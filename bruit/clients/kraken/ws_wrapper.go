@@ -5,6 +5,7 @@ import (
 	kraken_data "bruit/bruit/clients/kraken/client_data"
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/clients/kraken/web_socket"
+	"bruit/bruit/shared_types"
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
@@ -134,7 +135,7 @@ func (client *KrakenClient) PubDecoder(g *bruit.Settings) {
 	return
 }
 
-func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *types.OHLCVals, tradesWriter api.WriteAPI) {
+func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.OHLCValHolder, tradesWriter api.WriteAPI) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 

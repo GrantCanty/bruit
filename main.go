@@ -5,6 +5,7 @@ import (
 	"bruit/bruit"
 	"bruit/bruit/clients/kraken"
 	"bruit/bruit/clients/kraken/types"
+	"bruit/bruit/shared_types"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
@@ -22,8 +23,8 @@ func main() {
 	//tradesWriter := api.NewWriteAPI("Vert", "Trades", http.NewService("http://localhost:8086", "u2igiLQb-vNFdIx2XxRVtSEmMEiHQj-K7dm4CZkeQhblPqtaFovPCvsA1gK_jf4zXfNBHbq1SKWbWzssFbF5kw==", http.DefaultOptions()), write.DefaultOptions())
 
 	k := &kraken.KrakenClient{}
-	k.InitClient(&g)
-	/*balances, err := k.GetAccountBalance()
+	/*k.InitClient(&g)
+	balances, err := k.GetAccountBalance()
 	if err != nil {
 		panic(err)
 	}
@@ -65,16 +66,16 @@ func main() {
 	}*/
 	//log.Println(resp.Token)
 
-	//k.InitWebSockets(&g)
+	k.InitWebSockets(&g)
 
 	go k.PubDecoder(&g)
 	//go k.PrivDecoder(&g)
 	//go k.PrivListen(&g)
 
-	ohlcMap := types.OHLCVals{}
+	ohlcMap := shared_types.OHLCValHolder(&types.OHLCVals{})
 	go k.PubListen(&g, &ohlcMap, tradesWriter)
 
-	k.SubscribeToTrades(&g, []string{"BTC/USD", "ETH/USD"})
+	//k.SubscribeToTrades(&g, []string{"BTC/USD", "ETH/USD"})
 	k.SubscribeToOHLC(&g, []string{"BTC/USD", "ETH/USD", "EOS/USD"}, 5)
 	//k.SubscribeToOrderBookk(g, []string{"BTC/USD"}, 10)
 	//go k.SubscribeToOpenOrders(&g, resp.Token)*/

@@ -1,12 +1,6 @@
 package bruit
 
-import (
-	"bruit/bruit/clients/kraken/types"
-
-	"github.com/influxdata/influxdb-client-go/v2/api"
-)
-
-type WebSocketClient interface {
+/*type WebSocketClient interface {
 	// GENERAL METHODS
 	InitWebSockets(g *Settings)
 	DeferChanClose(g *Settings)
@@ -25,4 +19,4 @@ type WebSocketClient interface {
 	// PRIVATE SOCKET METHODS
 
 	//PrivListen()
-}
+}*/

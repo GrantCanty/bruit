@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-type OHLCResponseHolder struct {
+type KrakenOHLCResponseHolder struct {
 	ChannelID   int
 	Interval    int64
 	ChannelName string
@@ -14,15 +14,27 @@ type OHLCResponseHolder struct {
 	List        shared_types.List
 }
 
+func (o KrakenOHLCResponseHolder) GetChannelID() int {
+	return o.ChannelID
+}
+
+func (o *KrakenOHLCResponseHolder) GetList() *shared_types.List {
+	return &o.List
+}
+
+func (o KrakenOHLCResponseHolder) GetInterval() int64 {
+	return o.Interval
+}
+
 type OHLCVals struct {
-	Vals  map[int]*OHLCResponseHolder
+	Vals  map[int]*shared_types.OhlcResponseHolder
 	Mutex sync.RWMutex
 }
 
-func (ohlcVals *OHLCVals) Set(key int, data *OHLCResponseHolder) {
+func (ohlcVals *OHLCVals) Set(key int, data *shared_types.OhlcResponseHolder) {
 	log.Println("-- Setting up map --")
 	if ohlcVals.Vals == nil {
-		ohlcVals.Vals = make(map[int]*OHLCResponseHolder)
+		ohlcVals.Vals = make(map[int]*shared_types.OhlcResponseHolder)
 	}
 	ohlcVals.Vals[key] = data
 }
@@ -41,4 +53,12 @@ func (ohlcVals *OHLCVals) Lock() {
 
 func (ohlcVals *OHLCVals) Unlock() {
 	ohlcVals.Mutex.Unlock()
+}
+
+func (ohlcVals *OHLCVals) GetVals() map[int]*shared_types.OhlcResponseHolder {
+	return ohlcVals.Vals
+}
+
+func (ohlcVals *OHLCVals) GetMutex() *sync.RWMutex {
+	return &ohlcVals.Mutex
 }
