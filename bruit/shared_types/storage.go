@@ -2,24 +2,35 @@ package shared_types
 
 import "sync"
 
-type OHLCResponseHolder struct {
+/*type OHLCResponseHolder struct {
 	ChannelID   int
 	Interval    int64
 	ChannelName string
 	Pair        string
 	List        List
-}
+}*/
 
 type OHLCVals struct {
-	Vals  map[int]*OHLCResponseHolder
+	Data  map[int]OhlcResponseHolder
 	Mutex sync.RWMutex
 }
 
-func (ohlcVals *OHLCVals) Set(key int, data *OHLCResponseHolder) {
-	if ohlcVals.Vals == nil {
-		ohlcVals.Vals = make(map[int]*OHLCResponseHolder)
+/*type KrakenOHLCResponseHolder struct {
+	Data SubscriptionMetaData
+	List List
+}*/
+
+type SubscriptionMetaData interface {
+	GetData() SubscriptionMetaData
+	GetChannelID() int
+	GetInterval() int64
+}
+
+func (ohlcVals *OHLCVals) Set(key int, data OhlcResponseHolder) {
+	if ohlcVals.Data == nil {
+		ohlcVals.Data = make(map[int]OhlcResponseHolder)
 	}
-	ohlcVals.Vals[key] = data
+	ohlcVals.Data[key] = data
 }
 
 func (ohlcVals *OHLCVals) RLock() {
@@ -37,3 +48,23 @@ func (ohlcVals *OHLCVals) Lock() {
 func (ohlcVals *OHLCVals) Unlock() {
 	ohlcVals.Mutex.Unlock()
 }
+
+func (ohlcVals *OHLCVals) GetData() map[int]OhlcResponseHolder {
+	return ohlcVals.Data
+}
+
+func (ohlcVals *OHLCVals) GetMutex() *sync.RWMutex {
+	return &ohlcVals.Mutex
+}
+
+/*func (o KrakenOHLCResponseHolder) GetChannelID() int {
+	return o.Data.GetChannelID()
+}
+
+func (o *KrakenOHLCResponseHolder) GetList() *List {
+	return &o.List
+}
+
+func (o KrakenOHLCResponseHolder) GetInterval() int64 {
+	return o.Data.GetInterval()
+}*/

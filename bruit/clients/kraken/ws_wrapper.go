@@ -1,12 +1,12 @@
 package kraken
 
 import (
-	"bruit/bruit"
-	kraken_data "bruit/bruit/clients/kraken/client_data"
-	"bruit/bruit/clients/kraken/types"
-	"bruit/bruit/clients/kraken/web_socket"
-	"bruit/bruit/shared_types"
-	"bruit/bruit/ws_client"
+	"bruit_new/bruit"
+	kraken_data "bruit_new/bruit/clients/kraken/client_data"
+	"bruit_new/bruit/clients/kraken/types"
+	"bruit_new/bruit/clients/kraken/web_socket"
+	"bruit_new/bruit/shared_types"
+	"bruit_new/bruit/ws_client"
 	"encoding/json"
 	"log"
 	"strconv"
@@ -135,7 +135,7 @@ func (client *KrakenClient) PubDecoder(g *bruit.Settings) {
 	return
 }
 
-func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.OHLCValHolder, tradesWriter api.WriteAPI) {
+func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap shared_types.OHLCValHolder, tradesWriter api.WriteAPI) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -144,7 +144,7 @@ func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.O
 		case *types.OHLCResponse:
 			log.Println("OHLCResponse")
 			log.Printf("new response: %#v\n", resp)
-			web_socket.OnOHLCResponse(resp, ohlcMap)
+			web_socket.OnOHLCResponse(*resp, ohlcMap)
 		case *types.TradeResponse:
 			log.Println("TradeResponse")
 			log.Printf("new response: %#v %d \n", resp, resp.TradeArray[0].Time.Time.Unix())

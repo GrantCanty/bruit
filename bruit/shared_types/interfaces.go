@@ -1,7 +1,7 @@
 package shared_types
 
 import (
-	"bruit/bruit"
+	"bruit_new/bruit"
 	"sync"
 
 	//"bruit/bruit/clients/kraken/types"
@@ -9,13 +9,13 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 )
 
-type List interface {
+/*type List interface {
 	GetList() List
 	AddToEnd(n *Node)
 	Print(locker *sync.RWMutex)
 	IsEmpty() bool
 	GetLast() *Node
-}
+}*/
 
 type WebSocketClient interface {
 	// GENERAL METHODS
@@ -24,10 +24,9 @@ type WebSocketClient interface {
 
 	// PUBLIC SOCKET METHODS
 	SubscribeToOHLC(g *bruit.Settings, pairs []string, interval int)
-	SubscribeToTrades()
+	SubscribeToTrades(g *bruit.Settings, pairs []string)
 	PubDecoder(g *bruit.Settings)
-	PubListen(g *bruit.Settings, ohlcMap *OHLCValHolder, tradesWriter *api.WriteAPIImpl) // needs to take an interface instead of OHLCVals
-	//SubscribeToTrades()
+	PubListen(g *bruit.Settings, ohlcMap OHLCValHolder, tradesWriter api.WriteAPI) // needs to take an interface instead of OHLCVals
 
 	// ORDER BOOK SOCKET METHODS
 	SubscribeToOrderBook(g *bruit.Settings, pairs []string, depth int)
@@ -47,11 +46,11 @@ type OhlcResponseHolder interface {
 }
 
 type OHLCValHolder interface {
-	Set(key int, data *OhlcResponseHolder)
+	Set(key int, data OhlcResponseHolder)
 	RLock()
 	RUnlock()
 	Lock()
 	Unlock()
-	GetVals() map[int]*OhlcResponseHolder
+	GetData() map[int]OhlcResponseHolder
 	GetMutex() *sync.RWMutex
 }

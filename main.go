@@ -2,10 +2,9 @@ package main
 
 import (
 	//"bruit/stored_data"
-	"bruit/bruit"
-	"bruit/bruit/clients/kraken"
-	"bruit/bruit/clients/kraken/types"
-	"bruit/bruit/shared_types"
+	"bruit_new/bruit"
+	"bruit_new/bruit/clients/kraken"
+	"bruit_new/bruit/shared_types"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
@@ -72,7 +71,7 @@ func main() {
 	//go k.PrivDecoder(&g)
 	//go k.PrivListen(&g)
 
-	ohlcMap := shared_types.OHLCValHolder(&types.OHLCVals{})
+	ohlcMap := shared_types.OHLCVals{}
 	go k.PubListen(&g, &ohlcMap, tradesWriter)
 
 	//k.SubscribeToTrades(&g, []string{"BTC/USD", "ETH/USD"})
@@ -80,7 +79,7 @@ func main() {
 	//k.SubscribeToOrderBookk(g, []string{"BTC/USD"}, 10)
 	//go k.SubscribeToOpenOrders(&g, resp.Token)*/
 
-	/*bots := []bruit.WebSocketClient{k}
+	/*bots := []shared_types.WebSocketClient{k}
 	for _, bot := range bots {
 		fmt.Println(bot)
 	}*/

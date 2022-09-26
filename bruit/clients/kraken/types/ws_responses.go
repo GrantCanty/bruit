@@ -1,7 +1,7 @@
 package types
 
 import (
-	"bruit/bruit/shared_types"
+	"bruit_new/bruit/shared_types"
 	"encoding/json"
 	"fmt"
 	"time"

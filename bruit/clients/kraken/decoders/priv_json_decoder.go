@@ -1,7 +1,7 @@
 package decoders
 
 import (
-	"bruit/bruit/clients/kraken/types"
+	"bruit_new/bruit/clients/kraken/types"
 	"encoding/json"
 	"log"
 )

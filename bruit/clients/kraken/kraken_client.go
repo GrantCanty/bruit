@@ -1,10 +1,10 @@
 package kraken
 
 import (
-	"bruit/bruit"
-	"bruit/bruit/clients/kraken/rest"
-	"bruit/bruit/clients/kraken/state"
-	"bruit/bruit/clients/kraken/web_socket"
+	"bruit_new/bruit"
+	"bruit_new/bruit/clients/kraken/rest"
+	"bruit_new/bruit/clients/kraken/state"
+	"bruit_new/bruit/clients/kraken/web_socket"
 )
 
 type KrakenClient struct {

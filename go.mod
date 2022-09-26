@@ -1,4 +1,4 @@
-module bruit
+module bruit_new
 
 go 1.17
 

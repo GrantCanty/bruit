@@ -40,21 +40,21 @@ type Node struct {
 	Next *Node
 }
 
-type list struct {
+type List struct {
 	Head   *Node
 	Last   *Node
 	Length uint
 }
 
-func NewList(head *Node, last *Node, length uint) *list {
-	return &list{Head: head, Last: last, Length: length}
+func NewList(head *Node, last *Node, length uint) *List {
+	return &List{Head: head, Last: last, Length: length}
 }
 
-func (l *list) GetList() List {
-	return l
+func (l *List) GetList() List {
+	return *l
 }
 
-func (l *list) AddToEnd(n *Node) {
+func (l *List) AddToEnd(n *Node) {
 	if l.Head == nil {
 		l.Head = n
 		l.Last = n
@@ -67,7 +67,7 @@ func (l *list) AddToEnd(n *Node) {
 	l.Length++
 }
 
-func (l list) Print(locker *sync.RWMutex) {
+func (l List) Print(locker *sync.RWMutex) {
 	locker.RLock()
 	tmp := l.Head
 	for tmp != nil {
@@ -78,11 +78,11 @@ func (l list) Print(locker *sync.RWMutex) {
 	fmt.Println()
 }
 
-func (l list) IsEmpty() bool {
+func (l List) IsEmpty() bool {
 	return l.Length == 0
 }
 
-func (l *list) GetLast() *Node {
+func (l *List) GetLast() *Node {
 	return l.Last
 }
 

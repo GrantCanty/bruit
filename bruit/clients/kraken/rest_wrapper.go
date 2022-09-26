@@ -1,9 +1,9 @@
 package kraken
 
 import (
-	kraken_data "bruit/bruit/clients/kraken/client_data"
-	"bruit/bruit/clients/kraken/rest"
-	"bruit/bruit/clients/kraken/types"
+	kraken_data "bruit_new/bruit/clients/kraken/client_data"
+	"bruit_new/bruit/clients/kraken/rest"
+	"bruit_new/bruit/clients/kraken/types"
 	"strconv"
 	"strings"
 )
@@ -46,7 +46,7 @@ func (c *KrakenClient) GetOHLC(pair string, interval int) (*types.OHLCResp, erro
 func (c *KrakenClient) GetAccountBalance() (*types.AccountBalancResp, error) {
 	nonceParams := rest.ReturnNonceValues()
 	url := strings.Join([]string{kraken_data.PrivRestUrl, kraken_data.AccountBalancUrl}, "")
-	resp, err := c.Rest.PrivateRequest(url, nonceParams, kraken_data.Api_key, kraken_data.Private_key, &types.AccountBalancResp{})
+	resp, err := c.Rest.PrivateRequest(url, nonceParams, kraken_data.ApiKey, kraken_data.PrivateKey, &types.AccountBalancResp{})
 
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (c *KrakenClient) GetAccountBalance() (*types.AccountBalancResp, error) {
 func (c *KrakenClient) GetPrivateWebSokcetKey() (*types.PrivWSKeyResp, error) {
 	nonceParams := rest.ReturnNonceValues()
 	url := strings.Join([]string{kraken_data.PrivRestUrl, kraken_data.WSTokenUrl}, "")
-	resp, err := c.Rest.PrivateRequest(url, nonceParams, kraken_data.Api_key, kraken_data.Private_key, &types.PrivWSKeyResp{})
+	resp, err := c.Rest.PrivateRequest(url, nonceParams, kraken_data.ApiKey, kraken_data.PrivateKey, &types.PrivWSKeyResp{})
 
 	if err != nil {
 		return nil, err
