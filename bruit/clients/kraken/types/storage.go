@@ -1,6 +1,6 @@
 package types
 
-import "bruit_new/bruit/shared_types"
+import "bruit/bruit/shared_types"
 
 type KrakenMetaData struct {
 	ChannelID   int

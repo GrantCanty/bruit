@@ -1,21 +1,15 @@
 package shared_types
 
 import (
-	"bruit_new/bruit"
+	"bruit/bruit"
 	"sync"
+	"time"
 
 	//"bruit/bruit/clients/kraken/types"
 
 	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/shopspring/decimal"
 )
-
-/*type List interface {
-	GetList() List
-	AddToEnd(n *Node)
-	Print(locker *sync.RWMutex)
-	IsEmpty() bool
-	GetLast() *Node
-}*/
 
 type WebSocketClient interface {
 	// GENERAL METHODS
@@ -36,6 +30,27 @@ type WebSocketClient interface {
 	// PRIVATE SOCKET METHODS
 
 	//PrivListen()
+}
+
+type Candle interface {
+	SetCandle(data ...interface{})
+	GetCandle() Candle
+	GetStartTime() UnixTime
+	SetStartTime(newTime time.Time)
+	GetEndTime() UnixTime
+	SetEndTime(newTime time.Time)
+	GetHigh() decimal.Decimal
+	SetHigh(num decimal.Decimal)
+	GetLow() decimal.Decimal
+	SetLow(num decimal.Decimal)
+	GetClose() decimal.Decimal
+	SetClose(num decimal.Decimal, num2 decimal.Decimal)
+	GetVWAP() decimal.Decimal
+	SetVWAP(num decimal.Decimal, num2 decimal.Decimal)
+	GetVolume() decimal.Decimal
+	SetVolume(num decimal.Decimal)
+	GetCount() int
+	SetCount(num int, num2 decimal.Decimal)
 }
 
 type OhlcResponseHolder interface {

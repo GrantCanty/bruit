@@ -1,9 +1,9 @@
 package kraken
 
 import (
-	kraken_data "bruit_new/bruit/clients/kraken/client_data"
-	"bruit_new/bruit/clients/kraken/rest"
-	"bruit_new/bruit/clients/kraken/types"
+	kraken_data "bruit/bruit/clients/kraken/client_data"
+	"bruit/bruit/clients/kraken/rest"
+	"bruit/bruit/clients/kraken/types"
 	"strconv"
 	"strings"
 )

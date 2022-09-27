@@ -1,12 +1,12 @@
 package kraken
 
 import (
-	"bruit_new/bruit"
-	kraken_data "bruit_new/bruit/clients/kraken/client_data"
-	"bruit_new/bruit/clients/kraken/types"
-	"bruit_new/bruit/clients/kraken/web_socket"
-	"bruit_new/bruit/shared_types"
-	"bruit_new/bruit/ws_client"
+	"bruit/bruit"
+	kraken_data "bruit/bruit/clients/kraken/client_data"
+	"bruit/bruit/clients/kraken/types"
+	"bruit/bruit/clients/kraken/web_socket"
+	"bruit/bruit/shared_types"
+	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
 	"strconv"

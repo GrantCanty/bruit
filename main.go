@@ -2,9 +2,9 @@ package main
 
 import (
 	//"bruit/stored_data"
-	"bruit_new/bruit"
-	"bruit_new/bruit/clients/kraken"
-	"bruit_new/bruit/shared_types"
+	"bruit/bruit"
+	"bruit/bruit/clients/kraken"
+	"bruit/bruit/shared_types"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
@@ -75,7 +75,7 @@ func main() {
 	go k.PubListen(&g, &ohlcMap, tradesWriter)
 
 	//k.SubscribeToTrades(&g, []string{"BTC/USD", "ETH/USD"})
-	k.SubscribeToOHLC(&g, []string{"BTC/USD", "ETH/USD", "EOS/USD"}, 5)
+	k.SubscribeToOHLC(&g, []string{"EOS/USD", "BTC/USD", "EOS/USD"}, 5)
 	//k.SubscribeToOrderBookk(g, []string{"BTC/USD"}, 10)
 	//go k.SubscribeToOpenOrders(&g, resp.Token)*/
 

@@ -1,7 +1,7 @@
 package types
 
 import (
-	"bruit_new/bruit/shared_types"
+	"bruit/bruit/shared_types"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -183,20 +183,42 @@ func (c *WSCandles) UnmarshalJSON(d []byte) error {
 	return nil
 }
 
-func (c *WSCandles) NewStartTime(newTime time.Time) {
-	c.StartTime.Time = newTime
-}
+// mOST SETTERS NEED A GUARD CLAUSE TO MAKE SURE THAT THE VALUE IS HIGHER THAN THE PREVIOUS RESPONSE (VOL, COUNT, HIGH, LOW(INVERSE), ). THIS HELPS WITH OUT OF ORDER DATA
 
 func (ws WSCandles) GetCandle() shared_types.Candle {
 	return &ws
+}
+
+func (ws *WSCandles) SetCandle(data ...interface{}) {
+	if len(data) != 9 {
+		return
+	} else {
+		ws.StartTime = data[0].(shared_types.UnixTime)
+		ws.EndTime = data[1].(shared_types.UnixTime)
+		ws.Open = data[2].(decimal.Decimal)
+		ws.High = data[3].(decimal.Decimal)
+		ws.Low = data[4].(decimal.Decimal)
+		ws.Close = data[5].(decimal.Decimal)
+		ws.VWAP = data[6].(decimal.Decimal)
+		ws.Volume = data[7].(decimal.Decimal)
+		ws.Count = data[8].(int)
+	}
 }
 
 func (ws WSCandles) GetStartTime() shared_types.UnixTime {
 	return ws.StartTime
 }
 
+func (ws *WSCandles) SetStartTime(newTime time.Time) {
+	ws.StartTime.Time = newTime
+}
+
 func (ws WSCandles) GetEndTime() shared_types.UnixTime {
 	return ws.EndTime
+}
+
+func (ws *WSCandles) SetEndTime(newTime time.Time) {
+	ws.EndTime.Time = newTime
 }
 
 func (ws WSCandles) GetHigh() decimal.Decimal {
@@ -204,7 +226,9 @@ func (ws WSCandles) GetHigh() decimal.Decimal {
 }
 
 func (ws *WSCandles) SetHigh(num decimal.Decimal) {
-	ws.High = num
+	if num.GreaterThan(ws.High) {
+		ws.High = num
+	}
 }
 
 func (ws WSCandles) GetLow() decimal.Decimal {
@@ -212,24 +236,31 @@ func (ws WSCandles) GetLow() decimal.Decimal {
 }
 
 func (ws *WSCandles) SetLow(num decimal.Decimal) {
-	ws.Low = num
+	if num.LessThan(ws.Low) {
+		ws.Low = num
+	}
 }
 
 func (ws WSCandles) GetClose() decimal.Decimal {
 	return ws.Close
 }
 
-func (ws *WSCandles) SetClose(num decimal.Decimal) {
-	ws.Close = num
+func (ws *WSCandles) SetClose(num decimal.Decimal, vol decimal.Decimal) {
+	if vol.GreaterThan(ws.Volume) {
+		ws.Close = num
+	}
 }
 
 func (ws WSCandles) GetVWAP() decimal.Decimal {
 	return ws.VWAP
 }
 
-func (ws *WSCandles) SetVWAP(num decimal.Decimal) {
-	ws.VWAP = num
+func (ws *WSCandles) SetVWAP(num decimal.Decimal, vol decimal.Decimal) {
+	if vol.GreaterThan(ws.Volume) {
+		ws.VWAP = num
+	}
 }
+
 func (ws WSCandles) GetVolume() decimal.Decimal {
 	return ws.Volume
 }
@@ -242,6 +273,8 @@ func (ws WSCandles) GetCount() int {
 	return ws.Count
 }
 
-func (ws *WSCandles) SetCount(num int) {
-	ws.Count = num
+func (ws *WSCandles) SetCount(num int, vol decimal.Decimal) {
+	if vol.GreaterThan(ws.Volume) {
+		ws.Count = num
+	}
 }
