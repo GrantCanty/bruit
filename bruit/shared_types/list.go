@@ -10,27 +10,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type Candle interface {
-	SetCandle(data ...interface{})
-	GetCandle() Candle
-	GetStartTime() UnixTime
-	SetStartTime(newTime time.Time)
-	GetEndTime() UnixTime
-	SetEndTime(newTime time.Time)
-	GetHigh() decimal.Decimal
-	SetHigh(num decimal.Decimal)
-	GetLow() decimal.Decimal
-	SetLow(num decimal.Decimal)
-	GetClose() decimal.Decimal
-	SetClose(num decimal.Decimal, num2 decimal.Decimal)
-	GetVWAP() decimal.Decimal
-	SetVWAP(num decimal.Decimal, num2 decimal.Decimal)
-	GetVolume() decimal.Decimal
-	SetVolume(num decimal.Decimal)
-	GetCount() int
-	SetCount(num int, num2 decimal.Decimal)
-}
-
 type Node struct {
 	Data Candle
 	Next *Node
