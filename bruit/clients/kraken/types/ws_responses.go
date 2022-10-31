@@ -45,11 +45,19 @@ type OHLCSuccessResponse struct {
 	Subscription OHLCSubscription `json:"subscription"`
 }
 
+func (o OHLCSuccessResponse) GetMetaData() shared_types.SubscriptionMetaData {
+	return KrakenMetaData{ChannelID: o.ChannelID, ChannelName: o.ChannelName, Pair: o.Pair}
+}
+
 type OHLCResponse struct {
 	ChannelID   int
 	OHLCArray   WSCandles
 	ChannelName string
 	Pair        string
+}
+
+func (o OHLCResponse) GetMetaData() shared_types.SubscriptionMetaData {
+	return KrakenMetaData{ChannelID: o.ChannelID, ChannelName: o.ChannelName, Pair: o.Pair}
 }
 
 type WSCandles struct {

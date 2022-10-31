@@ -135,30 +135,41 @@ func (client *KrakenClient) PubDecoder(g *bruit.Settings) {
 	return
 }
 
-func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap shared_types.OHLCValHolder, tradesWriter api.WriteAPI) {
+func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
 	for chanResp := range client.WebSocket.GetPubChan() {
 		switch resp := chanResp.(type) {
 		case *types.OHLCResponse:
-			log.Println("OHLCResponse")
-			log.Printf("new response: %#v\n", resp)
-			web_socket.OnOHLCResponse(*resp, ohlcMap)
+			if g.GlobalSettings.Logging.GetLoggingConsole() {
+				log.Println("OHLCResponse")
+				log.Printf("new response: %#v\n", resp)
+			}
+			client.WebSocket.OnOHLCResponse(*resp, ohlcMap)
 		case *types.TradeResponse:
-			log.Println("TradeResponse")
-			log.Printf("new response: %#v %d \n", resp, resp.TradeArray[0].Time.Time.Unix())
+			if g.GlobalSettings.Logging.GetLoggingConsole() {
+				log.Println("TradeResponse")
+				log.Printf("new response: %#v %d \n", resp, resp.TradeArray[0].Time.Time.Unix())
+			}
 			web_socket.OnTradeResponse(*resp, tradesWriter)
 			//tradesWriter.WritePoint()
 		case *types.ServerConnectionStatusResponse:
-			log.Println("ServerConnectionStatusResponse")
-			log.Println(resp)
+			if g.GlobalSettings.Logging.GetLoggingConsole() {
+				log.Println("ServerConnectionStatusResponse")
+				log.Println(resp)
+			}
 		case *types.HeartBeat:
-			log.Println("HeartBeat")
-			//log.Println(resp.Event)
+			if g.GlobalSettings.Logging.GetLoggingConsole() {
+				log.Println("HeartBeat")
+				//log.Println(resp.Event)
+			}
 		case *types.OHLCSuccessResponse:
-			log.Println("OHLCSuccessResponse")
-			log.Println(resp.ChannelID)
+			if g.GlobalSettings.Logging.GetLoggingConsole() {
+				log.Println("OHLCSuccessResponse")
+				log.Println(resp)
+			}
+			client.WebSocket.HandleOHLCSuccessResponse(resp)
 		default:
 			log.Println("in default case")
 			log.Println(resp)

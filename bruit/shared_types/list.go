@@ -1,8 +1,6 @@
 package shared_types
 
 import (
-	//"bruit/bruit/clients/kraken/types"
-	//"bruit/bruit/clients/kraken/types"
 	"fmt"
 	"sync"
 	"time"
@@ -25,8 +23,8 @@ func NewList(head *Node, last *Node, length uint) *List {
 	return &List{Head: head, Last: last, Length: length}
 }
 
-func (l *List) GetList() List {
-	return *l
+func (l *List) GetList() *List {
+	return l
 }
 
 func (l *List) AddToEnd(n *Node) {
@@ -44,6 +42,11 @@ func (l *List) AddToEnd(n *Node) {
 
 func (l List) Print(locker *sync.RWMutex) {
 	locker.RLock()
+
+	if l.IsEmpty() {
+		return
+	}
+
 	tmp := l.Head
 	for tmp != nil {
 		fmt.Println(string("\033[34m"), tmp.Data, string("\033[0m"))
@@ -70,17 +73,17 @@ func (l *List) EditCandle(oldCandle Candle, newCandle Candle) {
 	oldCandle.SetVolume(newCandle.GetVolume())
 }
 
-func (l *List) AddCandle(newCandle Candle, emptyCandles Candle, interval int64) { // old candle should switch to list
+func (l *List) AddCandle(newCandle Candle, emptyCandles Candle, interval int) { // old candle should switch to list
 	since := time.Since(l.GetLast().Data.GetEndTime().Time).Minutes()
 	if since < time.Duration(interval).Minutes() { // if the time since the close of the last candle is less than the time of the connection's interval, the candle you received will just be added to the end
 		newCandle.SetStartTime(l.GetLast().Data.GetEndTime().Time)
 		node := Node{Data: newCandle, Next: nil}
 		l.AddToEnd(&node)
 	} else {
-		newNodeCount := int64(int64(since) / interval)
+		newNodeCount := int(int(since) / interval)
 		zero := decimal.New(0, 0)
 
-		for i := int64(0); i < newNodeCount; i++ {
+		for i := int(0); i < newNodeCount; i++ {
 			last := l.GetLast()
 			close := last.Data.GetClose()
 

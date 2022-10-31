@@ -75,7 +75,7 @@ func main() {
 	go k.PubListen(&g, &ohlcMap, tradesWriter)
 
 	//k.SubscribeToTrades(&g, []string{"BTC/USD", "ETH/USD"})
-	k.SubscribeToOHLC(&g, []string{"EOS/USD", "BTC/USD", "EOS/USD"}, 5)
+	k.SubscribeToOHLC(&g, []string{"EOS/USD", "BTC/USD"}, 5)
 	//k.SubscribeToOrderBookk(g, []string{"BTC/USD"}, 10)
 	//go k.SubscribeToOpenOrders(&g, resp.Token)*/
 

@@ -5,6 +5,7 @@ import (
 	kraken_data "bruit/bruit/clients/kraken/client_data"
 	"bruit/bruit/clients/kraken/decoders"
 	"bruit/bruit/clients/kraken/types"
+	"bruit/bruit/shared_types"
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
@@ -18,6 +19,32 @@ type WebSocketClient struct {
 	pubChan  chan interface{}
 	bookChan chan interface{}
 	privChan chan interface{}
+
+	subscriptions map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData
+}
+
+func (ws WebSocketClient) GetSubscriptions() map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData {
+	return ws.subscriptions
+}
+
+func (ws WebSocketClient) GetInterval(metaData shared_types.SubscriptionMetaData) int {
+	return ws.subscriptions[metaData].GetData().(types.KrakenOHLCSubscriptionData).Interval
+}
+
+func (ws WebSocketClient) GetChannelID(metaData shared_types.SubscriptionMetaData) int {
+	return metaData.GetChannelID()
+}
+
+func (ws *WebSocketClient) HandleOHLCSuccessResponse(resp *types.OHLCSuccessResponse) {
+	if _, found := ws.subscriptions[resp.GetMetaData()]; found {
+		ws.subscriptions[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}
+	} else {
+		if ws.subscriptions == nil {
+			ws.subscriptions = make(map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData)
+		}
+		ws.subscriptions[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}
+	}
+	log.Println("subscription list: ", ws.subscriptions)
 }
 
 func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.LoggingSettings) {

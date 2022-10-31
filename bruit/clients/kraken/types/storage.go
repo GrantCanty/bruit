@@ -1,45 +1,70 @@
 package types
 
-import "bruit/bruit/shared_types"
+import (
+	"bruit/bruit/shared_types"
+)
 
 type KrakenMetaData struct {
 	ChannelID   int
-	Interval    int64
 	ChannelName string
 	Pair        string
-}
-
-func (k KrakenMetaData) GetData() shared_types.SubscriptionMetaData {
-	return k
 }
 
 func (k KrakenMetaData) GetChannelID() int {
 	return k.ChannelID
 }
 
-func (k KrakenMetaData) GetInterval() int64 {
-	return k.Interval
+func (k KrakenMetaData) GetChannelName() string {
+	return k.ChannelName
 }
 
-type KrakenOHLCResponseHolder struct {
+func (k KrakenMetaData) GetPair() string {
+	return k.Pair
+}
+
+func (k KrakenMetaData) Found(metaData shared_types.SubscriptionMetaData) bool {
+	switch data := metaData.(type) {
+	case *KrakenMetaData:
+		if data.ChannelID == k.ChannelID && data.ChannelName == k.ChannelName && data.Pair == k.Pair {
+			return true
+		}
+	}
+	return false
+}
+
+type KrakenOHLCSubscriptionData struct {
+	Interval int
+	Status   string
+}
+
+func (k KrakenOHLCSubscriptionData) GetData() shared_types.SubscriptionData {
+	return KrakenOHLCSubscriptionData{k.Interval, k.Status}
+}
+
+/*type KrakenOHLCResponseHolder struct {
 	ChannelID   int
 	Interval    int64
 	ChannelName string
 	Pair        string
-	List        shared_types.List
-}
+	//MetaData KrakenMetaData
+	List shared_types.List
+}*/
 
-func (o KrakenOHLCResponseHolder) GetChannelID() int {
+/*func (o KrakenOHLCResponseHolder) GetChannelID() int {
 	return o.ChannelID
-}
+}*/
 
-func (o *KrakenOHLCResponseHolder) GetList() *shared_types.List {
+/*func (o *KrakenOHLCResponseHolder) GetList() *shared_types.List {
 	return &o.List
-}
+}*/
 
-func (o KrakenOHLCResponseHolder) GetInterval() int64 {
+/*func (k KrakenOHLCResponseHolder) GetMetaData() {
+
+}*/
+
+/*func (o KrakenOHLCResponseHolder) GetInterval() int64 {
 	return o.Interval
-}
+}*/
 
 /*type OHLCVals struct {
 	Vals  map[int]shared_types.OhlcResponseHolder

@@ -2,7 +2,6 @@ package shared_types
 
 import (
 	"bruit/bruit"
-	"sync"
 	"time"
 
 	//"bruit/bruit/clients/kraken/types"
@@ -20,7 +19,7 @@ type WebSocketClient interface {
 	SubscribeToOHLC(g *bruit.Settings, pairs []string, interval int)
 	SubscribeToTrades(g *bruit.Settings, pairs []string)
 	PubDecoder(g *bruit.Settings)
-	PubListen(g *bruit.Settings, ohlcMap OHLCValHolder, tradesWriter api.WriteAPI) // needs to take an interface instead of OHLCVals
+	PubListen(g *bruit.Settings, ohlcMap *OHLCVals, tradesWriter api.WriteAPI) // needs to take an interface instead of OHLCVals
 
 	// ORDER BOOK SOCKET METHODS
 	SubscribeToOrderBook(g *bruit.Settings, pairs []string, depth int)
@@ -44,28 +43,32 @@ type Candle interface {
 	GetLow() decimal.Decimal
 	SetLow(num decimal.Decimal)
 	GetClose() decimal.Decimal
-	SetClose(num decimal.Decimal, num2 decimal.Decimal)
+	SetClose(num decimal.Decimal, vol decimal.Decimal)
 	GetVWAP() decimal.Decimal
-	SetVWAP(num decimal.Decimal, num2 decimal.Decimal)
+	SetVWAP(num decimal.Decimal, vol decimal.Decimal)
 	GetVolume() decimal.Decimal
 	SetVolume(num decimal.Decimal)
 	GetCount() int
-	SetCount(num int, num2 decimal.Decimal)
+	SetCount(num int, vol decimal.Decimal)
 }
 
-type OhlcResponseHolder interface {
-	GetChannelID() int
-	GetList() *List
-	GetInterval() int64
-	//Return() *OhlcResponseHolder
-}
-
-type OHLCValHolder interface {
-	Set(key int, data OhlcResponseHolder)
+/*type OHLCValHolder interface {
+	Set(key int, data List)
 	RLock()
 	RUnlock()
 	Lock()
 	Unlock()
-	GetData() map[int]OhlcResponseHolder
+	GetData() map[SubscriptionMetaData]List
 	GetMutex() *sync.RWMutex
+}*/
+
+type SubscriptionMetaData interface {
+	GetChannelID() int
+	GetChannelName() string
+	GetPair() string
+	Found(metaData SubscriptionMetaData) bool
+}
+
+type SubscriptionData interface {
+	GetData() SubscriptionData
 }
