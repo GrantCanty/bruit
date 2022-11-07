@@ -5,7 +5,6 @@ import (
 	kraken_data "bruit/bruit/clients/kraken/client_data"
 	"bruit/bruit/clients/kraken/decoders"
 	"bruit/bruit/clients/kraken/types"
-	"bruit/bruit/shared_types"
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
@@ -20,10 +19,10 @@ type WebSocketClient struct {
 	bookChan chan interface{}
 	privChan chan interface{}
 
-	subscriptions map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData
+	//subscriptions map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData
 }
 
-func (ws WebSocketClient) GetSubscriptions() map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData {
+/*func (ws WebSocketClient) GetSubscriptions() map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData {
 	return ws.subscriptions
 }
 
@@ -45,7 +44,7 @@ func (ws *WebSocketClient) HandleOHLCSuccessResponse(resp *types.OHLCSuccessResp
 		ws.subscriptions[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}
 	}
 	log.Println("subscription list: ", ws.subscriptions)
-}
+}*/
 
 func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.LoggingSettings) {
 	var resp interface{}

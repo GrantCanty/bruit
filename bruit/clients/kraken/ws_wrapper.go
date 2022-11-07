@@ -74,12 +74,20 @@ func (client *KrakenClient) startWebSocketConnection(g *bruit.Settings) {
 	return
 }
 
-func (client *KrakenClient) InitWebSockets(g *bruit.Settings) {
+func (client *KrakenClient) initWebSockets(g *bruit.Settings) {
 	//client.initTesting(testing)
 	if !AreChannelsInit(&client.WebSocket) {
 		client.WebSocket.InitChannels()
 	}
 	client.startWebSocketConnection(g)
+}
+
+func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResponse) {
+	/*resp.Subscription{Interval: resp.Subscription.Interval, Status: resp.Status}
+
+	client.State.Client.GetSubscriptions()[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}*/
+	client.State.Client.AddSubscription(resp.GetMetaData(), types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status})
+	log.Println("subscription list: ", client.State.Client.GetSubscriptions())
 }
 
 // PUBLIC SOCKET METHODS
@@ -146,7 +154,7 @@ func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.O
 				log.Println("OHLCResponse")
 				log.Printf("new response: %#v\n", resp)
 			}
-			client.WebSocket.OnOHLCResponse(*resp, ohlcMap)
+			client.State.OnOHLCResponse(*resp, ohlcMap)
 		case *types.TradeResponse:
 			if g.GlobalSettings.Logging.GetLoggingConsole() {
 				log.Println("TradeResponse")
@@ -169,7 +177,7 @@ func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.O
 				log.Println("OHLCSuccessResponse")
 				log.Println(resp)
 			}
-			client.WebSocket.HandleOHLCSuccessResponse(resp)
+			client.HandleOHLCSuccessResponse(*resp)
 		default:
 			log.Println("in default case")
 			log.Println(resp)

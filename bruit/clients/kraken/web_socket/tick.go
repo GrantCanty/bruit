@@ -2,9 +2,6 @@ package web_socket
 
 import (
 	"bruit/bruit/clients/kraken/types"
-	"bruit/bruit/shared_types"
-	"strconv"
-	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
@@ -20,14 +17,7 @@ func OnTradeResponse(data types.TradeResponse, tradesWriter api.WriteAPI) {
 	}
 }
 
-func (ws *WebSocketClient) OnOHLCResponse(data types.OHLCResponse, ohlcMap *shared_types.OHLCVals) {
-	/**
-	*  Add:
-	*  OHLCResponseHandler func to add responses to a LL. should delete the head if length is too long (ex: 10,000)
-	*  CalcTechnicals func to recalculate the values of technical indicators
-	*  Eval func to evaluate if buy/sell condition is met
-	*  PlaceOrder func depending on Eval func
-	**/
+/*func (ws *WebSocketClient) OnOHLCResponse(data types.OHLCResponse, ohlcMap *shared_types.OHLCVals) {
 	ws.handleOHLCResponse(data, ohlcMap)
 	//oo := ohlcMap.Vals
 	//gg := (*(*ohlcMap).GetVals()[data.ChannelID]).GetList()
@@ -88,4 +78,4 @@ func (ws *WebSocketClient) handleOHLCResponse(resp types.OHLCResponse, ohlcMap *
 		ohlcMap.Set(resp.GetMetaData(), tmp)
 		ohlcMap.Unlock()
 	}
-}
+}*/

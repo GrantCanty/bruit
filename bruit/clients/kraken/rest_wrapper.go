@@ -43,16 +43,16 @@ func (c *KrakenClient) GetOHLC(pair string, interval int) (*types.OHLCResp, erro
 
 // PRIV FUNCS
 
-func (c *KrakenClient) GetAccountBalance() (*types.AccountBalancResp, error) {
+func (c *KrakenClient) GetAccountBalances() (*types.AccountBalanceResp, error) {
 	nonceParams := rest.ReturnNonceValues()
 	url := strings.Join([]string{kraken_data.PrivRestUrl, kraken_data.AccountBalancUrl}, "")
-	resp, err := c.Rest.PrivateRequest(url, nonceParams, kraken_data.ApiKey, kraken_data.PrivateKey, &types.AccountBalancResp{})
+	resp, err := c.Rest.PrivateRequest(url, nonceParams, kraken_data.ApiKey, kraken_data.PrivateKey, &types.AccountBalanceResp{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.(*types.AccountBalancResp), err
+	return resp.(*types.AccountBalanceResp), err
 }
 
 func (c *KrakenClient) GetPrivateWebSokcetKey() (*types.PrivWSKeyResp, error) {

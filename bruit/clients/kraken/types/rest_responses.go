@@ -42,7 +42,7 @@ type AssetPairResp struct {
 	Ordermin       string     `json:"order_min"`
 }
 
-type AccountBalancResp map[string]decimal.Decimal
+type AccountBalanceResp map[string]decimal.Decimal
 
 type FeesInfo struct {
 	Vol int

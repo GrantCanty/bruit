@@ -22,8 +22,8 @@ func main() {
 	//tradesWriter := api.NewWriteAPI("Vert", "Trades", http.NewService("http://localhost:8086", "u2igiLQb-vNFdIx2XxRVtSEmMEiHQj-K7dm4CZkeQhblPqtaFovPCvsA1gK_jf4zXfNBHbq1SKWbWzssFbF5kw==", http.DefaultOptions()), write.DefaultOptions())
 
 	k := &kraken.KrakenClient{}
-	/*k.InitClient(&g)
-	balances, err := k.GetAccountBalance()
+	k.InitClient(&g)
+	/*balances, err := k.GetAccountBalance()
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +65,7 @@ func main() {
 	}*/
 	//log.Println(resp.Token)
 
-	k.InitWebSockets(&g)
+	//k.InitWebSockets(&g)
 
 	go k.PubDecoder(&g)
 	//go k.PrivDecoder(&g)

@@ -15,7 +15,15 @@ type KrakenClient struct {
 }
 
 func (k *KrakenClient) InitClient(g *bruit.Settings) {
-	k.InitWebSockets(g)
-	k.State.InitState()
+	k.initWebSockets(g)
+	k.initState()
 
+}
+
+func (k *KrakenClient) initState() {
+	bals, err := k.GetAccountBalances()
+	if err != nil {
+		panic(err)
+	}
+	k.State.Init(*bals)
 }

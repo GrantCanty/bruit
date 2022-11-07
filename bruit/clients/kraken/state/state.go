@@ -1,32 +1,24 @@
 package state
 
-import "github.com/shopspring/decimal"
+import (
+	"bruit/bruit/clients/kraken/types"
+	"bruit/bruit/shared_types"
+)
 
 /**
  * should have a client manager with managers for subscriptions(channelIDs, intervals for OHLC, status) state(balances, ),
 **/
 
-type Manager struct {
-	State  StateManager
-	Client ClientManager
+type StateManager struct {
+	Account AccountManager
+	Client  ClientManager
 }
 
-type StateManager struct {
-	Balances map[string]decimal.Decimal
+type AccountManager struct {
+	balancesWithStaking    types.AccountBalanceResp
+	balancesWithoutStaking types.AccountBalanceResp
 }
 
 type ClientManager struct {
-}
-
-func (m *Manager) InitManager() {
-	m.State.InitState()
-	m.Client.InitClient()
-}
-
-func (s *StateManager) InitState() {
-	s.Balances = make(map[string]decimal.Decimal)
-}
-
-func (c *ClientManager) InitClient() {
-
+	subscriptions map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData
 }
