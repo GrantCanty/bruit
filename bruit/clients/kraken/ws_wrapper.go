@@ -4,91 +4,11 @@ import (
 	"bruit/bruit"
 	kraken_data "bruit/bruit/clients/kraken/client_data"
 	"bruit/bruit/clients/kraken/types"
-	"bruit/bruit/clients/kraken/web_socket"
-	"bruit/bruit/shared_types"
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
 	"strconv"
-
-	"github.com/influxdata/influxdb-client-go/v2/api"
 )
-
-// GENERAL METHODS
-
-func (client *KrakenClient) startWebSocketConnection(g *bruit.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
-
-	if IsPubSocketInit(client.WebSocket) == nil && IsPrivSocketInit(client.WebSocket) == nil && IsBookSocketInit(client.WebSocket) == nil {
-		log.Println("connections are already init")
-		return
-	}
-	client.WebSocket.InitConnections()
-
-	if err := IsPubSocketInit(client.WebSocket); err != nil { // guard clause checker
-		panic(err)
-	}
-	if err := IsBookSocketInit(client.WebSocket); err != nil {
-		panic(err)
-	}
-	if err := IsPrivSocketInit(client.WebSocket); err != nil { // guard clause checker
-		panic(err)
-	}
-
-	ws_client.ReceiveLocker(client.WebSocket.GetPubSocketPointer())
-	client.WebSocket.GetPubSocketPointer().OnConnected = func(socket ws_client.Socket) {
-		log.Println("Connected to public server")
-	}
-	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
-
-	/*ws_client.ReceiveLocker(&client.WebSocket.bookSocket)
-	client.WebSocket.bookSocket.OnConnected = func(socket ws_client.Socket) {
-		log.Println("Connected to book server")
-	}
-	ws_client.ReceiveUnlocker(&client.WebSocket.bookSocket)
-
-	ws_client.ReceiveLocker(&client.WebSocket.privSocket)
-	client.WebSocket.privSocket.OnConnected = func(socket ws_client.Socket) {
-		log.Println("Connected to private server")
-	}
-	ws_client.ReceiveUnlocker(&client.WebSocket.privSocket)*/
-
-	client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		//decoders.PubJsonDecoder(message, client.Testing)
-		client.WebSocket.PubJsonDecoder(message, g.GlobalSettings.Logging)
-		log.Println(message)
-	}
-	/*client.WebSocket.bookSocket.OnTextMessage = func(message string, socket ws_client.Socket) {
-		ws_client.BookJsonDecoder(message, client.Testing)
-		log.Println(message)
-	}
-	client.WebSocket.privSocket.OnTextMessage = func(message string, socket ws_client.Socket) {
-		ws_client.PrivJsonDecoder(message, client.Testing)
-		log.Println(message)
-	}*/
-
-	client.WebSocket.GetPubSocketPointer().Connect()
-	//client.WebSocket.GetBookSocketPointer().Connect()
-	//client.WebSocket.GetPrivSocketPointer().Connect()
-	return
-}
-
-func (client *KrakenClient) initWebSockets(g *bruit.Settings) {
-	//client.initTesting(testing)
-	if !AreChannelsInit(&client.WebSocket) {
-		client.WebSocket.InitChannels()
-	}
-	client.startWebSocketConnection(g)
-}
-
-func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResponse) {
-	/*resp.Subscription{Interval: resp.Subscription.Interval, Status: resp.Status}
-
-	client.State.Client.GetSubscriptions()[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}*/
-	client.State.Client.AddSubscription(resp.GetMetaData(), types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status})
-	log.Println("subscription list: ", client.State.Client.GetSubscriptions())
-}
 
 // PUBLIC SOCKET METHODS
 
@@ -103,6 +23,10 @@ func (client *KrakenClient) SubscribeToTrades(g *bruit.Settings, pairs []string)
 	client.WebSocket.SubscribeToTrades(pairs)
 }
 
+/****
+	*Add func to check if already subscribed to OHLC Stream
+	*Add func to get past OHLC data from rest API. Add to the candle map list
+*****/
 func (client *KrakenClient) SubscribeToOHLC(g *bruit.Settings, pairs []string, interval int) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
@@ -141,49 +65,6 @@ func (client *KrakenClient) PubDecoder(g *bruit.Settings) {
 
 	<-g.ConcurrencySettings.Ctx.Done()
 	return
-}
-
-func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
-
-	for chanResp := range client.WebSocket.GetPubChan() {
-		switch resp := chanResp.(type) {
-		case *types.OHLCResponse:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
-				log.Println("OHLCResponse")
-				log.Printf("new response: %#v\n", resp)
-			}
-			client.State.OnOHLCResponse(*resp, ohlcMap)
-		case *types.TradeResponse:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
-				log.Println("TradeResponse")
-				log.Printf("new response: %#v %d \n", resp, resp.TradeArray[0].Time.Time.Unix())
-			}
-			web_socket.OnTradeResponse(*resp, tradesWriter)
-			//tradesWriter.WritePoint()
-		case *types.ServerConnectionStatusResponse:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
-				log.Println("ServerConnectionStatusResponse")
-				log.Println(resp)
-			}
-		case *types.HeartBeat:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
-				log.Println("HeartBeat")
-				//log.Println(resp.Event)
-			}
-		case *types.OHLCSuccessResponse:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
-				log.Println("OHLCSuccessResponse")
-				log.Println(resp)
-			}
-			client.HandleOHLCSuccessResponse(*resp)
-		default:
-			log.Println("in default case")
-			log.Println(resp)
-		}
-	}
-	<-g.ConcurrencySettings.Ctx.Done()
 }
 
 // ORDER BOOK SOCKET METHODS
@@ -226,23 +107,6 @@ func (client *KrakenClient) BookDecoder(g *bruit.Settings) {
 
 	<-g.ConcurrencySettings.Ctx.Done()
 	return
-}
-
-func (client *KrakenClient) BookListen(g *bruit.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
-	//defer client.WebSocket.GetBookSocketPointer().Close()
-
-	for c := range client.WebSocket.GetBookChan() {
-		log.Println(c)
-		/*switch v := c.(type) {
-		case *types.HeartBeat:
-			log.Println(v)
-		}*/
-	}
-
-	<-g.ConcurrencySettings.Ctx.Done()
-	log.Println("closing book listen func")
 }
 
 // PRIVATE SOCKET METHODS
@@ -339,60 +203,4 @@ func (client *KrakenClient) PrivDecoder(g *bruit.Settings) {
 
 	<-g.ConcurrencySettings.Ctx.Done()
 	return
-}
-
-func (client *KrakenClient) PrivListen(g *bruit.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
-
-	for chanResp := range client.WebSocket.GetPrivChan() {
-		switch resp := chanResp.(type) {
-		case *types.OpenOrdersResponse:
-			log.Println("OpenOrdersResponse")
-			log.Println(resp)
-		case *types.CancelOrderResponse:
-			log.Println("CancelOrderResponse")
-			log.Println(resp)
-		case *types.ServerConnectionStatusResponse:
-			log.Println("ServerConnectionStatusResponse")
-			log.Println(resp)
-		case *types.HeartBeat:
-			log.Println("HeartBeat")
-			//log.Println(resp.Event)
-		default:
-			log.Println("in default case")
-			log.Println(resp)
-		}
-	}
-	<-g.ConcurrencySettings.Ctx.Done()
-}
-
-// GENERAL METHODS
-
-func (client *KrakenClient) DeferChanClose(g *bruit.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
-	<-g.ConcurrencySettings.Ctx.Done()
-
-	defer close(client.WebSocket.GetPubChan())
-	defer close(client.WebSocket.GetBookChan())
-	defer close(client.WebSocket.GetPrivChan())
-
-	defer client.WebSocket.GetPubSocketPointer().Close()
-	//defer client.WebSocket.GetBookSocketPointer().Close()
-	//defer client.WebSocket.GetPrivSocketPointer().Close()
-
-	//ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
-	/*client.WebSocket.GetPubSocketPointer().OnDisconnected = func(err error, socket ws_client.Socket) {
-		if err != nil {
-			//log.Println("no error: closed pub socke
-			log.Println("error: ", err)
-		} else {
-			log.Println("no error: closed pub socket")
-		}
-		//client.WebSocket.BookJsonDecoder(message, g.GlobalSettings.Logging)
-	}*/
-	//ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
-
-	log.Println("Closing channels")
 }
