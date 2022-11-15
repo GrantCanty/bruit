@@ -47,6 +47,7 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.Logg
 
 func (client *WebSocketClient) BookJsonDecoder(response string, logger bruit.LoggingSettings) {
 	var resp BookResp
+	log.Println(response)
 	//byteResponse := []byte(response)
 
 	client.bookChan <- resp

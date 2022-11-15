@@ -69,6 +69,7 @@ func (client *KrakenClient) PubDecoder(g *bruit.Settings) {
 
 // ORDER BOOK SOCKET METHODS
 
+// Subscribe to the order book.
 func (client *KrakenClient) SubscribeToOrderBook(g *bruit.Settings, pairs []string, depth int) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()

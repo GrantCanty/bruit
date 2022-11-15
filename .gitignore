@@ -7,3 +7,6 @@ ohlc_get.go
 old_main.go
 test.json
 list-tester.go
+test_bals.go
+md.go
+ob.go
