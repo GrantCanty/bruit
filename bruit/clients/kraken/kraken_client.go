@@ -21,13 +21,12 @@ type KrakenClient struct {
 
 func (k *KrakenClient) InitClient(g *bruit.Settings) {
 	k.initWebSockets(g)
-	k.initKeys(*g)
+	k.initKeys(g)
 	k.initState()
 
 }
 
 func (client *KrakenClient) initWebSockets(g *bruit.Settings) {
-	//client.initTesting(testing)
 	if !AreChannelsInit(&client.WebSocket) {
 		client.WebSocket.InitChannels()
 	}
@@ -43,7 +42,7 @@ func (k *KrakenClient) initState() {
 }
 
 //loads the api keys from the .env file
-func (k *KrakenClient) initKeys(g bruit.Settings) {
+func (k *KrakenClient) initKeys(g *bruit.Settings) {
 	env, err := godotenv.Read()
 	if err != nil {
 		panic(err)
