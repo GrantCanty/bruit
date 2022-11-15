@@ -7,14 +7,14 @@ Bruit aims to create a fully automated & algorithmic trading system that's light
 * Finish functions for Kraken order book
 * Implementation of the trading ending and strategies
 * Implementing the timeseries database (InfluxDB)
-* Implementing new modes & main system commands
+* Implementing new runtime modes & main system commands
 * Implementing performance tracking
 * Connecting to other exchanges
 
 ## Usage
 To start:
 1. Create Kraken account and get API Keys
-2. Create a .env file with fields ```API_KEY``` & ```PRIVATE_KEY```. Insert API keys here
+2. Add data to fields of .env file(s) 
 
 #### Subscribe to OHLC
 ```
@@ -47,6 +47,8 @@ func main() {
 	go k.DeferChanClose(&settings)
 	settings.Wait()
 }
+```
 
 ### Conventions
-Run decoder and listen functions before subscribing to a stream to minimize the chance that of missing messages 
+* Run decoder and listen functions before subscribing to a stream to minimize the chance of missing messages 
+* Create multiple .env files ex: ```.env.test, .env.prod, .env.backtest``` and change the ```READ``` field in the main ```.env``` file to chose which ```.env``` file to use while running
