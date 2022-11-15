@@ -1,25 +1,19 @@
 package main
 
 import (
-	//"bruit/stored_data"
 	"bruit/bruit"
 	"bruit/bruit/clients/kraken"
+	"bruit/bruit/influx"
 	"bruit/bruit/shared_types"
-
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
 
 func main() {
 	g := bruit.Settings{}
 	g.Init()
 
-	db := influxdb2.NewClient("http://localhost:8086", "u2igiLQb-vNFdIx2XxRVtSEmMEiHQj-K7dm4CZkeQhblPqtaFovPCvsA1gK_jf4zXfNBHbq1SKWbWzssFbF5kw==")
-	tradesWriter := db.WriteAPI("Vert", "Trades")
+	db := influx.DB{}
+	db.Init()
 	//balancesWriter := db.WriteAPIBlocking("Vert", "Balances")
-
-	//ctx := context.Background()
-
-	//tradesWriter := api.NewWriteAPI("Vert", "Trades", http.NewService("http://localhost:8086", "u2igiLQb-vNFdIx2XxRVtSEmMEiHQj-K7dm4CZkeQhblPqtaFovPCvsA1gK_jf4zXfNBHbq1SKWbWzssFbF5kw==", http.DefaultOptions()), write.DefaultOptions())
 
 	k := &kraken.KrakenClient{}
 	k.InitClient(&g)
@@ -72,7 +66,7 @@ func main() {
 	//go k.PrivListen(&g)
 
 	ohlcMap := shared_types.OHLCVals{}
-	go k.PubListen(&g, &ohlcMap, tradesWriter)
+	go k.PubListen(&g, &ohlcMap, db.GetTradeWriter())
 
 	//k.SubscribeToTrades(&g, []string{"BTC/USD", "ETH/USD"})
 	k.SubscribeToOHLC(&g, []string{"EOS/USD", "BTC/USD"}, 5)

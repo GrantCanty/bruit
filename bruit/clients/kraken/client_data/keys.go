@@ -10,8 +10,8 @@ var (
 )
 
 func LoadKeys(env map[string]string) {
-	ApiKey = env["API_KEY"]
-	PrivateKey = env["PRIVATE_KEY"]
+	ApiKey = env["KRAKEN_API_KEY"]
+	PrivateKey = env["KRAKEN_PRIVATE_KEY"]
 
 	log.Println("ApiKey: ", ApiKey, "PrivateKey: ", PrivateKey)
 }

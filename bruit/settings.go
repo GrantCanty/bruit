@@ -87,9 +87,9 @@ func (s *Settings) Wait() {
 	s.ConcurrencySettings.Wg.Wait()
 }
 
-func (s Settings) GetEnv() map[string]string {
+/*func (s *Settings) GetEnv() map[string]string {
 	return s.env
-}
+}*/
 
 func (g *Globals) Init() {
 	g.RunTime.init()
