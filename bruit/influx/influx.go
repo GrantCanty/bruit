@@ -1,9 +1,10 @@
 package influx
 
 import (
+	"bruit/bruit/env"
+
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
-	"github.com/joho/godotenv"
 )
 
 type DB struct {
@@ -21,7 +22,7 @@ func (db *DB) Init() {
 }
 
 func (db *DB) initClient() {
-	env, err := godotenv.Read()
+	env, err := env.Read()
 	if err != nil {
 		panic(err)
 	}
@@ -34,7 +35,7 @@ func (db *DB) initClient() {
 }
 
 func (db *DB) initWriters() {
-	env, err := godotenv.Read()
+	env, err := env.Read()
 	if err != nil {
 		panic(err)
 	}

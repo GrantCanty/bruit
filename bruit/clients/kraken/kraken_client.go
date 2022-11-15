@@ -7,10 +7,9 @@ import (
 	"bruit/bruit/clients/kraken/state"
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/clients/kraken/web_socket"
+	"bruit/bruit/env"
 	"bruit/bruit/ws_client"
 	"log"
-
-	"github.com/joho/godotenv"
 )
 
 type KrakenClient struct {
@@ -21,7 +20,7 @@ type KrakenClient struct {
 
 func (k *KrakenClient) InitClient(g *bruit.Settings) {
 	k.initWebSockets(g)
-	k.initKeys(g)
+	k.initKeys()
 	k.initState()
 
 }
@@ -42,8 +41,8 @@ func (k *KrakenClient) initState() {
 }
 
 //loads the api keys from the .env file
-func (k *KrakenClient) initKeys(g *bruit.Settings) {
-	env, err := godotenv.Read()
+func (k *KrakenClient) initKeys() {
+	env, err := env.Read()
 	if err != nil {
 		panic(err)
 	}
