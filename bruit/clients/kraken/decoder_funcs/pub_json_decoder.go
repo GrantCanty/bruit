@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func PubJsonDecoder(response string, testing bool) interface{} {
+/*func PubJsonDecoder(response string, testing bool) interface{} {
 	var resp interface{}
 	byteResponse := []byte(response)
 
@@ -118,7 +118,7 @@ func ohlcSubscriptionResponseDecoder(byteResponse []byte, testing bool) (*types.
 		return nil, err
 	}
 	return &ohlc, err
-}
+}*/
 
 func OhlcResponseDecoder(byteResponse []byte, testing bool) (*types.OHLCResponse, error) {
 	if testing == true {
