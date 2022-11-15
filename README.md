@@ -52,3 +52,4 @@ func main() {
 ### Conventions
 * Run decoder and listen functions before subscribing to a stream to minimize the chance of missing messages 
 * Create multiple .env files ex: ```.env.test, .env.prod, .env.backtest``` and change the ```READ``` field in the main ```.env``` file to chose which ```.env``` file to use while running
+* Always ```.Init()``` any struct after declaring it 
