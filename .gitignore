@@ -1,5 +1,4 @@
 /bruit/clients/huobi
-/bruit/clients/kraken/client_data/keys.go
 assets.go
 book-tester.go
 ob.go
@@ -10,3 +9,4 @@ list-tester.go
 test_bals.go
 md.go
 ob.go
+.env

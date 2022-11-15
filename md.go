@@ -1,13 +1,6 @@
 package main
 
-import (
-	ktypes "bruit/bruit/clients/kraken/types"
-	"bruit/bruit/shared_types"
-	"fmt"
-	"sync"
-)
-
-type MD struct {
+/*type MD struct {
 	Data  map[shared_types.SubscriptionMetaData]shared_types.List
 	Mutex sync.RWMutex
 }
@@ -22,3 +15,4 @@ func main() {
 
 	fmt.Printf("%#v\n", md)
 }
+*/

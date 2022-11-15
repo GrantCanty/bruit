@@ -11,6 +11,7 @@ import (
 type Settings struct {
 	ConcurrencySettings ConcurrencySettings
 	GlobalSettings      Globals
+	env                 map[string]string
 }
 
 type ConcurrencySettings struct {
@@ -84,6 +85,10 @@ func (s *Settings) Wait() {
 	<-s.ConcurrencySettings.comms
 	s.ConcurrencySettings.cancel()
 	s.ConcurrencySettings.Wg.Wait()
+}
+
+func (s Settings) GetEnv() map[string]string {
+	return s.env
 }
 
 func (g *Globals) Init() {
