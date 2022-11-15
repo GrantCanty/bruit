@@ -14,7 +14,8 @@ Bruit aims to create a fully automated & algorithmic trading system that's light
 ## Usage
 To start:
 1. Create Kraken account and get API Keys
-2. Add data to fields of .env file(s) 
+2. Install InfluxDB
+3. Add keys and data to fields of .env file(s) 
 
 #### Subscribe to OHLC
 ```
