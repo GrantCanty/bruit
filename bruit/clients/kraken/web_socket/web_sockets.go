@@ -46,11 +46,46 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.Logg
 }
 
 func (client *WebSocketClient) BookJsonDecoder(response string, logger bruit.LoggingSettings) {
-	var resp BookResp
+	var ob types.BookResp
 	log.Println(response)
-	//byteResponse := []byte(response)
+	/*var resp []interface{}
 
-	client.bookChan <- resp
+	byteResponse := []byte(response)
+
+	err := json.Unmarshal(byteResponse, &resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, element := range resp[1].(map[string]interface{})["as"].([]interface{}) {
+		priceStr := element.([]interface{})[0].(string)
+		price, err := decimal.NewFromString(priceStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		volStr := element.([]interface{})[1].(string)
+		vol, err := decimal.NewFromString(volStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		ob.Asks = append(ob.Asks, types.Level{Price: price, Volume: vol})
+	}
+
+	for _, element := range resp[1].(map[string]interface{})["bs"].([]interface{}) {
+		priceStr := element.([]interface{})[0].(string)
+		price, err := decimal.NewFromString(priceStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		volStr := element.([]interface{})[1].(string)
+		vol, err := decimal.NewFromString(volStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		ob.Bids = append(ob.Bids, types.Level{Price: price, Volume: vol})
+	}*/
+
+	client.bookChan <- ob
 }
 
 func (client *WebSocketClient) PrivJsonDecoder(response string, logger bruit.LoggingSettings) {

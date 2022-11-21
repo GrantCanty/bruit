@@ -1,6 +1,7 @@
 package web_socket
 
 import (
+	"bruit/bruit/clients/kraken/types"
 	"fmt"
 	"hash/crc32"
 	"strings"
@@ -8,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func GetCheckSumInput(bids []Level, asks []Level) string {
+func GetCheckSumInput(bids []types.Level, asks []types.Level) string {
 	var str strings.Builder
 	for _, level := range asks[:10] {
 		price := level.Price.StringFixed(5)
@@ -35,7 +36,7 @@ func GetCheckSumInput(bids []Level, asks []Level) string {
 	return str.String()
 }
 
-func verifyOrderBookCheckSum(bids []Level, asks []Level, checkSum string) {
+func verifyOrderBookCheckSum(bids []types.Level, asks []types.Level, checkSum string) {
 	checSumInput := GetCheckSumInput(bids, asks)
 	crc := crc32.ChecksumIEEE([]byte(checSumInput))
 	if fmt.Sprint(crc) != checkSum {

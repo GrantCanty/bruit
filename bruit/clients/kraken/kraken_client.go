@@ -69,17 +69,17 @@ func (client *KrakenClient) startWebSocketConnection(g *bruit.Settings) {
 		panic(err)
 	}
 
-	ws_client.ReceiveLocker(client.WebSocket.GetPubSocketPointer())
+	/*ws_client.ReceiveLocker(client.WebSocket.GetPubSocketPointer())
 	client.WebSocket.GetPubSocketPointer().OnConnected = func(socket ws_client.Socket) {
 		log.Println("Connected to public server")
 	}
-	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
+	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())*/
 
-	/*ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
+	ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
 	client.WebSocket.GetBookSocketPointer().OnConnected = func(socket ws_client.Socket) {
 		log.Println("Connected to book server")
 	}
-	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())*/
+	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
 
 	/*ws_client.ReceiveLocker(&client.WebSocket.privSocket)
 	client.WebSocket.privSocket.OnConnected = func(socket ws_client.Socket) {
@@ -87,25 +87,25 @@ func (client *KrakenClient) startWebSocketConnection(g *bruit.Settings) {
 	}
 	ws_client.ReceiveUnlocker(&client.WebSocket.privSocket)*/
 
-	client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
+	/*client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
 		//decoders.PubJsonDecoder(message, client.Testing)
 		client.WebSocket.PubJsonDecoder(message, g.GlobalSettings.Logging)
 		log.Println(message)
-	}
+	}*/
 
-	/*client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
+	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
 		//decoders.BookJsonDecoder(message, client.Testing)
 		client.WebSocket.BookJsonDecoder(message, g.GlobalSettings.Logging)
 		log.Println(message)
-	}*/
+	}
 
 	/*client.WebSocket.privSocket.OnTextMessage = func(message string, socket ws_client.Socket) {
 		ws_client.PrivJsonDecoder(message, client.Testing)
 		log.Println(message)
 	}*/
 
-	client.WebSocket.GetPubSocketPointer().Connect()
-	//client.WebSocket.GetBookSocketPointer().Connect()
+	//client.WebSocket.GetPubSocketPointer().Connect()
+	client.WebSocket.GetBookSocketPointer().Connect()
 	//client.WebSocket.GetPrivSocketPointer().Connect()
 	return
 }
@@ -124,8 +124,8 @@ func (client *KrakenClient) DeferChanClose(g *bruit.Settings) {
 	defer close(client.WebSocket.GetBookChan())
 	defer close(client.WebSocket.GetPrivChan())
 
-	defer client.WebSocket.GetPubSocketPointer().Close()
-	//defer client.WebSocket.GetBookSocketPointer().Close()
+	//defer client.WebSocket.GetPubSocketPointer().Close()
+	defer client.WebSocket.GetBookSocketPointer().Close()
 	//defer client.WebSocket.GetPrivSocketPointer().Close()
 
 	//ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())

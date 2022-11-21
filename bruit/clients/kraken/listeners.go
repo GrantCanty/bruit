@@ -59,7 +59,7 @@ func (client *KrakenClient) BookListen(g *bruit.Settings) {
 	//defer client.WebSocket.GetBookSocketPointer().Close()
 
 	for c := range client.WebSocket.GetBookChan() {
-		log.Println(c)
+		log.Println("book listen: ", c)
 		/*switch v := c.(type) {
 		case *types.HeartBeat:
 			log.Println(v)

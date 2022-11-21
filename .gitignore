@@ -12,3 +12,5 @@ ob.go
 .env.test
 .env~17fabfc615d8a40b2a88d680f2234cee63047965
 test_main.go
+orderbook.go
+orderbook_json.go
