@@ -46,11 +46,20 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.Logg
 }
 
 func (client *WebSocketClient) BookJsonDecoder(response string, logger bruit.LoggingSettings) {
-	var ob types.BookResp
+	// use only for testing purposes right now. will be gone later
+	var ob types.InitialBookResp
 	log.Println(response)
-	/*var resp []interface{}
 
-	byteResponse := []byte(response)
+	var resp interface{}
+	byteRespose := []byte(response)
+
+	resp, err := decoders.InitialBookResponseDecoder(byteRespose, logger.GetLoggingConsole())
+	if err != nil {
+		log.Println(resp, err)
+	}
+	log.Println(resp)
+
+	/*byteResponse := []byte(response)
 
 	err := json.Unmarshal(byteResponse, &resp)
 	if err != nil {

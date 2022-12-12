@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"log"
+	"time"
 )
 
 func BookJsonDecoder(response string, testing bool) []interface{} {
@@ -20,15 +21,18 @@ func BookJsonDecoder(response string, testing bool) []interface{} {
 	return resp
 }
 
-func InitialBookResponseDecoder(byteResponse []byte, testing bool) (*types.BookResp, error) {
+func InitialBookResponseDecoder(byteResponse []byte, testing bool) (*types.BookDecodedResp, error) {
+	now := time.Now()
 	reader := bytes.NewReader(byteResponse)
 	decoder := json.NewDecoder(reader)
 	decoder.DisallowUnknownFields()
 
 	if testing == true {
-		log.Println("in hb response func")
+		log.Println("in initial book response decoder func")
 	}
-	var book types.BookResp
+
+	// decodes byteResponse
+	var book types.InitialBookResp
 	err := decoder.Decode(&book)
 	if err != nil {
 		if testing == true {
@@ -36,7 +40,13 @@ func InitialBookResponseDecoder(byteResponse []byte, testing bool) (*types.BookR
 		}
 		return nil, err
 	}
-	return &book, err
+
+	var ob types.BookDecodedResp
+	ob.TimeReceived = now
+	ob.Asks = book.Levels["as"]
+	ob.Bids = book.Levels["bs"]
+
+	return &ob, err
 }
 
 /*var resp []interface{}

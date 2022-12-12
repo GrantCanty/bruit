@@ -9,9 +9,24 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type BookResp struct {
+type InitialBookResp struct {
 	ChannelID   int
 	Levels      map[string][]Level
+	ChannelName string
+	Pair        string
+}
+
+type UpdateBookWithAsksOrBidsResp struct {
+	ChannelID   int
+	PriceAndVol map[string]interface{}
+	ChannelName string
+	Pair        string
+}
+
+type UpdateBookWithAsksAndBidsResp struct {
+	ChannelID   int
+	Asks        map[string]interface{}
+	Bids        map[string]interface{}
 	ChannelName string
 	Pair        string
 }
@@ -28,7 +43,7 @@ type Level struct {
 	TS     shared_types.UnixTime
 }
 
-func (b *BookResp) UnmarshalJSON(d []byte) error {
+func (b *InitialBookResp) UnmarshalJSON(d []byte) error {
 	tmp := []interface{}{&b.ChannelID, &b.Levels, &b.ChannelName, &b.Pair}
 	length := len(tmp)
 	if err := json.Unmarshal(d, &tmp); err != nil {
@@ -36,6 +51,36 @@ func (b *BookResp) UnmarshalJSON(d []byte) error {
 	}
 	g := len(tmp)
 	if g != length {
+		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+	}
+	return nil
+}
+
+func (b *UpdateBookWithAsksOrBidsResp) UnmarshalJSON(d []byte) error {
+	tmp := []interface{}{&b.ChannelID, &b.PriceAndVol, &b.ChannelName, &b.Pair}
+	length := len(tmp)
+	err := json.Unmarshal(d, &tmp)
+	if err != nil {
+		return err
+	}
+	g := len(tmp)
+	if g != length {
+		fmt.Println(tmp)
+		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+	}
+	return nil
+}
+
+func (b *UpdateBookWithAsksAndBidsResp) UnmarshalJSON(d []byte) error {
+	tmp := []interface{}{&b.ChannelID, &b.Asks, &b.Bids, &b.ChannelName, &b.Pair}
+	length := len(tmp)
+	err := json.Unmarshal(d, &tmp)
+	if err != nil {
+		return err
+	}
+	g := len(tmp)
+	if g != length {
+		fmt.Println(tmp)
 		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
 	}
 	return nil

@@ -4,7 +4,6 @@ import (
 	"bruit/bruit"
 	"bruit/bruit/clients/kraken"
 	"bruit/bruit/influx"
-	"bruit/bruit/shared_types"
 )
 
 func main() {
@@ -61,17 +60,20 @@ func main() {
 
 	//k.InitWebSockets(&g)
 
-	go k.PubDecoder(&g)
+	//go k.PubDecoder(&g)
+	go k.BookDecoder(&g)
 	//go k.PrivDecoder(&g)
 	//go k.PrivListen(&g)
 
-	ohlcMap := shared_types.OHLCVals{}
-	go k.PubListen(&g, &ohlcMap, db.GetTradeWriter())
+	//ohlcMap := shared_types.OHLCVals{}
+	//go k.PubListen(&g, &ohlcMap, db.GetTradeWriter())
+	go k.BookListen(&g)
 
 	//k.SubscribeToTrades(&g, []string{"BTC/USD", "ETH/USD"})
-	k.SubscribeToOHLC(&g, []string{"EOS/USD", "BTC/USD"}, 5)
+	//k.SubscribeToOHLC(&g, []string{"EOS/USD", "BTC/USD"}, 5)
 	//k.SubscribeToOrderBookk(g, []string{"BTC/USD"}, 10)
 	//go k.SubscribeToOpenOrders(&g, resp.Token)*/
+	k.SubscribeToOrderBook(&g, []string{"EOS/USD"}, 10)
 
 	/*bots := []shared_types.WebSocketClient{k}
 	for _, bot := range bots {

@@ -112,7 +112,7 @@ func (client *KrakenClient) startWebSocketConnection(g *bruit.Settings) {
 
 func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResponse) {
 	client.State.Client.AddSubscription(resp.GetMetaData(), types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status})
-	log.Println("subscription list: ", client.State.Client.GetSubscriptions())
+	//log.Println("subscription list: ", client.State.Client.GetSubscriptions())
 }
 
 func (client *KrakenClient) DeferChanClose(g *bruit.Settings) {
