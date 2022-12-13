@@ -8,6 +8,7 @@ import (
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
+	"time"
 )
 
 type WebSocketClient struct {
@@ -46,20 +47,31 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.Logg
 }
 
 func (client *WebSocketClient) BookJsonDecoder(response string, logger bruit.LoggingSettings) {
-	// use only for testing purposes right now. will be gone later
-	var ob types.InitialBookResp
-	log.Println(response)
-
+	now := time.Now()
 	var resp interface{}
-	byteRespose := []byte(response)
+	byteResponse := []byte(response)
 
-	resp, err := decoders.InitialBookResponseDecoder(byteRespose, logger.GetLoggingConsole())
+	resp, err := decoders.InitialBookResponseDecoder(byteResponse, now, logger.GetLoggingConsole())
 	if err != nil {
-		log.Println(resp, err)
+		resp, err = decoders.IncrementalAskAndBidDecoder(byteResponse, logger.GetLoggingConsole())
+		if err != nil {
+			resp, err = decoders.IncrementalAskOrBidDecoder(byteResponse, logger.GetLoggingConsole())
+			if err != nil {
+				resp, err = decoders.HbResponseDecoder(byteResponse, logger.GetLoggingConsole())
+				if err != nil {
+					resp, err = decoders.ServerConnectionStatusResponseDecoder(byteResponse, logger.GetLoggingConsole())
+					if err != nil {
+						resp, err = decoders.BookSubscriptionResponseDecoder(byteResponse, logger.GetLoggingConsole())
+						if err != nil {
+							log.Println(string("\033[31m"), "Received response of unknown data type: ", response)
+						}
+					}
+				}
+			}
+		}
 	}
-	log.Println(resp)
-
-	/*byteResponse := []byte(response)
+	/*log.Println("resp from boonJsonDecoder: ", resp)
+	byteResponse := []byte(response)
 
 	err := json.Unmarshal(byteResponse, &resp)
 	if err != nil {
@@ -93,8 +105,8 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger bruit.Log
 		}
 		ob.Bids = append(ob.Bids, types.Level{Price: price, Volume: vol})
 	}*/
-
-	client.bookChan <- ob
+	client.bookChan <- resp
+	return
 }
 
 func (client *WebSocketClient) PrivJsonDecoder(response string, logger bruit.LoggingSettings) {

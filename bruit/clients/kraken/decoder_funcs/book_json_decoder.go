@@ -21,8 +21,7 @@ func BookJsonDecoder(response string, testing bool) []interface{} {
 	return resp
 }
 
-func InitialBookResponseDecoder(byteResponse []byte, testing bool) (*types.BookDecodedResp, error) {
-	now := time.Now()
+func InitialBookResponseDecoder(byteResponse []byte, now time.Time, testing bool) (*types.BookDecodedResp, error) {
 	reader := bytes.NewReader(byteResponse)
 	decoder := json.NewDecoder(reader)
 	decoder.DisallowUnknownFields()
@@ -36,17 +35,82 @@ func InitialBookResponseDecoder(byteResponse []byte, testing bool) (*types.BookD
 	err := decoder.Decode(&book)
 	if err != nil {
 		if testing == true {
-			log.Println(err)
+			log.Println("initialBookResponseDecoder error: ", err)
 		}
 		return nil, err
 	}
 
+	// transfer data from book to ob
 	var ob types.BookDecodedResp
 	ob.TimeReceived = now
 	ob.Asks = book.Levels["as"]
 	ob.Bids = book.Levels["bs"]
 
 	return &ob, err
+}
+
+func IncrementalAskOrBidDecoder(byteResponse []byte, testing bool) (*types.UpdateBookWithAsksOrBidsResp, error) {
+	reader := bytes.NewReader(byteResponse)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	if testing == true {
+		log.Println("in incremental ask or bid decoder func")
+	}
+
+	// decodes byteResponse
+	var asksOrBids types.UpdateBookWithAsksOrBidsResp
+	err := decoder.Decode(&asksOrBids)
+	if err != nil {
+		if testing == true {
+			log.Println("incrementalAskOrBidDecoder error: ", err)
+		}
+		return nil, err
+	}
+
+	return &asksOrBids, nil
+
+}
+
+func IncrementalAskAndBidDecoder(byteResponse []byte, testing bool) (*types.UpdateBookWithAsksAndBidsResp, error) {
+	reader := bytes.NewReader(byteResponse)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	if testing == true {
+		log.Println("in incremental ask and bid decoder func")
+	}
+
+	// decodes byteResponse
+	var asksAndBids types.UpdateBookWithAsksAndBidsResp
+	err := decoder.Decode(&asksAndBids)
+	if err != nil {
+		if testing == true {
+			log.Println("incrementalAskAndBidDecoder erroor: ", err)
+		}
+		return nil, err
+	}
+
+	return &asksAndBids, nil
+}
+
+func BookSubscriptionResponseDecoder(byteResponse []byte, testing bool) (*types.BookSuccessResponse, error) {
+	reader := bytes.NewReader(byteResponse)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	if testing == true {
+		log.Println("in ohlc subscription response func")
+	}
+	var ohlc types.BookSuccessResponse
+	err := decoder.Decode(&ohlc)
+	if err != nil {
+		if testing == true {
+			log.Println("ohlc subscription response error", err)
+		}
+		return nil, err
+	}
+	return &ohlc, err
 }
 
 /*var resp []interface{}

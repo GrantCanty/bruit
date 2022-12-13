@@ -43,6 +43,15 @@ type Level struct {
 	TS     shared_types.UnixTime
 }
 
+type BookSuccessResponse struct {
+	ChannelID    int              `json:"channelID"`
+	ChannelName  string           `json:"channelName"`
+	Event        string           `json:"event"`
+	Pair         string           `json:"pair"`
+	Status       string           `json:"status"`
+	Subscription BookSubscription `json:"subscription"`
+}
+
 func (b *InitialBookResp) UnmarshalJSON(d []byte) error {
 	tmp := []interface{}{&b.ChannelID, &b.Levels, &b.ChannelName, &b.Pair}
 	length := len(tmp)
