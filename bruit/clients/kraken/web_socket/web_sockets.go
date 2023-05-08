@@ -16,9 +16,10 @@ type WebSocketClient struct {
 	bookSocket ws_client.Socket
 	privSocket ws_client.Socket
 
-	pubChan  chan interface{}
-	bookChan chan interface{}
-	privChan chan interface{}
+	pubChan      chan interface{}
+	bookChan     chan interface{} // this chan contains the final book data
+	bookJSONChan chan interface{} // this chan contains the most recently decoded data from the book subscription
+	privChan     chan interface{}
 }
 
 func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.LoggingSettings) {
@@ -105,7 +106,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger bruit.Log
 		}
 		ob.Bids = append(ob.Bids, types.Level{Price: price, Volume: vol})
 	}*/
-	client.bookChan <- resp
+	client.bookJSONChan <- resp
 	return
 }
 
@@ -154,6 +155,7 @@ func (client *WebSocketClient) PrivJsonDecoder(response string, logger bruit.Log
 func (ws *WebSocketClient) InitChannels() {
 	ws.pubChan = make(chan interface{})
 	ws.bookChan = make(chan interface{})
+	ws.bookJSONChan = make(chan interface{})
 	ws.privChan = make(chan interface{})
 }
 
@@ -227,6 +229,10 @@ func (ws *WebSocketClient) GetPubChan() chan interface{} {
 
 func (ws *WebSocketClient) GetBookChan() chan interface{} {
 	return ws.bookChan
+}
+
+func (ws *WebSocketClient) GetBookJSONChan() chan interface{} {
+	return ws.bookJSONChan
 }
 
 func (ws *WebSocketClient) GetPrivChan() chan interface{} {

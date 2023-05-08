@@ -89,6 +89,7 @@ func (client *KrakenClient) SubscribeToOrderBook(g *bruit.Settings, pairs []stri
 	if err != nil {
 		log.Println("error marshaling: ", err)
 	}
+	log.Println(string(sub))
 	client.WebSocket.GetBookSocketPointer().SendBinary(sub)
 }
 

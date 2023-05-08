@@ -1,7 +1,6 @@
 package types
 
 import (
-	"bruit/bruit/shared_types"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -40,7 +39,7 @@ type BookDecodedResp struct {
 type Level struct {
 	Price  decimal.Decimal
 	Volume decimal.Decimal
-	TS     shared_types.UnixTime
+	//TS     shared_types.UnixTime
 }
 
 type BookSuccessResponse struct {
@@ -96,7 +95,7 @@ func (b *UpdateBookWithAsksAndBidsResp) UnmarshalJSON(d []byte) error {
 }
 
 func (l *Level) UnmarshalJSON(d []byte) error {
-	tmp := []interface{}{&l.Price, &l.Volume, &l.TS}
+	tmp := []interface{}{&l.Price, &l.Volume}
 	length := len(tmp)
 	err := json.Unmarshal(d, &tmp)
 	if err != nil {

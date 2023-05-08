@@ -10,7 +10,7 @@ import (
 func OnTradeResponse(data types.TradeResponse, tradesWriter api.WriteAPI) {
 	for _, trade := range data.TradeArray {
 		price, _ := trade.Price.Float64()
-		vol, _ := trade.Price.Float64()
+		vol, _ := trade.Volume.Float64()
 		//influxdb2
 		point := influxdb2.NewPoint("trade", map[string]string{"object": "trade", "pair": data.Pair}, map[string]interface{}{"price": price, "volume": vol, "side": trade.Side, "orderType": trade.OrderType, "misc": trade.Misc}, trade.Time.Time)
 		tradesWriter.WritePoint(point)

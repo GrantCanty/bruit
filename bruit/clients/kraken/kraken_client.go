@@ -59,10 +59,11 @@ func (client *KrakenClient) startWebSocketConnection(g *bruit.Settings) {
 	}
 	client.WebSocket.InitConnections()
 
+	//initSocket
 	if err := IsPubSocketInit(client.WebSocket); err != nil { // guard clause checker
 		panic(err)
 	}
-	if err := IsBookSocketInit(client.WebSocket); err != nil {
+	if err := IsBookSocketInit(client.WebSocket); err != nil { // guard clause checker
 		panic(err)
 	}
 	if err := IsPrivSocketInit(client.WebSocket); err != nil { // guard clause checker
@@ -93,11 +94,11 @@ func (client *KrakenClient) startWebSocketConnection(g *bruit.Settings) {
 		log.Println(message)
 	}*/
 
-	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
+	/*client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
 		//decoders.BookJsonDecoder(message, client.Testing)
 		client.WebSocket.BookJsonDecoder(message, g.GlobalSettings.Logging)
 		log.Println(message)
-	}
+	}*/
 
 	/*client.WebSocket.privSocket.OnTextMessage = func(message string, socket ws_client.Socket) {
 		ws_client.PrivJsonDecoder(message, client.Testing)
@@ -120,6 +121,8 @@ func (client *KrakenClient) DeferChanClose(g *bruit.Settings) {
 	defer g.ConcurrencySettings.Wg.Done()
 	<-g.ConcurrencySettings.Ctx.Done()
 
+	log.Println("Closing channels")
+
 	defer close(client.WebSocket.GetPubChan())
 	defer close(client.WebSocket.GetBookChan())
 	defer close(client.WebSocket.GetPrivChan())
@@ -140,5 +143,5 @@ func (client *KrakenClient) DeferChanClose(g *bruit.Settings) {
 	}*/
 	//ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
 
-	log.Println("Closing channels")
+	log.Println("Closed channels")
 }

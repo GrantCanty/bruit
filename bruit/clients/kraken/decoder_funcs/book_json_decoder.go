@@ -8,18 +8,18 @@ import (
 	"time"
 )
 
-func BookJsonDecoder(response string, testing bool) []interface{} {
-	var resp []interface{}
-	//byteResponse := []byte(response)
-	log.Println(response)
+/*func BookJsonDecoder(response string, testing bool) []interface{} {
+var resp []interface{}
+//byteResponse := []byte(response)
+log.Println(response)
 
-	/*_, err := hbResponseDecoder(byteResponse, testing)
-	if err != nil {
-		resp, err = rr()
-	}*/
+/*_, err := hbResponseDecoder(byteResponse, testing)
+if err != nil {
+	resp, err = rr()
+}*/
 
-	return resp
-}
+//return resp
+//}
 
 func InitialBookResponseDecoder(byteResponse []byte, now time.Time, testing bool) (*types.BookDecodedResp, error) {
 	reader := bytes.NewReader(byteResponse)
@@ -60,6 +60,7 @@ func IncrementalAskOrBidDecoder(byteResponse []byte, testing bool) (*types.Updat
 
 	// decodes byteResponse
 	var asksOrBids types.UpdateBookWithAsksOrBidsResp
+
 	err := decoder.Decode(&asksOrBids)
 	if err != nil {
 		if testing == true {

@@ -8,17 +8,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-/*type BookResp struct {
-	TimeReceived time.Time
-	Bids         []Level
-	Asks         []Level
-}
-
-type Level struct {
-	Price  decimal.Decimal
-	Volume decimal.Decimal
-}*/
-
 func remove(slice []types.Level, s int) []types.Level {
 	return append(slice[:s], slice[s+1:]...)
 }
