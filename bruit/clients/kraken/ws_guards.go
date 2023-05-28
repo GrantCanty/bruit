@@ -1,7 +1,7 @@
 package kraken
 
 import (
-	"bruit/bruit/clients/kraken/web_socket"
+	web_socket "bruit/bruit/clients/kraken/web_socket_client"
 	"bruit/bruit/ws_client"
 	"errors"
 )
