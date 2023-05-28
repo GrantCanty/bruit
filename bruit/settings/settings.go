@@ -11,7 +11,11 @@ import (
 type Settings interface {
 	Init()
 	Wait()
-	Add()
+	Add(i int)
+	Done()
+	CtxDone() <-chan struct{}
+	GetLoggingToConsole() bool
+	GetLoggingSettings() LoggingSettings
 }
 
 type DefaultSettings struct {

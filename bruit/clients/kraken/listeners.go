@@ -11,36 +11,38 @@ import (
 )
 
 func (client *KrakenClient) PubListen(g settings.Settings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	for chanResp := range client.WebSocket.GetPubChan() {
 		switch resp := chanResp.(type) {
 		case *types.OHLCResponse:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
+			if g.GetLoggingToConsole() {
 				log.Println("OHLCResponse")
 				log.Printf("new response: %#v\n", resp)
 			}
 			client.State.OnOHLCResponse(*resp, ohlcMap)
 		case *types.TradeResponse:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
+			if g.GetLoggingToConsole() {
 				log.Println("TradeResponse")
 				log.Printf("new response: %#v %d \n", resp, resp.TradeArray[0].Time.Time.Unix())
 			}
 			web_socket.OnTradeResponse(*resp, tradesWriter)
 			//tradesWriter.WritePoint()
 		case *types.ServerConnectionStatusResponse:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
+			if g.GetLoggingToConsole() {
 				log.Println("ServerConnectionStatusResponse")
 				log.Println(resp)
 			}
 		case *types.HeartBeat:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
+			if g.GetLoggingToConsole() {
 				log.Println("HeartBeat")
 				//log.Println(resp.Event)
 			}
 		case *types.OHLCSuccessResponse:
-			if g.GlobalSettings.Logging.GetLoggingConsole() {
+			if g.GetLoggingToConsole() {
 				log.Println("OHLCSuccessResponse")
 				log.Println(resp)
 			}
@@ -50,12 +52,15 @@ func (client *KrakenClient) PubListen(g settings.Settings, ohlcMap *shared_types
 			log.Println(resp)
 		}
 	}
-	<-g.ConcurrencySettings.Ctx.Done()
+	//<-g.ConcurrencySettings.Ctx.Done()
+	<-g.CtxDone()
 }
 
 func (client *KrakenClient) BookListen(g settings.Settings, book *types.BookDecodedResp) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	//var book types.BookDecodedResp
 
@@ -69,13 +74,16 @@ func (client *KrakenClient) BookListen(g settings.Settings, book *types.BookDeco
 		}
 	}
 
-	<-g.ConcurrencySettings.Ctx.Done()
+	//<-g.ConcurrencySettings.Ctx.Done()
+	<-g.CtxDone()
 	log.Println("closing book listen func")
 }
 
 func (client *KrakenClient) PrivListen(g settings.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	for chanResp := range client.WebSocket.GetPrivChan() {
 		switch resp := chanResp.(type) {
@@ -96,5 +104,6 @@ func (client *KrakenClient) PrivListen(g settings.Settings) {
 			log.Println(resp)
 		}
 	}
-	<-g.ConcurrencySettings.Ctx.Done()
+	//<-g.ConcurrencySettings.Ctx.Done()
+	<-g.CtxDone()
 }

@@ -13,8 +13,10 @@ import (
 // PUBLIC SOCKET METHODS
 
 func (client *KrakenClient) SubscribeToTrades(g settings.Settings, pairs []string) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	if err := PubSocketGuard(client.WebSocket); err != nil {
 		panic(err)
@@ -28,8 +30,10 @@ func (client *KrakenClient) SubscribeToTrades(g settings.Settings, pairs []strin
 	*Add func to get past OHLC data from rest API. Add to the candle map list
 *****/
 func (client *KrakenClient) SubscribeToOHLC(g settings.Settings, pairs []string, interval int) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	var found bool = false
 	for _, i := range kraken_data.OHLCVals {
@@ -50,8 +54,10 @@ func (client *KrakenClient) SubscribeToOHLC(g settings.Settings, pairs []string,
 }
 
 func (client *KrakenClient) PubDecoder(g settings.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	if err := PubSocketGuard(client.WebSocket); err != nil { // guard clause checker
 		panic(err)
@@ -59,11 +65,12 @@ func (client *KrakenClient) PubDecoder(g settings.Settings) {
 
 	ws_client.ReceiveLocker(client.WebSocket.GetPubSocketPointer())
 	client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		client.WebSocket.PubJsonDecoder(message, g.GlobalSettings.Logging)
+		client.WebSocket.PubJsonDecoder(message, g.GetLoggingSettings())
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
 
-	<-g.ConcurrencySettings.Ctx.Done()
+	//<-g.ConcurrencySettings.Ctx.Done()
+	<-g.CtxDone()
 	return
 }
 
@@ -71,8 +78,10 @@ func (client *KrakenClient) PubDecoder(g settings.Settings) {
 
 // Subscribe to the order book.
 func (client *KrakenClient) SubscribeToOrderBook(g settings.Settings, pairs []string, depth int) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	if err := BookSocketGuard(client.WebSocket); err != nil {
 		panic(err)
@@ -94,8 +103,10 @@ func (client *KrakenClient) SubscribeToOrderBook(g settings.Settings, pairs []st
 }
 
 func (client *KrakenClient) BookDecoder(g settings.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	if err := BookSocketGuard(client.WebSocket); err != nil { // guard clause checker
 		panic(err)
@@ -103,19 +114,22 @@ func (client *KrakenClient) BookDecoder(g settings.Settings) {
 
 	ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
 	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		client.WebSocket.BookJsonDecoder(message, g.GlobalSettings.Logging)
+		client.WebSocket.BookJsonDecoder(message, g.GetLoggingSettings())
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
 
-	<-g.ConcurrencySettings.Ctx.Done()
+	//<-g.ConcurrencySettings.Ctx.Done()
+	<-g.CtxDone()
 	return
 }
 
 // PRIVATE SOCKET METHODS
 
 func (client *KrakenClient) SubscribeToOpenOrders(g settings.Settings, token string) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
@@ -133,13 +147,13 @@ func (client *KrakenClient) SubscribeToOpenOrders(g settings.Settings, token str
 
 	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)*/
 	client.WebSocket.SubscribeToOpenOrders(token)
-
-	//<-g.ConcurrencySettings.Ctx.Done()
 }
 
 func (client *KrakenClient) CancelAll(g settings.Settings, token string) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
@@ -148,14 +162,14 @@ func (client *KrakenClient) CancelAll(g settings.Settings, token string) {
 		Token: token,
 	})
 	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)
-
-	<-g.ConcurrencySettings.Ctx.Done()
 }
 
 // find a way to ad tradeID
 func (client *KrakenClient) CancelOrder(g settings.Settings, token string, tradeIDs []string) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
@@ -165,13 +179,13 @@ func (client *KrakenClient) CancelOrder(g settings.Settings, token string, trade
 		Txid:  tradeIDs,
 	})
 	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)
-
-	//<-g.ConcurrencySettings.Ctx.Done()
 }
 
 func (client *KrakenClient) AddOrder(g settings.Settings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
@@ -187,22 +201,23 @@ func (client *KrakenClient) AddOrder(g settings.Settings, token string, otype st
 		Validate:  test,
 	})
 	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)
-
-	//<-g.ConcurrencySettings.Ctx.Done()
 }
 
 func (client *KrakenClient) PrivDecoder(g settings.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
 	ws_client.ReceiveLocker(client.WebSocket.GetPrivSocketPointer())
 	client.WebSocket.GetPrivSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		client.WebSocket.PrivJsonDecoder(message, g.GlobalSettings.Logging)
+		client.WebSocket.PrivJsonDecoder(message, g.GetLoggingSettings())
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPrivSocketPointer())
 
-	<-g.ConcurrencySettings.Ctx.Done()
+	//<-g.ConcurrencySettings.Ctx.Done()
+	<-g.CtxDone()
 	return
 }

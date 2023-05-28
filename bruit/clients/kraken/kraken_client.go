@@ -50,8 +50,10 @@ func (k *KrakenClient) initKeys() {
 }
 
 func (client *KrakenClient) startWebSocketConnection(g settings.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
 
 	if IsPubSocketInit(client.WebSocket) == nil && IsPrivSocketInit(client.WebSocket) == nil && IsBookSocketInit(client.WebSocket) == nil {
 		log.Println("connections are already init")
@@ -117,9 +119,12 @@ func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResp
 }
 
 func (client *KrakenClient) DeferChanClose(g settings.Settings) {
-	g.ConcurrencySettings.Wg.Add(1)
-	defer g.ConcurrencySettings.Wg.Done()
-	<-g.ConcurrencySettings.Ctx.Done()
+	//g.ConcurrencySettings.Wg.Add(1)
+	g.Add(1)
+	//defer g.ConcurrencySettings.Wg.Done()
+	defer g.Done()
+	//<-g.ConcurrencySettings.Ctx.Done()
+	<-g.CtxDone()
 
 	log.Println("Closing channels")
 
