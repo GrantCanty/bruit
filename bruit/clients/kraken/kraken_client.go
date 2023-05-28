@@ -3,10 +3,10 @@ package kraken
 import (
 	"bruit/bruit"
 	kraken_data "bruit/bruit/clients/kraken/client_data"
-	"bruit/bruit/clients/kraken/rest"
+	rest "bruit/bruit/clients/kraken/rest_client"
 	"bruit/bruit/clients/kraken/state"
 	"bruit/bruit/clients/kraken/types"
-	"bruit/bruit/clients/kraken/web_socket"
+	web_socket "bruit/bruit/clients/kraken/web_socket_client"
 	"bruit/bruit/env"
 	"bruit/bruit/ws_client"
 	"log"
