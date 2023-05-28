@@ -53,7 +53,7 @@ func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.O
 	<-g.ConcurrencySettings.Ctx.Done()
 }
 
-func (client *KrakenClient) BookListen(g *bruit.Settings) {
+func (client *KrakenClient) BookListen(g *bruit.Settings, book *types.BookDecodedResp) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -64,8 +64,8 @@ func (client *KrakenClient) BookListen(g *bruit.Settings) {
 		switch v := c.(type) {
 		case *types.HeartBeat:
 			log.Println(v)
-		case *types.InitialBookResp:
-			client.WebSocket.GetBookChan() <- v
+		case *types.BookDecodedResp:
+			book = v
 		}
 	}
 
