@@ -8,7 +8,13 @@ import (
 	"syscall"
 )
 
-type Settings struct {
+type Settings interface {
+	Init()
+	Wait()
+	Add()
+}
+
+type DefaultSettings struct {
 	ConcurrencySettings ConcurrencySettings
 	GlobalSettings      Globals
 	env                 map[string]string
@@ -59,7 +65,7 @@ type RiskLevels struct {
 	isLevelThree bool
 }
 
-func (s *Settings) Init() {
+func (s *DefaultSettings) Init() {
 	s.ConcurrencySettings.Init()
 	s.GlobalSettings.Init()
 }
@@ -81,7 +87,7 @@ func (g *ConcurrencySettings) Init() {
 	g.Wg.Wait()
 }*/
 
-func (s *Settings) Wait() {
+func (s *DefaultSettings) Wait() {
 	<-s.ConcurrencySettings.comms
 	s.ConcurrencySettings.cancel()
 	s.ConcurrencySettings.Wg.Wait()
