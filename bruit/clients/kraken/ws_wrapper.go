@@ -1,9 +1,9 @@
 package kraken
 
 import (
-	"bruit/bruit"
 	kraken_data "bruit/bruit/clients/kraken/client_data"
 	"bruit/bruit/clients/kraken/types"
+	"bruit/bruit/settings"
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
@@ -12,7 +12,7 @@ import (
 
 // PUBLIC SOCKET METHODS
 
-func (client *KrakenClient) SubscribeToTrades(g *bruit.Settings, pairs []string) {
+func (client *KrakenClient) SubscribeToTrades(g *settings.Settings, pairs []string) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -27,7 +27,7 @@ func (client *KrakenClient) SubscribeToTrades(g *bruit.Settings, pairs []string)
 	*Add func to check if already subscribed to OHLC Stream
 	*Add func to get past OHLC data from rest API. Add to the candle map list
 *****/
-func (client *KrakenClient) SubscribeToOHLC(g *bruit.Settings, pairs []string, interval int) {
+func (client *KrakenClient) SubscribeToOHLC(g *settings.Settings, pairs []string, interval int) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -49,7 +49,7 @@ func (client *KrakenClient) SubscribeToOHLC(g *bruit.Settings, pairs []string, i
 	}
 }
 
-func (client *KrakenClient) PubDecoder(g *bruit.Settings) {
+func (client *KrakenClient) PubDecoder(g *settings.Settings) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -70,7 +70,7 @@ func (client *KrakenClient) PubDecoder(g *bruit.Settings) {
 // ORDER BOOK SOCKET METHODS
 
 // Subscribe to the order book.
-func (client *KrakenClient) SubscribeToOrderBook(g *bruit.Settings, pairs []string, depth int) {
+func (client *KrakenClient) SubscribeToOrderBook(g *settings.Settings, pairs []string, depth int) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -93,7 +93,7 @@ func (client *KrakenClient) SubscribeToOrderBook(g *bruit.Settings, pairs []stri
 	client.WebSocket.GetBookSocketPointer().SendBinary(sub)
 }
 
-func (client *KrakenClient) BookDecoder(g *bruit.Settings) {
+func (client *KrakenClient) BookDecoder(g *settings.Settings) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -113,7 +113,7 @@ func (client *KrakenClient) BookDecoder(g *bruit.Settings) {
 
 // PRIVATE SOCKET METHODS
 
-func (client *KrakenClient) SubscribeToOpenOrders(g *bruit.Settings, token string) {
+func (client *KrakenClient) SubscribeToOpenOrders(g *settings.Settings, token string) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -137,7 +137,7 @@ func (client *KrakenClient) SubscribeToOpenOrders(g *bruit.Settings, token strin
 	//<-g.ConcurrencySettings.Ctx.Done()
 }
 
-func (client *KrakenClient) CancelAll(g *bruit.Settings, token string) {
+func (client *KrakenClient) CancelAll(g *settings.Settings, token string) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -153,7 +153,7 @@ func (client *KrakenClient) CancelAll(g *bruit.Settings, token string) {
 }
 
 // find a way to ad tradeID
-func (client *KrakenClient) CancelOrder(g *bruit.Settings, token string, tradeIDs []string) {
+func (client *KrakenClient) CancelOrder(g *settings.Settings, token string, tradeIDs []string) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -169,7 +169,7 @@ func (client *KrakenClient) CancelOrder(g *bruit.Settings, token string, tradeID
 	//<-g.ConcurrencySettings.Ctx.Done()
 }
 
-func (client *KrakenClient) AddOrder(g *bruit.Settings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) {
+func (client *KrakenClient) AddOrder(g *settings.Settings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -191,7 +191,7 @@ func (client *KrakenClient) AddOrder(g *bruit.Settings, token string, otype stri
 	//<-g.ConcurrencySettings.Ctx.Done()
 }
 
-func (client *KrakenClient) PrivDecoder(g *bruit.Settings) {
+func (client *KrakenClient) PrivDecoder(g *settings.Settings) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 

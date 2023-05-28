@@ -1,20 +1,20 @@
 package engine
 
 import (
-	"bruit/bruit"
 	"bruit/bruit/clients"
 	"bruit/bruit/influx"
+	"bruit/bruit/settings"
 )
 
 type BruitEngine interface {
-	Init(s *bruit.Settings, c clients.BruitClient, db influx.DB)
+	Init(s *settings.Settings, c clients.BruitClient, db influx.DB)
 	Run()
 	Stop()
 }
 
 type emptyEngine int
 
-func (e emptyEngine) Init(s *bruit.Settings, c clients.BruitClient, db influx.DB) {
+func (e emptyEngine) Init(s *settings.Settings, c clients.BruitClient, db influx.DB) {
 	return
 }
 
@@ -42,7 +42,7 @@ type Production struct {
 	BruitEngine
 }
 
-func (p *Production) Init(s *bruit.Settings, c clients.BruitClient, db influx.DB) {
+func (p *Production) Init(s *settings.Settings, c clients.BruitClient, db influx.DB) {
 	s.Init()
 	c.InitClient(s)
 	db.Init()

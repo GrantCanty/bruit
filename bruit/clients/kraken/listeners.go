@@ -1,16 +1,16 @@
 package kraken
 
 import (
-	"bruit/bruit"
 	"bruit/bruit/clients/kraken/types"
 	web_socket "bruit/bruit/clients/kraken/web_socket_client"
+	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
 	"log"
 
 	"github.com/influxdata/influxdb-client-go/v2/api"
 )
 
-func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI) {
+func (client *KrakenClient) PubListen(g *settings.Settings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -53,7 +53,7 @@ func (client *KrakenClient) PubListen(g *bruit.Settings, ohlcMap *shared_types.O
 	<-g.ConcurrencySettings.Ctx.Done()
 }
 
-func (client *KrakenClient) BookListen(g *bruit.Settings, book *types.BookDecodedResp) {
+func (client *KrakenClient) BookListen(g *settings.Settings, book *types.BookDecodedResp) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -73,7 +73,7 @@ func (client *KrakenClient) BookListen(g *bruit.Settings, book *types.BookDecode
 	log.Println("closing book listen func")
 }
 
-func (client *KrakenClient) PrivListen(g *bruit.Settings) {
+func (client *KrakenClient) PrivListen(g *settings.Settings) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 

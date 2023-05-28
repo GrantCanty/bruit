@@ -1,13 +1,13 @@
 package kraken
 
 import (
-	"bruit/bruit"
 	kraken_data "bruit/bruit/clients/kraken/client_data"
 	rest "bruit/bruit/clients/kraken/rest_client"
 	"bruit/bruit/clients/kraken/state"
 	"bruit/bruit/clients/kraken/types"
 	web_socket "bruit/bruit/clients/kraken/web_socket_client"
 	"bruit/bruit/env"
+	"bruit/bruit/settings"
 	"bruit/bruit/ws_client"
 	"log"
 )
@@ -18,14 +18,14 @@ type KrakenClient struct {
 	State     state.StateManager
 }
 
-func (k *KrakenClient) InitClient(g *bruit.Settings) {
+func (k *KrakenClient) InitClient(g *settings.Settings) {
 	k.initWebSockets(g)
 	k.initKeys()
 	k.initState()
 
 }
 
-func (client *KrakenClient) initWebSockets(g *bruit.Settings) {
+func (client *KrakenClient) initWebSockets(g *settings.Settings) {
 	if !AreChannelsInit(&client.WebSocket) {
 		client.WebSocket.InitChannels()
 	}
@@ -49,7 +49,7 @@ func (k *KrakenClient) initKeys() {
 	kraken_data.LoadKeys(env)
 }
 
-func (client *KrakenClient) startWebSocketConnection(g *bruit.Settings) {
+func (client *KrakenClient) startWebSocketConnection(g *settings.Settings) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 
@@ -116,7 +116,7 @@ func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResp
 	//log.Println("subscription list: ", client.State.Client.GetSubscriptions())
 }
 
-func (client *KrakenClient) DeferChanClose(g *bruit.Settings) {
+func (client *KrakenClient) DeferChanClose(g *settings.Settings) {
 	g.ConcurrencySettings.Wg.Add(1)
 	defer g.ConcurrencySettings.Wg.Done()
 	<-g.ConcurrencySettings.Ctx.Done()

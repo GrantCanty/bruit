@@ -1,4 +1,4 @@
-package bruit
+package settings
 
 import (
 	"context"

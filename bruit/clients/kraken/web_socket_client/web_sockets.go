@@ -1,10 +1,10 @@
 package web_socket
 
 import (
-	"bruit/bruit"
 	kraken_data "bruit/bruit/clients/kraken/client_data"
 	decoders "bruit/bruit/clients/kraken/decoder_funcs"
 	"bruit/bruit/clients/kraken/types"
+	"bruit/bruit/settings"
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
@@ -22,7 +22,7 @@ type WebSocketClient struct {
 	privChan     chan interface{}
 }
 
-func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.LoggingSettings) {
+func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.LoggingSettings) {
 	var resp interface{}
 	byteResponse := []byte(response)
 
@@ -47,7 +47,7 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger bruit.Logg
 	return
 }
 
-func (client *WebSocketClient) BookJsonDecoder(response string, logger bruit.LoggingSettings) {
+func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.LoggingSettings) {
 	now := time.Now()
 	var resp interface{}
 	byteResponse := []byte(response)
@@ -110,7 +110,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger bruit.Log
 	return
 }
 
-func (client *WebSocketClient) PrivJsonDecoder(response string, logger bruit.LoggingSettings) {
+func (client *WebSocketClient) PrivJsonDecoder(response string, logger settings.LoggingSettings) {
 	var resp interface{}
 	byteResponse := []byte(response)
 

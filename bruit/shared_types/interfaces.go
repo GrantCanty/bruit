@@ -1,7 +1,7 @@
 package shared_types
 
 import (
-	"bruit/bruit"
+	bruit "bruit/bruit/settings"
 	"time"
 
 	//"bruit/bruit/clients/kraken/types"

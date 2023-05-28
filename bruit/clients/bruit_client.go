@@ -1,21 +1,21 @@
 package clients
 
-import "bruit/bruit"
+import "bruit/bruit/settings"
 
 type BruitClient interface {
-	InitClient(g *bruit.Settings)
-	DeferChanClose(g *bruit.Settings)
+	InitClient(g *settings.Settings)
+	DeferChanClose(g *settings.Settings)
 
-	SubscribeToTrades(g *bruit.Settings, pairs []string)
-	SubscribeToOHLC(g *bruit.Settings, pairs []string, depth int)
-	SubscribeToOrderBook(g *bruit.Settings, pairs []string, depth int)
-	SubscribeToOpenOrders(g *bruit.Settings, token string)
+	SubscribeToTrades(g *settings.Settings, pairs []string)
+	SubscribeToOHLC(g *settings.Settings, pairs []string, depth int)
+	SubscribeToOrderBook(g *settings.Settings, pairs []string, depth int)
+	SubscribeToOpenOrders(g *settings.Settings, token string)
 
-	PrivDecoder(g *bruit.Settings)
-	PubDecoder(g *bruit.Settings)
-	BookDecoder(g *bruit.Settings)
+	PrivDecoder(g *settings.Settings)
+	PubDecoder(g *settings.Settings)
+	BookDecoder(g *settings.Settings)
 
-	CancelAll(g *bruit.Settings, token string)
-	CancelOrder(g *bruit.Settings, token string, tradeIDs []string)
-	AddOrder(g *bruit.Settings, token string, otype string, ttype string, pair string, vol string, price string, testing bool)
+	CancelAll(g *settings.Settings, token string)
+	CancelOrder(g *settings.Settings, token string, tradeIDs []string)
+	AddOrder(g *settings.Settings, token string, otype string, ttype string, pair string, vol string, price string, testing bool)
 }
