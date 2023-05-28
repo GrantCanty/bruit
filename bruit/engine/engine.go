@@ -10,6 +10,7 @@ type BruitEngine interface {
 	Init(s settings.Settings, c clients.BruitClient, db influx.DB)
 	Run()
 	Stop()
+	Wait()
 }
 
 type emptyEngine int
@@ -30,7 +31,7 @@ func Engine() BruitEngine {
 	return new(emptyEngine)
 }
 
-func ProductionEngine(parent BruitEngine) (engine BruitEngine) {
+func NewProductionEngine(parent BruitEngine) BruitEngine {
 	return newProduction(parent)
 }
 
