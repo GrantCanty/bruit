@@ -1,22 +1,31 @@
 package main
 
 import (
-	"bruit/bruit"
 	"bruit/bruit/clients/kraken"
+	"bruit/bruit/engine"
 	"bruit/bruit/influx"
+	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
 )
 
 func main() {
-	g := bruit.Settings{}
-	g.Init()
+	var g settings.Settings
+	g = settings.NewDefaultSettings(g)
+	//g := settings.DefaultSettings{}
+	//g.Init()
 
 	db := influx.DB{}
-	db.Init()
+	//db.Init()
 	//balancesWriter := db.WriteAPIBlocking("Vert", "Balances")
 
+	//var k clients.BruitClient
 	k := &kraken.KrakenClient{}
-	k.InitClient(&g)
+	//k.InitClient(g)
+
+	var e engine.BruitEngine
+	e = engine.NewProductionEngine(e)
+	e.Init(g, k, db)
+
 	/*balances, err := k.GetAccountBalance()
 	if err != nil {
 		panic(err)
@@ -61,17 +70,17 @@ func main() {
 
 	//k.InitWebSockets(&g)
 
-	go k.PubDecoder(&g)
+	go k.PubDecoder(g)
 	//go k.BookDecoder(&g)
 	//go k.PrivDecoder(&g)
 	//go k.PrivListen(&g)
 
 	ohlcMap := shared_types.OHLCVals{}
-	go k.PubListen(&g, &ohlcMap, db.GetTradeWriter())
+	go k.PubListen(g, &ohlcMap, db.GetTradeWriter())
 	//go k.BookListen(&g)
 
 	//k.SubscribeToTrades(&g, []string{"BTC/USD", "ETH/USD"})
-	k.SubscribeToOHLC(&g, []string{"EOS/USD", "BTC/USD"}, 1)
+	k.SubscribeToOHLC(g, []string{"EOS/USD", "BTC/USD"}, 1)
 	//k.SubscribeToOrderBookk(g, []string{"BTC/USD"}, 10)
 	//go k.SubscribeToOpenOrders(&g, resp.Token)*/
 	//k.SubscribeToOrderBook(&g, []string{"EOS/USD"}, 10)
@@ -86,7 +95,7 @@ func main() {
 	//go k.PrivListen(&g)
 
 	//k.WebSocket.PrivChan
-	go k.DeferChanClose(&g)
+	go k.DeferChanClose(g)
 	g.Wait()
 
 }

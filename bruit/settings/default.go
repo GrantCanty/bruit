@@ -32,11 +32,15 @@ func (s *DefaultSettings) Add(i int) {
 }
 
 func (s *DefaultSettings) Done() {
-	s.ConcurrencySettings.Ctx.Done()
+	s.ConcurrencySettings.Wg.Done()
 }
 
-func (s *DefaultSettings) CtxDone() <-chan struct{} {
-	return s.ConcurrencySettings.Ctx.Done()
+func (s *DefaultSettings) CtxDone() /*<-chan struct{}*/ {
+	//var d <-chan struct{}
+	//d = make(<-chan struct{})
+	<-s.ConcurrencySettings.Ctx.Done()
+
+	//return d
 }
 
 func (s *DefaultSettings) GetLoggingToConsole() bool {

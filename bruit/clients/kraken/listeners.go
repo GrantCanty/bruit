@@ -53,7 +53,8 @@ func (client *KrakenClient) PubListen(g settings.Settings, ohlcMap *shared_types
 		}
 	}
 	//<-g.ConcurrencySettings.Ctx.Done()
-	<-g.CtxDone()
+	//<-g.CtxDone()
+	g.CtxDone()
 }
 
 func (client *KrakenClient) BookListen(g settings.Settings, book *types.BookDecodedResp) {
@@ -75,7 +76,8 @@ func (client *KrakenClient) BookListen(g settings.Settings, book *types.BookDeco
 	}
 
 	//<-g.ConcurrencySettings.Ctx.Done()
-	<-g.CtxDone()
+	//<-g.CtxDone()
+	g.CtxDone()
 	log.Println("closing book listen func")
 }
 
@@ -105,5 +107,6 @@ func (client *KrakenClient) PrivListen(g settings.Settings) {
 		}
 	}
 	//<-g.ConcurrencySettings.Ctx.Done()
-	<-g.CtxDone()
+	//<-g.CtxDone()
+	g.CtxDone()
 }

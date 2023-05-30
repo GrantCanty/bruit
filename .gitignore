@@ -16,3 +16,4 @@ orderbook.go
 orderbook_json.go
 unmarshaler.go
 newmain.go
+ticker.go

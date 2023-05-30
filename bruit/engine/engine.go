@@ -4,13 +4,15 @@ import (
 	"bruit/bruit/clients"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
+	"log"
+	"time"
 )
 
 type BruitEngine interface {
 	Init(s settings.Settings, c clients.BruitClient, db influx.DB)
-	Run()
+	Run(s settings.Settings)
 	Stop()
-	Wait()
+	Wait(s settings.Settings)
 }
 
 type emptyEngine int
@@ -19,11 +21,15 @@ func (e emptyEngine) Init(s settings.Settings, c clients.BruitClient, db influx.
 	return
 }
 
-func (e emptyEngine) Run() {
+func (e emptyEngine) Run(s settings.Settings) {
 	return
 }
 
 func (e emptyEngine) Stop() {
+	return
+}
+
+func (e emptyEngine) Wait(s settings.Settings) {
 	return
 }
 
@@ -41,6 +47,8 @@ func newProduction(parent BruitEngine) BruitEngine {
 
 type Production struct {
 	BruitEngine
+
+	c clients.BruitClient
 }
 
 func (p *Production) Init(s settings.Settings, c clients.BruitClient, db influx.DB) {
@@ -49,6 +57,24 @@ func (p *Production) Init(s settings.Settings, c clients.BruitClient, db influx.
 	db.Init()
 }
 
-func (p *Production) Run()
+func (p *Production) Run(s settings.Settings) {
+	s.Add(1)
+	defer s.Done()
 
-func (p *Production) Stop()
+	timer := time.NewTimer(time.Second)
+	go func() {
+		<-timer.C
+		log.Println("timer ticked")
+	}()
+
+	s.CtxDone()
+}
+
+func (p *Production) Stop() {
+	return
+}
+
+func (p *Production) Wait(s settings.Settings) {
+	go p.c.DeferChanClose(s)
+	s.Wait()
+}

@@ -14,9 +14,9 @@ import (
 
 func (client *KrakenClient) SubscribeToTrades(g settings.Settings, pairs []string) {
 	//g.ConcurrencySettings.Wg.Add(1)
-	g.Add(1)
+	//g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
-	defer g.Done()
+	//defer g.Done()
 
 	if err := PubSocketGuard(client.WebSocket); err != nil {
 		panic(err)
@@ -31,9 +31,9 @@ func (client *KrakenClient) SubscribeToTrades(g settings.Settings, pairs []strin
 *****/
 func (client *KrakenClient) SubscribeToOHLC(g settings.Settings, pairs []string, interval int) {
 	//g.ConcurrencySettings.Wg.Add(1)
-	g.Add(1)
+	//g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
-	defer g.Done()
+	//defer g.Done()
 
 	var found bool = false
 	for _, i := range kraken_data.OHLCVals {
@@ -70,7 +70,8 @@ func (client *KrakenClient) PubDecoder(g settings.Settings) {
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
 
 	//<-g.ConcurrencySettings.Ctx.Done()
-	<-g.CtxDone()
+	//<-g.CtxDone()
+	g.CtxDone()
 	return
 }
 
@@ -79,9 +80,9 @@ func (client *KrakenClient) PubDecoder(g settings.Settings) {
 // Subscribe to the order book.
 func (client *KrakenClient) SubscribeToOrderBook(g settings.Settings, pairs []string, depth int) {
 	//g.ConcurrencySettings.Wg.Add(1)
-	g.Add(1)
+	//g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
-	defer g.Done()
+	//defer g.Done()
 
 	if err := BookSocketGuard(client.WebSocket); err != nil {
 		panic(err)
@@ -119,7 +120,8 @@ func (client *KrakenClient) BookDecoder(g settings.Settings) {
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
 
 	//<-g.ConcurrencySettings.Ctx.Done()
-	<-g.CtxDone()
+	//<-g.CtxDone()
+	g.CtxDone()
 	return
 }
 
@@ -127,9 +129,9 @@ func (client *KrakenClient) BookDecoder(g settings.Settings) {
 
 func (client *KrakenClient) SubscribeToOpenOrders(g settings.Settings, token string) {
 	//g.ConcurrencySettings.Wg.Add(1)
-	g.Add(1)
+	//g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
-	defer g.Done()
+	//defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
@@ -151,9 +153,9 @@ func (client *KrakenClient) SubscribeToOpenOrders(g settings.Settings, token str
 
 func (client *KrakenClient) CancelAll(g settings.Settings, token string) {
 	//g.ConcurrencySettings.Wg.Add(1)
-	g.Add(1)
+	//g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
-	defer g.Done()
+	//defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
@@ -167,9 +169,9 @@ func (client *KrakenClient) CancelAll(g settings.Settings, token string) {
 // find a way to ad tradeID
 func (client *KrakenClient) CancelOrder(g settings.Settings, token string, tradeIDs []string) {
 	//g.ConcurrencySettings.Wg.Add(1)
-	g.Add(1)
+	//g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
-	defer g.Done()
+	//defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
@@ -183,9 +185,9 @@ func (client *KrakenClient) CancelOrder(g settings.Settings, token string, trade
 
 func (client *KrakenClient) AddOrder(g settings.Settings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) {
 	//g.ConcurrencySettings.Wg.Add(1)
-	g.Add(1)
+	//g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
-	defer g.Done()
+	//defer g.Done()
 
 	PrivSocketGuard(client.WebSocket)
 
@@ -218,6 +220,7 @@ func (client *KrakenClient) PrivDecoder(g settings.Settings) {
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPrivSocketPointer())
 
 	//<-g.ConcurrencySettings.Ctx.Done()
-	<-g.CtxDone()
+	//<-g.CtxDone()
+	g.CtxDone()
 	return
 }

@@ -18,6 +18,7 @@ func (sm StateManager) GetSubscriptions() map[shared_types.SubscriptionMetaData]
 }
 
 func (sm StateManager) GetInterval(metaData shared_types.SubscriptionMetaData) int {
+	//log.Println("interval: ", sm.Client.subscriptions[metaData])
 	return sm.Client.subscriptions[metaData].GetData().(types.KrakenOHLCSubscriptionData).Interval
 }
 
