@@ -95,7 +95,7 @@ func main() {
 	//go k.PrivListen(&g)
 
 	//k.WebSocket.PrivChan
-	go k.DeferChanClose(g)
-	g.Wait()
+	//go k.DeferChanClose(g)
+	e.Wait(g, k)
 
 }

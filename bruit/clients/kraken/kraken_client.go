@@ -126,15 +126,15 @@ func (client *KrakenClient) DeferChanClose(g settings.Settings) {
 	//defer g.ConcurrencySettings.Wg.Done()
 	defer g.Done()
 	//<-g.ConcurrencySettings.Ctx.Done()
-	g.CtxDone()
+	<-g.CtxDone()
 
 	log.Println("Closing channels")
 
-	defer close(client.WebSocket.GetPubChan())
-	defer close(client.WebSocket.GetBookChan())
-	defer close(client.WebSocket.GetPrivChan())
+	close(client.WebSocket.GetPubChan())
+	close(client.WebSocket.GetBookChan())
+	close(client.WebSocket.GetPrivChan())
 
-	defer client.WebSocket.GetPubSocketPointer().Close()
+	client.WebSocket.GetPubSocketPointer().Close()
 	//defer client.WebSocket.GetBookSocketPointer().Close()
 	//defer client.WebSocket.GetPrivSocketPointer().Close()
 

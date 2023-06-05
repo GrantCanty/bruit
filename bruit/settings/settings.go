@@ -5,7 +5,7 @@ type Settings interface {
 	Wait()
 	Add(i int)
 	Done()
-	CtxDone() //<-chan struct{}
+	CtxDone() <-chan struct{}
 	GetLoggingToConsole() bool
 	GetLoggingSettings() LoggingSettings
 }
@@ -28,8 +28,8 @@ func (e emptySettings) Done() {
 	return
 }
 
-func (e emptySettings) CtxDone() /*<-chan struct{}*/ {
-	return //nil
+func (e emptySettings) CtxDone() <-chan struct{} {
+	return make(<-chan struct{})
 }
 
 func (e emptySettings) GetLoggingToConsole() bool {

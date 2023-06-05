@@ -35,10 +35,11 @@ func (s *DefaultSettings) Done() {
 	s.ConcurrencySettings.Wg.Done()
 }
 
-func (s *DefaultSettings) CtxDone() /*<-chan struct{}*/ {
+func (s *DefaultSettings) CtxDone() <-chan struct{} {
 	//var d <-chan struct{}
 	//d = make(<-chan struct{})
-	<-s.ConcurrencySettings.Ctx.Done()
+	//s.ConcurrencySettings.Ctx.Done()
+	return s.ConcurrencySettings.Ctx.Done()
 
 	//return d
 }

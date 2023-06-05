@@ -12,7 +12,7 @@ type BruitEngine interface {
 	Init(s settings.Settings, c clients.BruitClient, db influx.DB)
 	Run(s settings.Settings)
 	Stop()
-	Wait(s settings.Settings)
+	Wait(s settings.Settings, c clients.BruitClient)
 }
 
 type emptyEngine int
@@ -29,7 +29,7 @@ func (e emptyEngine) Stop() {
 	return
 }
 
-func (e emptyEngine) Wait(s settings.Settings) {
+func (e emptyEngine) Wait(s settings.Settings, c clients.BruitClient) {
 	return
 }
 
@@ -61,20 +61,29 @@ func (p *Production) Run(s settings.Settings) {
 	s.Add(1)
 	defer s.Done()
 
-	timer := time.NewTimer(time.Second)
+	timer := time.NewTicker(1 * time.Second)
 	go func() {
-		<-timer.C
-		log.Println("timer ticked")
+		for {
+			select {
+			case t := <-timer.C:
+				log.Println("tick at", t)
+				/*case <-s.CtxDone():
+				log.Println("stopping")
+				return*/
+			}
+
+		}
 	}()
 
-	s.CtxDone()
+	<-s.CtxDone()
 }
 
 func (p *Production) Stop() {
 	return
 }
 
-func (p *Production) Wait(s settings.Settings) {
-	go p.c.DeferChanClose(s)
+func (p *Production) Wait(s settings.Settings, c clients.BruitClient) {
+	//go p.c.DeferChanClose(s)
+	go c.DeferChanClose(s)
 	s.Wait()
 }
