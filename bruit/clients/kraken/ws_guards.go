@@ -4,14 +4,8 @@ import (
 	web_socket "bruit/bruit/clients/kraken/web_socket_client"
 	"bruit/bruit/ws_client"
 	"errors"
+	"log"
 )
-
-/*func socketGuard(socket ws_client.Socket) error { // checks if socket is init. returns error if not init
-	if !ws_client.IsInit(socket) {
-		return errors.New("KrakenClient is not initialized")
-	}
-	return nil
-}*/
 
 func IsPubSocketInit(client web_socket.WebSocketClient) error {
 	if !ws_client.IsInit(client.GetPubSocket()) {
@@ -46,7 +40,9 @@ func IsPrivSocketInit(client web_socket.WebSocketClient) error { // checks if so
 	return nil
 }
 
-func PubSocketGuard(client web_socket.WebSocketClient) error { // checks if socket is init and public. returns error if either is not true
+func PubSocketGuard(client *web_socket.WebSocketClient) error { // checks if socket is init and public. returns error if either is not true
+	ws_client.ReceiveLocker(client.GetPubSocketPointer())
+
 	if !ws_client.IsInit(client.GetPubSocket()) {
 		return errors.New("KrakenClient is not initialized")
 	}
@@ -56,12 +52,24 @@ func PubSocketGuard(client web_socket.WebSocketClient) error { // checks if sock
 	}
 
 	if !client.GetPubSocket().IsConnected {
+		client.GetPubSocketPointer().OnConnected = func(socket ws_client.Socket) {
+			log.Println("Connected to public server")
+		}
+
+		log.Println("Connecting...")
 		client.GetPubSocketPointer().Connect()
+
+		ws_client.ReceiveUnlocker(client.GetPubSocketPointer())
+	} else {
+		ws_client.ReceiveUnlocker(client.GetPubSocketPointer())
 	}
+
 	return nil
 }
 
-func BookSocketGuard(client web_socket.WebSocketClient) error { // checks if socket is init and public. returns error if either is not true
+func BookSocketGuard(client *web_socket.WebSocketClient) error { // checks if socket is init and public. returns error if either is not true
+	ws_client.ReceiveLocker(client.GetBookSocketPointer())
+
 	if !ws_client.IsInit(client.GetBookSocket()) {
 		return errors.New("bookSocket is not initialized")
 	}
@@ -71,12 +79,22 @@ func BookSocketGuard(client web_socket.WebSocketClient) error { // checks if soc
 	}
 
 	if !client.GetBookSocket().IsConnected {
+		client.GetBookSocketPointer().OnConnected = func(socket ws_client.Socket) {
+			log.Println("Connected to book server")
+		}
+
 		client.GetBookSocketPointer().Connect()
+
+		ws_client.ReceiveUnlocker(client.GetBookSocketPointer())
+	} else {
+		ws_client.ReceiveUnlocker(client.GetBookSocketPointer())
 	}
 	return nil
 }
 
-func PrivSocketGuard(client web_socket.WebSocketClient) error { // checks if socket is init and public. returns error if either is not true
+func PrivSocketGuard(client *web_socket.WebSocketClient) error { // checks if socket is init and public. returns error if either is not true
+	ws_client.ReceiveLocker(client.GetPrivSocketPointer())
+
 	if !ws_client.IsInit(client.GetPrivSocket()) {
 		return errors.New("KrakenClient is not initialized")
 	}
@@ -85,11 +103,16 @@ func PrivSocketGuard(client web_socket.WebSocketClient) error { // checks if soc
 		return errors.New("Public socket function called on a private socket")
 	}
 
-	/*if !client.GetPrivSocket().IsConnected {
-		log.Println("priv socket not connected")
+	if !client.GetPrivSocket().IsConnected {
+		client.GetPrivSocketPointer().OnConnected = func(socket ws_client.Socket) {
+			log.Println("Connected to private server")
+		}
+
 		client.GetPrivSocketPointer().Connect()
+		ws_client.ReceiveUnlocker(client.GetPrivSocketPointer())
+	} else {
+		ws_client.ReceiveUnlocker(client.GetPrivSocketPointer())
 	}
-	log.Println("priv socket connected")*/
 	return nil
 }
 

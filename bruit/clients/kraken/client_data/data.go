@@ -3,7 +3,7 @@ package kraken_data
 import "strings"
 
 var (
-	OHLCVals      = []int{1, 5, 15, 30, 60, 240, 1440, 10080, 21600}
+	//OHLCVals      = []int{1, 5, 15, 30, 60, 240, 1440, 10080, 21600}
 	Priv_ws_token string
 )
 
@@ -22,6 +22,10 @@ const (
 	AccountBalancUrl = "/Balance"
 	WSTokenUrl       = "/GetWebSocketsToken"
 )
+
+func GetOHLCIntervals() []int {
+	return []int{1, 5, 15, 30, 60, 240, 1440, 10080, 21600}
+}
 
 func GetPubWSUrl() string {
 	return PubWSUrl

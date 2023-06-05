@@ -193,7 +193,7 @@ func (ws *WebSocketClient) SubscribeToOpenOrders(token string) {
 	ws.privSocket.SendBinary(sub)
 }
 
-func (client *WebSocketClient) InitConnections() { // used to initialized public and private sockets
+func (client *WebSocketClient) InitSockets() { // used to initialized public and private sockets
 	ws_client.PublicInit(&client.pubSocket, kraken_data.GetPubWSUrl())
 	ws_client.BookInit(&client.bookSocket, kraken_data.GetPubWSUrl())
 	ws_client.PrivateInit(&client.privSocket, kraken_data.GetPrivWSUrl())

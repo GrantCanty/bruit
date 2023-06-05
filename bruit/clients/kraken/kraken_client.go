@@ -8,7 +8,6 @@ import (
 	web_socket "bruit/bruit/clients/kraken/web_socket_client"
 	"bruit/bruit/env"
 	"bruit/bruit/settings"
-	"bruit/bruit/ws_client"
 	"log"
 )
 
@@ -19,17 +18,17 @@ type KrakenClient struct {
 }
 
 func (k *KrakenClient) InitClient(g settings.Settings) {
-	k.initWebSockets(g)
+	k.initWebSockets()
 	k.initKeys()
 	k.initState()
 
 }
 
-func (client *KrakenClient) initWebSockets(g settings.Settings) {
+func (client *KrakenClient) initWebSockets() {
 	if !AreChannelsInit(&client.WebSocket) {
 		client.WebSocket.InitChannels()
 	}
-	client.startWebSocketConnection(g)
+	client.socketInit()
 }
 
 func (k *KrakenClient) initState() {
@@ -49,18 +48,14 @@ func (k *KrakenClient) initKeys() {
 	kraken_data.LoadKeys(env)
 }
 
-func (client *KrakenClient) startWebSocketConnection(g settings.Settings) {
-	//g.ConcurrencySettings.Wg.Add(1)
-	//g.Add(1)
-	//defer g.ConcurrencySettings.Wg.Done()
-	//defer g.Done()
+func (client *KrakenClient) socketInit() {
 
 	// if all sockets are not init, init connections
 	if IsPubSocketInit(client.WebSocket) == nil && IsPrivSocketInit(client.WebSocket) == nil && IsBookSocketInit(client.WebSocket) == nil {
 		log.Println("connections are already init")
 		return
 	}
-	client.WebSocket.InitConnections()
+	client.WebSocket.InitSockets()
 
 	// checks to see that sockets are actually init. should switch this to send an error message
 	if err := IsPubSocketInit(client.WebSocket); err != nil { // guard clause checker
@@ -72,46 +67,6 @@ func (client *KrakenClient) startWebSocketConnection(g settings.Settings) {
 	if err := IsPrivSocketInit(client.WebSocket); err != nil { // guard clause checker
 		panic(err)
 	}
-
-	ws_client.ReceiveLocker(client.WebSocket.GetPubSocketPointer())
-	client.WebSocket.GetPubSocketPointer().OnConnected = func(socket ws_client.Socket) {
-		log.Println("Connected to public server")
-	}
-	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
-
-	/*ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
-	client.WebSocket.GetBookSocketPointer().OnConnected = func(socket ws_client.Socket) {
-		log.Println("Connected to book server")
-	}
-	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())*/
-
-	/*ws_client.ReceiveLocker(&client.WebSocket.privSocket)
-	client.WebSocket.privSocket.OnConnected = func(socket ws_client.Socket) {
-		log.Println("Connected to private server")
-	}
-	ws_client.ReceiveUnlocker(&client.WebSocket.privSocket)*/
-
-	/*client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		//decoders.PubJsonDecoder(message, client.Testing)
-		client.WebSocket.PubJsonDecoder(message, g.GlobalSettings.Logging)
-		log.Println(message)
-	}*/
-
-	/*client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		//decoders.BookJsonDecoder(message, client.Testing)
-		client.WebSocket.BookJsonDecoder(message, g.GlobalSettings.Logging)
-		log.Println(message)
-	}*/
-
-	/*client.WebSocket.privSocket.OnTextMessage = func(message string, socket ws_client.Socket) {
-		ws_client.PrivJsonDecoder(message, client.Testing)
-		log.Println(message)
-	}*/
-
-	client.WebSocket.GetPubSocketPointer().Connect()
-	//client.WebSocket.GetBookSocketPointer().Connect()
-	//client.WebSocket.GetPrivSocketPointer().Connect()
-	//<-g.CtxDone()
 	return
 }
 
