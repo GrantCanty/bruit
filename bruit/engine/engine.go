@@ -4,13 +4,12 @@ import (
 	"bruit/bruit/clients"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
-	"log"
-	"time"
+	"bruit/bruit/shared_types"
 )
 
 type BruitEngine interface {
 	Init(s settings.Settings, c clients.BruitClient, db influx.DB)
-	Run(s settings.Settings)
+	Run(s settings.Settings, c clients.BruitClient, db influx.DB)
 	Stop()
 	Wait(s settings.Settings, c clients.BruitClient)
 }
@@ -21,7 +20,7 @@ func (e emptyEngine) Init(s settings.Settings, c clients.BruitClient, db influx.
 	return
 }
 
-func (e emptyEngine) Run(s settings.Settings) {
+func (e emptyEngine) Run(s settings.Settings, c clients.BruitClient, db influx.DB) {
 	return
 }
 
@@ -57,23 +56,16 @@ func (p *Production) Init(s settings.Settings, c clients.BruitClient, db influx.
 	db.Init()
 }
 
-func (p *Production) Run(s settings.Settings) {
+func (p *Production) Run(s settings.Settings, c clients.BruitClient, db influx.DB) {
 	s.Add(1)
 	defer s.Done()
 
-	timer := time.NewTicker(1 * time.Second)
-	go func() {
-		for {
-			select {
-			case t := <-timer.C:
-				log.Println("tick at", t)
-				/*case <-s.CtxDone():
-				log.Println("stopping")
-				return*/
-			}
+	go c.PubDecoder(s)
 
-		}
-	}()
+	ohlcMap := shared_types.OHLCVals{}
+	go c.PubListen(s, &ohlcMap, db.GetTradeWriter())
+
+	c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
 
 	<-s.CtxDone()
 }
