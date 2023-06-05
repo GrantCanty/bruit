@@ -76,34 +76,29 @@ func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResp
 }
 
 func (client *KrakenClient) DeferChanClose(g settings.Settings) {
-	//g.ConcurrencySettings.Wg.Add(1)
 	g.Add(1)
-	//defer g.ConcurrencySettings.Wg.Done()
 	defer g.Done()
-	//<-g.ConcurrencySettings.Ctx.Done()
 	<-g.CtxDone()
 
-	log.Println("Closing channels")
+	log.Println("Closing channels and connections")
 
+	client.closeChannelsAndConnections()
+
+	log.Println("Closed channels and connections")
+}
+
+func (client *KrakenClient) closeChannelsAndConnections() {
 	close(client.WebSocket.GetPubChan())
 	close(client.WebSocket.GetBookChan())
 	close(client.WebSocket.GetPrivChan())
 
-	client.WebSocket.GetPubSocketPointer().Close()
-	//defer client.WebSocket.GetBookSocketPointer().Close()
-	//defer client.WebSocket.GetPrivSocketPointer().Close()
-
-	//ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
-	/*client.WebSocket.GetPubSocketPointer().OnDisconnected = func(err error, socket ws_client.Socket) {
-		if err != nil {
-			//log.Println("no error: closed pub socke
-			log.Println("error: ", err)
-		} else {
-			log.Println("no error: closed pub socket")
-		}
-		//client.WebSocket.BookJsonDecoder(message, g.GlobalSettings.Logging)
-	}*/
-	//ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
-
-	log.Println("Closed channels")
+	if client.WebSocket.GetPubSocket().IsConnected {
+		client.WebSocket.GetPubSocketPointer().Close()
+	}
+	if client.WebSocket.GetBookSocket().IsConnected {
+		client.WebSocket.GetBookSocketPointer().Close()
+	}
+	if client.WebSocket.GetPrivSocket().IsConnected {
+		client.WebSocket.GetPrivSocketPointer().Close()
+	}
 }
