@@ -10,7 +10,7 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 )
 
-func (client *KrakenClient) PubListen(g settings.Settings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI) {
+func (client *KrakenClient) PubListen(g settings.BruitSettings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI) {
 	//g.ConcurrencySettings.Wg.Add(1)
 	g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
@@ -57,7 +57,7 @@ func (client *KrakenClient) PubListen(g settings.Settings, ohlcMap *shared_types
 	g.CtxDone()
 }
 
-func (client *KrakenClient) BookListen(g settings.Settings, book *types.BookDecodedResp) {
+func (client *KrakenClient) BookListen(g settings.BruitSettings, book *types.BookDecodedResp) {
 	//g.ConcurrencySettings.Wg.Add(1)
 	g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()
@@ -81,7 +81,7 @@ func (client *KrakenClient) BookListen(g settings.Settings, book *types.BookDeco
 	log.Println("closing book listen func")
 }
 
-func (client *KrakenClient) PrivListen(g settings.Settings) {
+func (client *KrakenClient) PrivListen(g settings.BruitSettings) {
 	//g.ConcurrencySettings.Wg.Add(1)
 	g.Add(1)
 	//defer g.ConcurrencySettings.Wg.Done()

@@ -8,19 +8,19 @@ import (
 )
 
 type BruitEngine interface {
-	Init(s settings.Settings, c clients.BruitClient, db influx.DB)
-	Run(s settings.Settings, c clients.BruitClient, db influx.DB)
+	Init(s settings.BruitSettings, c clients.BruitClient, db influx.DB)
+	Run(s settings.BruitSettings, c clients.BruitClient, db influx.DB)
 	Stop()
-	Wait(s settings.Settings, c clients.BruitClient)
+	Wait(s settings.BruitSettings, c clients.BruitClient)
 }
 
 type emptyEngine int
 
-func (e emptyEngine) Init(s settings.Settings, c clients.BruitClient, db influx.DB) {
+func (e emptyEngine) Init(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
 	return
 }
 
-func (e emptyEngine) Run(s settings.Settings, c clients.BruitClient, db influx.DB) {
+func (e emptyEngine) Run(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
 	return
 }
 
@@ -28,7 +28,7 @@ func (e emptyEngine) Stop() {
 	return
 }
 
-func (e emptyEngine) Wait(s settings.Settings, c clients.BruitClient) {
+func (e emptyEngine) Wait(s settings.BruitSettings, c clients.BruitClient) {
 	return
 }
 
@@ -50,13 +50,13 @@ type Production struct {
 	c clients.BruitClient
 }
 
-func (p *Production) Init(s settings.Settings, c clients.BruitClient, db influx.DB) {
+func (p *Production) Init(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
 	s.Init()
 	c.InitClient(s)
 	db.Init()
 }
 
-func (p *Production) Run(s settings.Settings, c clients.BruitClient, db influx.DB) {
+func (p *Production) Run(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
 	s.Add(1)
 	defer s.Done()
 
@@ -74,7 +74,7 @@ func (p *Production) Stop() {
 	return
 }
 
-func (p *Production) Wait(s settings.Settings, c clients.BruitClient) {
+func (p *Production) Wait(s settings.BruitSettings, c clients.BruitClient) {
 	//go p.c.DeferChanClose(s)
 	go c.DeferChanClose(s)
 	s.Wait()

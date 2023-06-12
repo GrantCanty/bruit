@@ -8,21 +8,21 @@ import (
 )
 
 type BruitClient interface {
-	InitClient(g settings.Settings)
-	DeferChanClose(g settings.Settings)
+	InitClient(g settings.BruitSettings)
+	DeferChanClose(g settings.BruitSettings)
 
-	SubscribeToTrades(g settings.Settings, pairs []string)
-	SubscribeToOHLC(g settings.Settings, pairs []string, depth int)
-	SubscribeToOrderBook(g settings.Settings, pairs []string, depth int)
-	SubscribeToOpenOrders(g settings.Settings, token string)
+	SubscribeToTrades(g settings.BruitSettings, pairs []string)
+	SubscribeToOHLC(g settings.BruitSettings, pairs []string, depth int)
+	SubscribeToOrderBook(g settings.BruitSettings, pairs []string, depth int)
+	SubscribeToOpenOrders(g settings.BruitSettings, token string)
 
-	PubDecoder(g settings.Settings)
-	BookDecoder(g settings.Settings)
-	PrivDecoder(g settings.Settings)
+	PubDecoder(g settings.BruitSettings)
+	BookDecoder(g settings.BruitSettings)
+	PrivDecoder(g settings.BruitSettings)
 
-	PubListen(g settings.Settings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI)
+	PubListen(g settings.BruitSettings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI)
 
-	CancelAll(g settings.Settings, token string)
-	CancelOrder(g settings.Settings, token string, tradeIDs []string)
-	AddOrder(g settings.Settings, token string, otype string, ttype string, pair string, vol string, price string, testing bool)
+	CancelAll(g settings.BruitSettings, token string)
+	CancelOrder(g settings.BruitSettings, token string, tradeIDs []string)
+	AddOrder(g settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool)
 }

@@ -8,9 +8,9 @@ type Globals struct {
 	BookDepth    int
 }
 
-func (g *Globals) Init() {
-	g.RunTime.init()
-	g.Logging.init()
+func (g *Globals) Init(runTimes map[string]bool, logging map[string]bool) {
+	g.RunTime.init(runTimes)
+	g.Logging.init(logging)
 	g.BaseCurrency = "USD"
 	g.BookDepth = 100
 	g.RiskLevel.init()
@@ -23,11 +23,11 @@ type RunTimeSettings struct {
 	IsProductionTrading bool
 }
 
-func (r *RunTimeSettings) init() {
-	r.IsSystemsTesting = true
-	r.IsBackTesting = false
-	r.IsPaperTrading = false
-	r.IsProductionTrading = false
+func (r *RunTimeSettings) init(m map[string]bool) {
+	r.IsSystemsTesting = m["ISSYSTEMSTESTING"]
+	r.IsBackTesting = m["ISBACKTESTING"]
+	r.IsPaperTrading = m["ISPAPERTRADING"]
+	r.IsProductionTrading = m["ISPRODUCTION"]
 }
 
 type LoggingSettings struct {
@@ -52,19 +52,9 @@ type RiskLevels struct {
 	isLevelThree bool
 }
 
-/*func (g *ConcurrencySettings) Wait() {
-	<-g.comms
-	g.cancel()
-	g.Wg.Wait()
-}*/
-
-/*func (s *Settings) GetEnv() map[string]string {
-	return s.env
-}*/
-
-func (l *LoggingSettings) init() {
-	l.isLoggingToDB = true
-	l.isLoggingToConsole = true
+func (l *LoggingSettings) init(m map[string]bool) {
+	l.isLoggingToDB = m["ISLOGGINGTODB"]
+	l.isLoggingToConsole = m["ISLOGGINGTOCONSOLE"]
 }
 
 func (l LoggingSettings) GetLoggingDB() bool {

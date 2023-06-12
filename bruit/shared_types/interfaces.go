@@ -12,19 +12,19 @@ import (
 
 type WebSocketClient interface {
 	// GENERAL METHODS
-	InitWebSockets(g *bruit.Settings)
-	DeferChanClose(g *bruit.Settings)
+	InitWebSockets(g *bruit.BruitSettings)
+	DeferChanClose(g *bruit.BruitSettings)
 
 	// PUBLIC SOCKET METHODS
-	SubscribeToOHLC(g *bruit.Settings, pairs []string, interval int)
-	SubscribeToTrades(g *bruit.Settings, pairs []string)
-	PubDecoder(g *bruit.Settings)
-	PubListen(g *bruit.Settings, ohlcMap *OHLCVals, tradesWriter api.WriteAPI) // needs to take an interface instead of OHLCVals
+	SubscribeToOHLC(g *bruit.BruitSettings, pairs []string, interval int)
+	SubscribeToTrades(g *bruit.BruitSettings, pairs []string)
+	PubDecoder(g *bruit.BruitSettings)
+	PubListen(g *bruit.BruitSettings, ohlcMap *OHLCVals, tradesWriter api.WriteAPI) // needs to take an interface instead of OHLCVals
 
 	// ORDER BOOK SOCKET METHODS
-	SubscribeToOrderBook(g *bruit.Settings, pairs []string, depth int)
+	SubscribeToOrderBook(g *bruit.BruitSettings, pairs []string, depth int)
 	//BookDecode(g *ConcurrencySettings)
-	BookListen(g *bruit.Settings)
+	BookListen(g *bruit.BruitSettings)
 
 	// PRIVATE SOCKET METHODS
 
