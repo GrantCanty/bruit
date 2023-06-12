@@ -1,11 +1,17 @@
 package settings
 
+import (
+	"bruit/bruit/env"
+	"log"
+	"strconv"
+)
+
 type DefaultSettings struct {
 	Settings
 
 	ConcurrencySettings ConcurrencySettings
 	GlobalSettings      Globals
-	env                 map[string]string
+	env                 map[string]bool
 }
 
 func NewDefaultSettings(parent Settings) Settings {
@@ -36,12 +42,7 @@ func (s *DefaultSettings) Done() {
 }
 
 func (s *DefaultSettings) CtxDone() <-chan struct{} {
-	//var d <-chan struct{}
-	//d = make(<-chan struct{})
-	//s.ConcurrencySettings.Ctx.Done()
 	return s.ConcurrencySettings.Ctx.Done()
-
-	//return d
 }
 
 func (s *DefaultSettings) GetLoggingToConsole() bool {
@@ -50,4 +51,72 @@ func (s *DefaultSettings) GetLoggingToConsole() bool {
 
 func (s *DefaultSettings) GetLoggingSettings() LoggingSettings {
 	return s.GlobalSettings.Logging
+}
+
+func (s *DefaultSettings) Load() {
+	configs, err := env.Read("CONFIG")
+	if err != nil {
+		panic(err)
+	}
+
+	s.initEnv(configs)
+
+	if s.GetLoggingToConsole() {
+		switch true {
+		case s.env["ISPRODUCTION"]:
+			log.Println("prod")
+			break
+		case s.env["ISBACKTESTING"]:
+			log.Println("back")
+			break
+		case s.env["ISPAPERTRADING"]:
+			log.Println("paper")
+			break
+		case s.env["ISSYSTEMSTESTING"]:
+			log.Println("system")
+			break
+		}
+	}
+}
+
+func getKeys(m map[string]bool) []string {
+	keys := make([]string, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+
+	return keys
+}
+func (s *DefaultSettings) makeMap() {
+	s.env = make(map[string]bool)
+
+	s.env["ISPRODUCTION"] = false
+	s.env["ISBACKTESTING"] = false
+	s.env["ISPAPERTRADING"] = false
+	s.env["ISSYSTEMSTESTING"] = false
+}
+
+func (s *DefaultSettings) initEnv(configs map[string]string) {
+	s.makeMap()
+	keys := getKeys(s.env)
+	var err interface{}
+
+	var trueCount, falseCount int = 0, 0
+	for i := 0; i < len(s.env); i++ {
+		s.env[keys[i]], err = strconv.ParseBool(configs[keys[i]])
+		if err != nil {
+			panic(err)
+		}
+		if s.env[keys[i]] == true {
+			trueCount++
+		} else {
+			falseCount++
+		}
+
+	}
+	if trueCount != 1 || falseCount != 3 {
+		panic("Incorrect count of true and false runtimes")
+	}
 }

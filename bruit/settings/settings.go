@@ -8,9 +8,19 @@ type Settings interface {
 	CtxDone() <-chan struct{}
 	GetLoggingToConsole() bool
 	GetLoggingSettings() LoggingSettings
+	Load()
 }
 
-type emptySettings int
+type emptySettings struct {
+}
+
+func NewEmptySettings() Settings {
+	return newEmpty()
+}
+
+func newEmpty() Settings {
+	return &emptySettings{}
+}
 
 func (e emptySettings) Init() {
 	return
@@ -38,6 +48,10 @@ func (e emptySettings) GetLoggingToConsole() bool {
 
 func (e emptySettings) GetLoggingSettings() LoggingSettings {
 	return LoggingSettings{}
+}
+
+func (e *emptySettings) Load() {
+	return
 }
 
 func NewSettings() Settings {

@@ -2,6 +2,7 @@ package influx
 
 import (
 	"bruit/bruit/env"
+	"log"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
@@ -22,8 +23,10 @@ func (db *DB) Init() {
 }
 
 func (db *DB) initClient() {
-	env, err := env.Read()
+	env, err := env.Read("DB")
 	if err != nil {
+		log.Println("err")
+		log.Println(env, err)
 		panic(err)
 	}
 
@@ -35,7 +38,7 @@ func (db *DB) initClient() {
 }
 
 func (db *DB) initWriters() {
-	env, err := env.Read()
+	env, err := env.Read("DB")
 	if err != nil {
 		panic(err)
 	}

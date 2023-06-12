@@ -41,7 +41,7 @@ func (k *KrakenClient) initState() {
 
 //loads the api keys from the .env file
 func (k *KrakenClient) initKeys() {
-	env, err := env.Read()
+	env, err := env.Read("CLIENT")
 	if err != nil {
 		panic(err)
 	}

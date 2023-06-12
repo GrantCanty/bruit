@@ -9,8 +9,10 @@ list-tester.go
 test_bals.go
 md.go
 ob.go
-.env.test
+.env.client.test
 .env~17fabfc615d8a40b2a88d680f2234cee63047965
+.env.config.test
+.env.db.test
 test_main.go
 orderbook.go
 orderbook_json.go
@@ -19,3 +21,4 @@ newmain.go
 ticker.go
 tickk.go
 testmain.go
+/bruit/config

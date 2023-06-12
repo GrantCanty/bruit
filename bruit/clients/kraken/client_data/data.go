@@ -3,7 +3,6 @@ package kraken_data
 import "strings"
 
 var (
-	//OHLCVals      = []int{1, 5, 15, 30, 60, 240, 1440, 10080, 21600}
 	Priv_ws_token string
 )
 
