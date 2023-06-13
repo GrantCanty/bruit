@@ -7,35 +7,6 @@ import (
 	"bruit/bruit/shared_types"
 )
 
-type BruitEngine interface {
-	Init(s settings.BruitSettings, c clients.BruitClient, db influx.DB)
-	Run(s settings.BruitSettings, c clients.BruitClient, db influx.DB)
-	Stop()
-	Wait(s settings.BruitSettings, c clients.BruitClient)
-}
-
-type emptyEngine int
-
-func (e emptyEngine) Init(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
-	return
-}
-
-func (e emptyEngine) Run(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
-	return
-}
-
-func (e emptyEngine) Stop() {
-	return
-}
-
-func (e emptyEngine) Wait(s settings.BruitSettings, c clients.BruitClient) {
-	return
-}
-
-func Engine() BruitEngine {
-	return new(emptyEngine)
-}
-
 func NewProductionEngine(parent BruitEngine) BruitEngine {
 	return newProduction(parent)
 }
@@ -75,7 +46,6 @@ func (p *Production) Stop() {
 }
 
 func (p *Production) Wait(s settings.BruitSettings, c clients.BruitClient) {
-	//go p.c.DeferChanClose(s)
 	go c.DeferChanClose(s)
 	s.Wait()
 }

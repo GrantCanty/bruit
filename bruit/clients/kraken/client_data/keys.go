@@ -6,6 +6,6 @@ var (
 )
 
 func LoadKeys(env map[string]string) {
-	ApiKey = env["KRAKEN_API_KEY"]
-	PrivateKey = env["KRAKEN_PRIVATE_KEY"]
+	ApiKey = env["KRAKENAPIKEY"]
+	PrivateKey = env["KRAKENPRIVATEKEY"]
 }

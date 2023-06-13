@@ -18,9 +18,6 @@ if err != nil {
 	resp, err = rr()
 }*/
 
-//return resp
-//}
-
 func InitialBookResponseDecoder(byteResponse []byte, now time.Time, testing bool) (*types.BookDecodedResp, error) {
 	reader := bytes.NewReader(byteResponse)
 	decoder := json.NewDecoder(reader)

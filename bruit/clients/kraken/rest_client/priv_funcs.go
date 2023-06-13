@@ -34,9 +34,6 @@ func createSignature(urlPath string, values url.Values, secret []byte) string {
 
 func ReturnNonceValues() url.Values {
 	nonceTime := strconv.FormatInt((time.Now().UnixMicro() / 1000), 10)
-	//nonceTime := strconv.FormatInt((time.Date(2022, time.August, 8, 0, 0, 0, 0, time.UTC).UnixMicro() / 1000), 10)
-
-	//log.Println("noncetime: ", nonceTime)
 
 	params := url.Values{}
 	params.Add("nonce", nonceTime)
