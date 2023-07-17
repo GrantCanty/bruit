@@ -33,17 +33,23 @@ func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []st
 		}
 	}
 
-	if found == true {
-		if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
-			panic(err)
-		}
-
-		// add func here that makes request to rest OHLC to get past OHLC data. data should then be added to the OHLC map
-
-		client.WebSocket.SubscribeToOHLC(pairs, interval)
-	} else {
+	if found == false {
 		log.Println("Interval is not supported for Kraken Client OHLC Subscription")
+		return
 	}
+
+	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
+		panic(err)
+	}
+
+	// add func here that makes request to rest OHLC to get past OHLC data. data should then be added to the OHLC map
+
+	client.WebSocket.SubscribeToOHLC(pairs, interval)
+}
+
+func (client *KrakenClient) SubscribeToHoldingsOHLC(g settings.BruitSettings, interval int) {
+	holdings := client.GetHoldingsWithoutStaking()
+	client.SubscribeToOHLC(g, holdings, interval)
 }
 
 func (client *KrakenClient) PubDecoder(g settings.BruitSettings) {

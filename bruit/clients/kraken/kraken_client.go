@@ -102,3 +102,23 @@ func (client *KrakenClient) closeChannelsAndConnections() {
 		client.WebSocket.GetPrivSocketPointer().Close()
 	}
 }
+
+func (client KrakenClient) GetHoldingsWithoutStaking() []string {
+	tmp := client.State.Account.GetBalancesWithoutStaking()
+	var bals []string
+	for i := range tmp {
+		bals = append(bals, i)
+	}
+	log.Println(bals)
+	return bals
+}
+
+func (client KrakenClient) GetHoldingsWithStaking() []string {
+	tmp := client.State.Account.GetBalancesWithStaking()
+	var bals []string
+	for i := range tmp {
+		bals = append(bals, i)
+	}
+	log.Println(bals)
+	return bals
+}
