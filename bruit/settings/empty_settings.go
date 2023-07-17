@@ -43,6 +43,10 @@ func (e *emptySettings) Load() {
 	return
 }
 
+func (e *emptySettings) GetBaseCurrency() string {
+	return ""
+}
+
 func NewSettings() BruitSettings {
 	return new(emptySettings)
 }

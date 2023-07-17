@@ -9,4 +9,5 @@ type BruitSettings interface {
 	GetLoggingToConsole() bool
 	GetLoggingSettings() LoggingSettings
 	Load()
+	GetBaseCurrency() string
 }

@@ -20,8 +20,7 @@ func main() {
 	var e engine.BruitEngine
 	e = engine.NewProductionEngine(e)
 	e.Init(s, c, db)
-	c.GetHoldingsWithoutStaking()
-	//go e.Run(s, c, db)
+	go e.Run(s, c, db)
 
 	e.Wait(s, c)
 }

@@ -19,15 +19,15 @@ func (c *KrakenClient) GetAssets() (*types.AssetInfoResp, error) {
 	return resp.(*types.AssetInfoResp), err
 }
 
-func (c *KrakenClient) GetAssetPairs() (*types.AssetPairResp, error) {
+func (c *KrakenClient) GetAssetPairs() (*types.AssetPairsResp, error) {
 	url := strings.Join([]string{kraken_data.RestUrl, kraken_data.PubRestUrl, kraken_data.AssetPairsUrl}, "")
-	resp, err := c.Rest.PublicRequest(url, nil, &types.AssetPairResp{})
+	resp, err := c.Rest.PublicRequest(url, nil, &types.AssetPairsResp{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.(*types.AssetPairResp), err
+	return resp.(*types.AssetPairsResp), err
 }
 
 func (c *KrakenClient) GetOHLC(pair string, interval int) (*types.OHLCResp, error) {

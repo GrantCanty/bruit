@@ -16,6 +16,10 @@ func (g *Globals) Init(runTimes map[string]bool, logging map[string]bool) {
 	g.RiskLevel.init()
 }
 
+func (g Globals) GetBaseCurrency() string {
+	return g.BaseCurrency
+}
+
 type RunTimeSettings struct {
 	IsSystemsTesting    bool
 	IsBackTesting       bool

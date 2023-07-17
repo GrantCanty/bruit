@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
 
@@ -14,7 +15,14 @@ type BruitClient interface {
 	GetHoldingsWithoutStaking() []string
 	GetHoldingsWithStaking() []string
 
-	//subscriptions
+	//rest
+	GetAssets() (*types.AssetInfoResp, error)
+	GetAssetPairs() (*types.AssetPairsResp, error)
+	GetOHLC(pair string, interval int) (*types.OHLCResp, error)
+	GetAccountBalances() (*types.AccountBalanceResp, error)
+	GetPrivateWebSokcetKey() (*types.PrivWSKeyResp, error)
+
+	//ws subscriptions
 	SubscribeToTrades(g settings.BruitSettings, pairs []string)
 	SubscribeToOHLC(g settings.BruitSettings, pairs []string, depth int)
 	SubscribeToHoldingsOHLC(g settings.BruitSettings, interval int)

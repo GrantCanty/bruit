@@ -21,4 +21,6 @@ type AccountManager struct {
 
 type ClientManager struct {
 	subscriptions map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData
+	assets        types.AssetInfoResp
+	assetPairs    types.AssetPairsResp
 }

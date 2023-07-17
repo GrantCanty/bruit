@@ -36,7 +36,18 @@ func (k *KrakenClient) initState() {
 	if err != nil {
 		panic(err)
 	}
-	k.State.Init(*bals)
+
+	assets, err := k.GetAssets()
+	if err != nil {
+		panic(err)
+	}
+
+	pairs, err := k.GetAssetPairs()
+	if err != nil {
+		panic(err)
+	}
+
+	k.State.Init(*bals, *assets, *pairs)
 }
 
 //loads the api keys from the .env file
@@ -109,7 +120,6 @@ func (client KrakenClient) GetHoldingsWithoutStaking() []string {
 	for i := range tmp {
 		bals = append(bals, i)
 	}
-	log.Println(bals)
 	return bals
 }
 
@@ -119,6 +129,5 @@ func (client KrakenClient) GetHoldingsWithStaking() []string {
 	for i := range tmp {
 		bals = append(bals, i)
 	}
-	log.Println(bals)
 	return bals
 }

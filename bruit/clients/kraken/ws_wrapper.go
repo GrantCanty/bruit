@@ -8,7 +8,12 @@ import (
 	"encoding/json"
 	"log"
 	"strconv"
+	"strings"
 )
+
+func remove(slice []string, pos int) []string {
+	return append(slice[:pos], slice[pos+1:]...)
+}
 
 // PUBLIC SOCKET METHODS
 
@@ -47,9 +52,22 @@ func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []st
 	client.WebSocket.SubscribeToOHLC(pairs, interval)
 }
 
+// search through assetResp in client manager from state package. if base and quote fields match the
 func (client *KrakenClient) SubscribeToHoldingsOHLC(g settings.BruitSettings, interval int) {
 	holdings := client.GetHoldingsWithoutStaking()
-	client.SubscribeToOHLC(g, holdings, interval)
+	var subs []string
+
+	for _, holding := range holdings {
+		//log.Println(i, holding, g.GetBaseCurrency())
+		for _, pair := range client.State.Client.GetAssetPairs() {
+			if holding == pair.Base && strings.Join([]string{"Z", g.GetBaseCurrency()}, "") == pair.Quote {
+				//log.Println(pair)
+				subs = append(subs, pair.WsName)
+			}
+		}
+	}
+
+	client.SubscribeToOHLC(g, subs, interval)
 }
 
 func (client *KrakenClient) PubDecoder(g settings.BruitSettings) {

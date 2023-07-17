@@ -36,7 +36,8 @@ func (p *Production) Run(s settings.BruitSettings, c clients.BruitClient, db inf
 	ohlcMap := shared_types.OHLCVals{}
 	go c.PubListen(s, &ohlcMap, db.GetTradeWriter())
 
-	c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
+	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
+	c.SubscribeToHoldingsOHLC(s, 1)
 
 	<-s.CtxDone()
 }

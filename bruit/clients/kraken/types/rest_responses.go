@@ -21,7 +21,9 @@ type AssetInfo struct {
 	Display  int    `json:"display_decimals"`
 }
 
-type AssetPairResp struct {
+type AssetPairsResp map[string]AssetPairs
+
+type AssetPairs struct {
 	AltName        string     `json:"altname"`
 	WsName         string     `json:"wsname"`
 	AclassBase     string     `json:"aclass_base"`
@@ -29,6 +31,7 @@ type AssetPairResp struct {
 	AclassQuote    string     `json:"aclass_quote"`
 	Quote          string     `json:"quote"`
 	Lot            string     `json:"lot"`
+	CostDecimals   int        `json:"cost_decimals"`
 	PairDecimals   int        `json:"pair_decimals"`
 	LotDecimals    int        `json:"lot_decimals"`
 	LotMultiplier  int        `json:"lot_multiplier"`
@@ -40,6 +43,9 @@ type AssetPairResp struct {
 	MarginCall     int        `json:"margin_call"`
 	MarginStop     int        `json:"margin_stop"`
 	Ordermin       string     `json:"order_min"`
+	CostMin        string     `json:"costmin"`
+	TickSize       string     `json:"tick_size"`
+	Status         string     `json:"status"`
 }
 
 type AccountBalanceResp map[string]decimal.Decimal

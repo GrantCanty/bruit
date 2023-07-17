@@ -152,3 +152,7 @@ func (s *settings) initLogging(configs map[string]string) {
 		}
 	}
 }
+
+func (s *settings) GetBaseCurrency() string {
+	return s.GlobalSettings.GetBaseCurrency()
+}

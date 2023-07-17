@@ -8,9 +8,12 @@ import (
 	"time"
 )
 
-func (sm *StateManager) Init(bals types.AccountBalanceResp) {
+func (sm *StateManager) Init(bals types.AccountBalanceResp, assets types.AssetInfoResp, pairs types.AssetPairsResp) {
 	sm.Client.initClient()
+
 	sm.Account.initAccount(bals)
+	sm.Client.initAssets(assets)
+	sm.Client.initPairs(pairs)
 }
 
 func (sm StateManager) GetSubscriptions() map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData {
