@@ -29,7 +29,7 @@ func (client *KrakenClient) SubscribeToTrades(g settings.BruitSettings, pairs []
 	*Add func to check if already subscribed to OHLC Stream
 	*Add func to get past OHLC data from rest API. Add to the candle map list
 *****/
-func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []string, interval int) {
+func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []types.Pairs, interval int) {
 	var found bool = false
 	for _, i := range kraken_data.GetOHLCIntervals() {
 		if i == interval {
@@ -48,26 +48,45 @@ func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []st
 	}
 
 	// add func here that makes request to rest OHLC to get past OHLC data. data should then be added to the OHLC map
+	var wsPairs []string
+	for _, pair := range pairs {
+		resp, err := client.GetOHLC(pair.Rest, interval)
+		wsPairs = append(wsPairs, pair.WS)
+		if err != nil {
+			log.Println(pair)
+			panic(err)
+			//log.Println("error with pair: ", pair)
+			//log.P
+		}
+		log.Println(resp)
+	}
 
-	client.WebSocket.SubscribeToOHLC(pairs, interval)
+	client.WebSocket.SubscribeToOHLC(wsPairs, interval)
 }
 
-// search through assetResp in client manager from state package. if base and quote fields match the
+// search through assetResp in client manager from state package. if base and quote fields match the holding and base currency, add wsname to a slice
 func (client *KrakenClient) SubscribeToHoldingsOHLC(g settings.BruitSettings, interval int) {
 	holdings := client.GetHoldingsWithoutStaking()
-	var subs []string
+	var pairs []types.Pairs
+	//var subs []string
 
 	for _, holding := range holdings {
 		//log.Println(i, holding, g.GetBaseCurrency())
 		for _, pair := range client.State.Client.GetAssetPairs() {
 			if holding == pair.Base && strings.Join([]string{"Z", g.GetBaseCurrency()}, "") == pair.Quote {
-				//log.Println(pair)
-				subs = append(subs, pair.WsName)
+				log.Println(pair)
+				log.Printf("%s%s", pair.Base, pair.Quote)
+				var p types.Pairs
+				p.WS = pair.WsName
+				p.Rest = pair.AltName
+				pairs = append(pairs, p)
 			}
 		}
 	}
 
-	client.SubscribeToOHLC(g, subs, interval)
+	log.Println(pairs)
+
+	client.SubscribeToOHLC(g, pairs, interval)
 }
 
 func (client *KrakenClient) PubDecoder(g settings.BruitSettings) {

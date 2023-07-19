@@ -24,7 +24,7 @@ type BruitClient interface {
 
 	//ws subscriptions
 	SubscribeToTrades(g settings.BruitSettings, pairs []string)
-	SubscribeToOHLC(g settings.BruitSettings, pairs []string, depth int)
+	SubscribeToOHLC(g settings.BruitSettings, pairs []types.Pairs, depth int)
 	SubscribeToHoldingsOHLC(g settings.BruitSettings, interval int)
 	SubscribeToOrderBook(g settings.BruitSettings, pairs []string, depth int)
 	SubscribeToOpenOrders(g settings.BruitSettings, token string)
