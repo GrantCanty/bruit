@@ -23,6 +23,14 @@ type BackTest struct {
 }
 
 func (p *BackTest) Init(s settings.BruitSettings, c clients.BruitClient, db *influx.DB) {
+	p.s = s
+	p.c = c
+	p.db = db
+
+	p.s.InitSettings()
+	p.c.InitClient(p.s)
+	p.db.InitDB()
+
 	return
 }
 
