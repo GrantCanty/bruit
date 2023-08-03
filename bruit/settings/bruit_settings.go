@@ -1,7 +1,7 @@
 package settings
 
 type BruitSettings interface {
-	Init()
+	InitSettings()
 	Wait()
 	Add(i int)
 	Done()

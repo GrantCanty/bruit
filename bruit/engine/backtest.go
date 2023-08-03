@@ -11,16 +11,18 @@ func NewBackTestEngine(parent BruitEngine) BruitEngine {
 }
 
 func newBackTest(parent BruitEngine) BruitEngine {
-	return &Production{BruitEngine: parent}
+	return &Production{BruitEngine: parent, c: nil, s: nil, db: nil}
 }
 
 type BackTest struct {
 	BruitEngine
 
-	c clients.BruitClient
+	c  clients.BruitClient
+	s  settings.BruitSettings
+	db *influx.DB
 }
 
-func (p *BackTest) Init(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
+func (p *BackTest) Init(s settings.BruitSettings, c clients.BruitClient, db *influx.DB) {
 	return
 }
 

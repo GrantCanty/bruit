@@ -50,15 +50,12 @@ func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []ty
 	// add func here that makes request to rest OHLC to get past OHLC data. data should then be added to the OHLC map
 	var wsPairs []string
 	for _, pair := range pairs {
-		resp, err := client.GetOHLC(pair.Rest, interval)
+		_, err := client.GetOHLC(pair.Rest, interval)
 		wsPairs = append(wsPairs, pair.WS)
 		if err != nil {
-			log.Println(pair)
 			panic(err)
-			//log.Println("error with pair: ", pair)
-			//log.P
 		}
-		log.Println(resp)
+		//log.Println(resp)
 	}
 
 	client.WebSocket.SubscribeToOHLC(wsPairs, interval)
@@ -68,14 +65,10 @@ func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []ty
 func (client *KrakenClient) SubscribeToHoldingsOHLC(g settings.BruitSettings, interval int) {
 	holdings := client.GetHoldingsWithoutStaking()
 	var pairs []types.Pairs
-	//var subs []string
 
 	for _, holding := range holdings {
-		//log.Println(i, holding, g.GetBaseCurrency())
 		for _, pair := range client.State.Client.GetAssetPairs() {
 			if holding == pair.Base && strings.Join([]string{"Z", g.GetBaseCurrency()}, "") == pair.Quote {
-				log.Println(pair)
-				log.Printf("%s%s", pair.Base, pair.Quote)
 				var p types.Pairs
 				p.WS = pair.WsName
 				p.Rest = pair.AltName

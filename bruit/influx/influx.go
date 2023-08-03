@@ -17,7 +17,7 @@ type Writers struct {
 	tradeWriter api.WriteAPI
 }
 
-func (db *DB) Init() {
+func (db *DB) InitDB() {
 	db.initClient()
 	db.initWriters()
 }

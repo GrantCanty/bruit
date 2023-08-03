@@ -7,8 +7,8 @@ import (
 )
 
 type BruitEngine interface {
-	Init(s settings.BruitSettings, c clients.BruitClient, db influx.DB)
-	Run(s settings.BruitSettings, c clients.BruitClient, db influx.DB)
+	Init(s settings.BruitSettings, c clients.BruitClient, db *influx.DB)
+	Run( /*s settings.BruitSettings, c clients.BruitClient, db influx.DB*/ )
 	Stop()
-	Wait(s settings.BruitSettings, c clients.BruitClient)
+	Wait( /*s settings.BruitSettings, c clients.BruitClient*/ )
 }

@@ -11,7 +11,7 @@ func newEmpty() BruitSettings {
 	return &emptySettings{}
 }
 
-func (e emptySettings) Init() {
+func (e emptySettings) InitSettings() {
 	return
 }
 
