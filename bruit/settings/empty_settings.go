@@ -50,3 +50,19 @@ func (e *emptySettings) GetBaseCurrency() string {
 func NewSettings() BruitSettings {
 	return new(emptySettings)
 }
+
+func (e emptySettings) IsProduction() bool {
+	return false
+}
+
+func (e emptySettings) IsBackTesting() bool {
+	return false
+}
+
+func (e emptySettings) IsPaperTrading() bool {
+	return false
+}
+
+func (e emptySettings) IsSystemsTesting() bool {
+	return false
+}

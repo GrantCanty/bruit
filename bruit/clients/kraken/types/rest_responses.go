@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bruit/bruit/shared_types"
 	"encoding/json"
 	"fmt"
 
@@ -61,7 +62,7 @@ type OHLCResp struct {
 }
 
 type RestCandles struct {
-	Time   float64
+	Time   shared_types.UnixTime
 	Open   decimal.Decimal
 	High   decimal.Decimal
 	Low    decimal.Decimal

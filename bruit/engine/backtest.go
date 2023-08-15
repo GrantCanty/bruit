@@ -2,8 +2,10 @@ package engine
 
 import (
 	"bruit/bruit/clients"
+	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
+	"log"
 )
 
 func NewBackTestEngine(parent BruitEngine) BruitEngine {
@@ -11,30 +13,37 @@ func NewBackTestEngine(parent BruitEngine) BruitEngine {
 }
 
 func newBackTest(parent BruitEngine) BruitEngine {
-	return &Production{BruitEngine: parent, c: nil, s: nil, db: nil}
+	return &BackTest{BruitEngine: parent}
 }
 
 type BackTest struct {
 	BruitEngine
 
-	c  clients.BruitClient
+	/*c  clients.BruitCryptoClient
 	s  settings.BruitSettings
-	db *influx.DB
+	db *influx.DB*/
+	ohlcData types.OHLCResp
 }
 
-func (p *BackTest) Init(s settings.BruitSettings, c clients.BruitClient, db *influx.DB) {
-	p.s = s
+func (p *BackTest) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
+	/*p.s = s
 	p.c = c
-	p.db = db
+	p.db = db*/
 
-	p.s.InitSettings()
-	p.c.InitClient(p.s)
-	p.db.InitDB()
+	/*s.InitSettings()
+	c.InitClient(s)
+	p.db.InitDB()*/
+
+	ohlcData, err := c.GetOHLC("DOT/USD", 5)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(ohlcData)
 
 	return
 }
 
-func (p *BackTest) Run(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
+func (p *BackTest) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
 	return
 }
 
@@ -42,6 +51,6 @@ func (p *BackTest) Stop() {
 	return
 }
 
-func (p *BackTest) Wait(s settings.BruitSettings, c clients.BruitClient) {
+func (p *BackTest) Wait(s settings.BruitSettings, c clients.BruitCryptoClient) {
 	return
 }

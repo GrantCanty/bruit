@@ -14,13 +14,12 @@ func main() {
 
 	db := influx.DB{}
 
-	var c clients.BruitClient
+	var c clients.BruitCryptoClient
 	c = &kraken.KrakenClient{}
 
 	var e engine.BruitEngine
 	e = engine.NewProductionEngine(e)
 	e.Init(s, c, &db)
-	go e.Run()
-
-	e.Wait()
+	go e.Run(s, c, &db)
+	e.Wait(s, c)
 }

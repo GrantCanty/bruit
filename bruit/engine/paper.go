@@ -7,16 +7,16 @@ import (
 	"bruit/bruit/shared_types"
 )
 
-func NewProductionEngine(parent BruitEngine) BruitEngine {
+func NewPaperTradingEngine(parent BruitEngine) BruitEngine {
 	return newProduction(parent)
 }
 
-func newProduction(parent BruitEngine) BruitEngine {
+func newPaperTrading(parent BruitEngine) BruitEngine {
 	//return &Production{BruitEngine: parent}
-	return &Production{BruitEngine: parent}
+	return &PaperTrading{BruitEngine: parent}
 }
 
-type Production struct {
+type PaperTrading struct {
 	BruitEngine
 
 	/*c  clients.BruitCryptoClient
@@ -24,7 +24,7 @@ type Production struct {
 	db *influx.DB*/
 }
 
-func (p *Production) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
+func (p *PaperTrading) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
 	/*p.s = s
 	p.c = c
 	p.db = db
@@ -34,7 +34,7 @@ func (p *Production) Init(s settings.BruitSettings, c clients.BruitCryptoClient,
 	p.db.InitDB()*/
 }
 
-func (p *Production) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
+func (p *PaperTrading) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
 	s.Add(1)
 	defer s.Done()
 
@@ -49,11 +49,11 @@ func (p *Production) Run(s settings.BruitSettings, c clients.BruitCryptoClient, 
 	<-s.CtxDone()
 }
 
-func (p *Production) Stop() {
+func (p *PaperTrading) Stop() {
 	return
 }
 
-func (p *Production) Wait(s settings.BruitSettings, c clients.BruitCryptoClient) {
+func (p *PaperTrading) Wait(s settings.BruitSettings, c clients.BruitCryptoClient) {
 	go c.DeferChanClose(s)
 	s.Wait()
 }

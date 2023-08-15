@@ -8,10 +8,10 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 )
 
-type BruitClient interface {
+type BruitCryptoClient interface {
 	//general system commands
-	InitClient(g settings.BruitSettings)
-	DeferChanClose(g settings.BruitSettings)
+	InitClient(s settings.BruitSettings)
+	DeferChanClose(s settings.BruitSettings)
 	GetHoldingsWithoutStaking() []string
 	GetHoldingsWithStaking() []string
 
@@ -23,22 +23,22 @@ type BruitClient interface {
 	GetPrivateWebSokcetKey() (*types.PrivWSKeyResp, error)
 
 	//ws subscriptions
-	SubscribeToTrades(g settings.BruitSettings, pairs []string)
-	SubscribeToOHLC(g settings.BruitSettings, pairs []types.Pairs, depth int)
-	SubscribeToHoldingsOHLC(g settings.BruitSettings, interval int)
-	SubscribeToOrderBook(g settings.BruitSettings, pairs []string, depth int)
-	SubscribeToOpenOrders(g settings.BruitSettings, token string)
+	SubscribeToTrades(s settings.BruitSettings, pairs []string)
+	SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, depth int)
+	SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int)
+	SubscribeToOrderBook(s settings.BruitSettings, pairs []string, depth int)
+	SubscribeToOpenOrders(s settings.BruitSettings, token string)
 
 	//decoders
-	PubDecoder(g settings.BruitSettings)
-	BookDecoder(g settings.BruitSettings)
-	PrivDecoder(g settings.BruitSettings)
+	PubDecoder(s settings.BruitSettings)
+	BookDecoder(s settings.BruitSettings)
+	PrivDecoder(s settings.BruitSettings)
 
 	//listeners
-	PubListen(g settings.BruitSettings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI)
+	PubListen(s settings.BruitSettings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI)
 
 	//orders
-	CancelAll(g settings.BruitSettings, token string)
-	CancelOrder(g settings.BruitSettings, token string, tradeIDs []string)
-	AddOrder(g settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool)
+	CancelAll(s settings.BruitSettings, token string)
+	CancelOrder(s settings.BruitSettings, token string, tradeIDs []string)
+	AddOrder(s settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool)
 }

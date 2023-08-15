@@ -17,7 +17,7 @@ type KrakenClient struct {
 	State     state.StateManager
 }
 
-func (k *KrakenClient) InitClient(g settings.BruitSettings) {
+func (k *KrakenClient) InitClient(s settings.BruitSettings) {
 	k.initWebSockets()
 	k.initKeys()
 	k.initState()
@@ -86,10 +86,10 @@ func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResp
 	//log.Println("subscription list: ", client.State.Client.GetSubscriptions())
 }
 
-func (client *KrakenClient) DeferChanClose(g settings.BruitSettings) {
-	g.Add(1)
-	defer g.Done()
-	<-g.CtxDone()
+func (client *KrakenClient) DeferChanClose(s settings.BruitSettings) {
+	s.Add(1)
+	defer s.Done()
+	<-s.CtxDone()
 
 	log.Println("Closing channels and connections")
 

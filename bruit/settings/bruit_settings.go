@@ -10,4 +10,8 @@ type BruitSettings interface {
 	GetLoggingSettings() LoggingSettings
 	Load()
 	GetBaseCurrency() string
+	IsProduction() bool
+	IsBackTesting() bool
+	IsPaperTrading() bool
+	IsSystemsTesting() bool
 }

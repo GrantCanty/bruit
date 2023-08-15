@@ -8,11 +8,11 @@ import (
 
 type emptyEngine int
 
-func (e emptyEngine) Init(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
-	return
+func (e emptyEngine) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db influx.DB) {
+
 }
 
-func (e emptyEngine) Run(s settings.BruitSettings, c clients.BruitClient, db influx.DB) {
+func (e emptyEngine) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db influx.DB) {
 	return
 }
 
@@ -20,7 +20,7 @@ func (e emptyEngine) Stop() {
 	return
 }
 
-func (e emptyEngine) Wait(s settings.BruitSettings, c clients.BruitClient) {
+func (e emptyEngine) Wait(s settings.BruitSettings, c clients.BruitCryptoClient) {
 	return
 }
 

@@ -7,16 +7,16 @@ import (
 	"bruit/bruit/shared_types"
 )
 
-func NewProductionEngine(parent BruitEngine) BruitEngine {
+func NewSystemsTestingEngine(parent BruitEngine) BruitEngine {
 	return newProduction(parent)
 }
 
-func newProduction(parent BruitEngine) BruitEngine {
+func newSystemsTesting(parent BruitEngine) BruitEngine {
 	//return &Production{BruitEngine: parent}
-	return &Production{BruitEngine: parent}
+	return &SystemsTesting{BruitEngine: parent}
 }
 
-type Production struct {
+type SystemsTesting struct {
 	BruitEngine
 
 	/*c  clients.BruitCryptoClient
@@ -24,7 +24,7 @@ type Production struct {
 	db *influx.DB*/
 }
 
-func (p *Production) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
+func (p *SystemsTesting) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
 	/*p.s = s
 	p.c = c
 	p.db = db
@@ -34,7 +34,7 @@ func (p *Production) Init(s settings.BruitSettings, c clients.BruitCryptoClient,
 	p.db.InitDB()*/
 }
 
-func (p *Production) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
+func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
 	s.Add(1)
 	defer s.Done()
 
@@ -49,11 +49,11 @@ func (p *Production) Run(s settings.BruitSettings, c clients.BruitCryptoClient, 
 	<-s.CtxDone()
 }
 
-func (p *Production) Stop() {
+func (p *SystemsTesting) Stop() {
 	return
 }
 
-func (p *Production) Wait(s settings.BruitSettings, c clients.BruitCryptoClient) {
+func (p *SystemsTesting) Wait(s settings.BruitSettings, c clients.BruitCryptoClient) {
 	go c.DeferChanClose(s)
 	s.Wait()
 }

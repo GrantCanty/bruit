@@ -23,7 +23,7 @@ func newDefaults(parent BruitSettings) BruitSettings {
 	return &settings{BruitSettings: parent}
 }
 
-func (s *settings) Init() {
+func (s *settings) InitSettings() {
 	s.Load()
 	s.ConcurrencySettings.Init()
 	s.GlobalSettings.Init(s.runTimes, s.logging)
@@ -155,4 +155,20 @@ func (s *settings) initLogging(configs map[string]string) {
 
 func (s *settings) GetBaseCurrency() string {
 	return s.GlobalSettings.GetBaseCurrency()
+}
+
+func (s *settings) IsProduction() bool {
+	return s.runTimes["ISPRODUCTION"] && !s.runTimes["ISBACKTESTING"] && !s.runTimes["ISPAPERTRADING"] && !s.runTimes["ISSYSTEMSTESTING"]
+}
+
+func (s *settings) IsBackTesting() bool {
+	return !s.runTimes["ISPRODUCTION"] && s.runTimes["ISBACKTESTING"] && !s.runTimes["ISPAPERTRADING"] && !s.runTimes["ISSYSTEMSTESTING"]
+}
+
+func (s *settings) IsPaperTrading() bool {
+	return !s.runTimes["ISPRODUCTION"] && !s.runTimes["ISBACKTESTING"] && s.runTimes["ISPAPERTRADING"] && !s.runTimes["ISSYSTEMSTESTING"]
+}
+
+func (s *settings) IsSystemsTesting() bool {
+	return !s.runTimes["ISPRODUCTION"] && !s.runTimes["ISBACKTESTING"] && !s.runTimes["ISPAPERTRADING"] && s.runTimes["ISSYSTEMSTESTING"]
 }

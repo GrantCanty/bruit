@@ -17,7 +17,7 @@ func remove(slice []string, pos int) []string {
 
 // PUBLIC SOCKET METHODS
 
-func (client *KrakenClient) SubscribeToTrades(g settings.BruitSettings, pairs []string) {
+func (client *KrakenClient) SubscribeToTrades(s settings.BruitSettings, pairs []string) {
 	if err := PubSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
 	}
@@ -29,7 +29,7 @@ func (client *KrakenClient) SubscribeToTrades(g settings.BruitSettings, pairs []
 	*Add func to check if already subscribed to OHLC Stream
 	*Add func to get past OHLC data from rest API. Add to the candle map list
 *****/
-func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []types.Pairs, interval int) {
+func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, interval int) {
 	var found bool = false
 	for _, i := range kraken_data.GetOHLCIntervals() {
 		if i == interval {
@@ -62,29 +62,37 @@ func (client *KrakenClient) SubscribeToOHLC(g settings.BruitSettings, pairs []ty
 }
 
 // search through assetResp in client manager from state package. if base and quote fields match the holding and base currency, add wsname to a slice
-func (client *KrakenClient) SubscribeToHoldingsOHLC(g settings.BruitSettings, interval int) {
+func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int) {
 	holdings := client.GetHoldingsWithoutStaking()
 	var pairs []types.Pairs
 
 	for _, holding := range holdings {
 		for _, pair := range client.State.Client.GetAssetPairs() {
-			if holding == pair.Base && strings.Join([]string{"Z", g.GetBaseCurrency()}, "") == pair.Quote {
+			if holding == pair.Base && strings.Join([]string{"Z", s.GetBaseCurrency()}, "") == pair.Quote {
 				var p types.Pairs
 				p.WS = pair.WsName
 				p.Rest = pair.AltName
 				pairs = append(pairs, p)
+
+				/*resp, err := client.GetOHLC(p.Rest, interval)
+				if err != nil {
+					log.Println(err)
+				}
+				client.State.OnOHLCResponse()*/
+			} else {
+				log.Println("ERROR: Pair could not find match ", pair, pair.Base)
 			}
 		}
 	}
 
 	log.Println(pairs)
 
-	client.SubscribeToOHLC(g, pairs, interval)
+	client.SubscribeToOHLC(s, pairs, interval)
 }
 
-func (client *KrakenClient) PubDecoder(g settings.BruitSettings) {
-	g.Add(1)
-	defer g.Done()
+func (client *KrakenClient) PubDecoder(s settings.BruitSettings) {
+	s.Add(1)
+	defer s.Done()
 
 	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
 		panic(err)
@@ -92,18 +100,18 @@ func (client *KrakenClient) PubDecoder(g settings.BruitSettings) {
 
 	ws_client.ReceiveLocker(client.WebSocket.GetPubSocketPointer())
 	client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		client.WebSocket.PubJsonDecoder(message, g.GetLoggingSettings())
+		client.WebSocket.PubJsonDecoder(message, s.GetLoggingSettings())
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
 
-	<-g.CtxDone()
+	<-s.CtxDone()
 	return
 }
 
 // ORDER BOOK SOCKET METHODS
 
 // Subscribe to the order book.
-func (client *KrakenClient) SubscribeToOrderBook(g settings.BruitSettings, pairs []string, depth int) {
+func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, pairs []string, depth int) {
 	if err := BookSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
 	}
@@ -123,9 +131,9 @@ func (client *KrakenClient) SubscribeToOrderBook(g settings.BruitSettings, pairs
 	client.WebSocket.GetBookSocketPointer().SendBinary(sub)
 }
 
-func (client *KrakenClient) BookDecoder(g settings.BruitSettings) {
-	g.Add(1)
-	defer g.Done()
+func (client *KrakenClient) BookDecoder(s settings.BruitSettings) {
+	s.Add(1)
+	defer s.Done()
 
 	if err := BookSocketGuard(&client.WebSocket); err != nil { // guard clause checker
 		panic(err)
@@ -133,17 +141,17 @@ func (client *KrakenClient) BookDecoder(g settings.BruitSettings) {
 
 	ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
 	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		client.WebSocket.BookJsonDecoder(message, g.GetLoggingSettings())
+		client.WebSocket.BookJsonDecoder(message, s.GetLoggingSettings())
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
 
-	<-g.CtxDone()
+	<-s.CtxDone()
 	return
 }
 
 // PRIVATE SOCKET METHODS
 
-func (client *KrakenClient) SubscribeToOpenOrders(g settings.BruitSettings, token string) {
+func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, token string) {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
 	}
@@ -164,7 +172,7 @@ func (client *KrakenClient) SubscribeToOpenOrders(g settings.BruitSettings, toke
 	client.WebSocket.SubscribeToOpenOrders(token)
 }
 
-func (client *KrakenClient) CancelAll(g settings.BruitSettings, token string) {
+func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
 	}
@@ -176,7 +184,7 @@ func (client *KrakenClient) CancelAll(g settings.BruitSettings, token string) {
 	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)
 }
 
-func (client *KrakenClient) CancelOrder(g settings.BruitSettings, token string, tradeIDs []string) {
+func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, tradeIDs []string) {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
 	}
@@ -189,7 +197,7 @@ func (client *KrakenClient) CancelOrder(g settings.BruitSettings, token string, 
 	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)
 }
 
-func (client *KrakenClient) AddOrder(g settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) {
+func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
 	}
@@ -208,9 +216,9 @@ func (client *KrakenClient) AddOrder(g settings.BruitSettings, token string, oty
 	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)
 }
 
-func (client *KrakenClient) PrivDecoder(g settings.BruitSettings) {
-	g.Add(1)
-	defer g.Done()
+func (client *KrakenClient) PrivDecoder(s settings.BruitSettings) {
+	s.Add(1)
+	defer s.Done()
 
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
@@ -218,10 +226,10 @@ func (client *KrakenClient) PrivDecoder(g settings.BruitSettings) {
 
 	ws_client.ReceiveLocker(client.WebSocket.GetPrivSocketPointer())
 	client.WebSocket.GetPrivSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		client.WebSocket.PrivJsonDecoder(message, g.GetLoggingSettings())
+		client.WebSocket.PrivJsonDecoder(message, s.GetLoggingSettings())
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPrivSocketPointer())
 
-	<-g.CtxDone()
+	<-s.CtxDone()
 	return
 }
