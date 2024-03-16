@@ -58,7 +58,7 @@ type FeesInfo struct {
 
 type OHLCResp struct {
 	Pair map[string][]RestCandles
-	Last float64 `json:"last"`
+	Last uint64 `json:"last"`
 }
 
 type RestCandles struct {

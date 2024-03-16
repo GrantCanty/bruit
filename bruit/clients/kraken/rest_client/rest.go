@@ -4,8 +4,10 @@ import (
 	kraken_data "bruit/bruit/clients/kraken/client_data"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 )
 
@@ -14,6 +16,7 @@ type RestClient struct {
 }
 
 func (c *RestClient) PublicRequest(url_path string, values url.Values, returnType interface{}) (interface{}, error) {
+	log.Println("pubreq returnType: ", reflect.TypeOf(returnType))
 	resp, err := c.doRequest(url_path, values, nil, returnType)
 
 	return resp, err

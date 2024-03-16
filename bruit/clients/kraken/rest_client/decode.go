@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"mime"
 	"net/http"
 )
@@ -36,8 +35,6 @@ func decode(resp *http.Response, returnType interface{}) (interface{}, error) {
 
 	err = json.Unmarshal(body, &jsonData)
 	if err != nil {
-		log.Println("resp from ws: ", string(body))
-		log.Printf("%sv", returnType)
 		return nil, fmt.Errorf("Could not execute request! #6 (%s)", err.Error())
 	}
 
