@@ -1,25 +1,19 @@
 package main
 
 import (
+	"bruit/bruit/client"
 	"bruit/bruit/clients"
 	"bruit/bruit/clients/kraken"
-	"bruit/bruit/engine"
-	"bruit/bruit/influx"
-	"bruit/bruit/settings"
 )
 
 func main() {
-	var s settings.BruitSettings
-	s = settings.NewDefaultSettings(s)
-
-	db := influx.DB{}
-
 	var c clients.BruitCryptoClient
 	c = &kraken.KrakenClient{}
 
-	var e engine.BruitEngine
-	e = engine.NewProductionEngine(e)
-	e.Init(s, c, &db)
-	go e.Run(s, c, &db)
-	e.Wait(s, c)
+	var bruit client.BruitClient
+	bruit = &client.Client{}
+	bruit.Init(c)
+	go bruit.Run()
+
+	bruit.Wait()
 }
