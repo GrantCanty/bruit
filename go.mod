@@ -8,12 +8,15 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/sacOO7/go-logger v0.0.0-20180719173527-9ac9add5a50d
 	github.com/shopspring/decimal v1.3.1
+	github.com/tidwall/gjson v1.17.1
 )
 
 require (
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
