@@ -24,7 +24,7 @@ type PaperTrading struct {
 	db *influx.DB*/
 }
 
-func (p *PaperTrading) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
+func (p *PaperTrading) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB, str shared_types.Strategy) {
 	/*p.s = s
 	p.c = c
 	p.db = db
