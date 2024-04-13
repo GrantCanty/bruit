@@ -5,6 +5,7 @@ import (
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
+	"bruit/bruit/shared_types"
 	"log"
 )
 
@@ -25,7 +26,7 @@ type BackTest struct {
 	ohlcData types.OHLCResp
 }
 
-func (p *BackTest) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
+func (p *BackTest) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB, str shared_types.Strategy) {
 	/*p.s = s
 	p.c = c
 	p.db = db*/
