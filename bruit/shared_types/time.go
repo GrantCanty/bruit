@@ -2,7 +2,6 @@ package shared_types
 
 import (
 	"encoding/json"
-	"log"
 	"math"
 	"strconv"
 	"time"
@@ -14,8 +13,6 @@ type UnixTime struct {
 
 //starts by trying to unmarsal using timestamp as a string. if it fails, trying to unmarshal using ts as float
 func (u *UnixTime) UnmarshalJSON(d []byte) error {
-	start := time.Now()
-
 	var sec int64
 	var s, m float64
 
@@ -40,8 +37,6 @@ func (u *UnixTime) UnmarshalJSON(d []byte) error {
 	if err != nil {
 		return err
 	}
-
-	log.Println("process time: ", time.Since(start))
 
 	return nil
 }
