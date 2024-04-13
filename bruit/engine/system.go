@@ -2,9 +2,11 @@ package engine
 
 import (
 	"bruit/bruit/clients"
+	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
+	"log"
 )
 
 func NewSystemsTestingEngine(parent BruitEngine) BruitEngine {
@@ -38,10 +40,22 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	s.Add(1)
 	defer s.Done()
 
+	var ch chan types.OHLCResponse
+	ch = make(chan types.OHLCResponse)
+
 	go c.PubDecoder(s)
 
-	ohlcMap := shared_types.OHLCVals{}
-	go c.PubListen(s, &ohlcMap, db.GetTradeWriter())
+	//ohlcMap := shared_types.OHLCVals{}
+	go c.PubListen(s, ch, db.GetTradeWriter())
+
+	go func(ch chan types.OHLCResponse) {
+		for {
+			select {
+			case res := <-ch:
+				log.Println("resssszszszs: ", res)
+			}
+		}
+	}(ch)
 
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
 	c.SubscribeToHoldingsOHLC(s, 1)

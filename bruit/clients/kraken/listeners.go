@@ -4,13 +4,12 @@ import (
 	"bruit/bruit/clients/kraken/types"
 	web_socket "bruit/bruit/clients/kraken/web_socket_client"
 	"bruit/bruit/settings"
-	"bruit/bruit/shared_types"
 	"log"
 
 	"github.com/influxdata/influxdb-client-go/v2/api"
 )
 
-func (client *KrakenClient) PubListen(s settings.BruitSettings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI) {
+func (client *KrakenClient) PubListen(s settings.BruitSettings, ch chan types.OHLCResponse, tradesWriter api.WriteAPI) {
 	s.Add(1)
 	defer s.Done()
 
@@ -18,10 +17,11 @@ func (client *KrakenClient) PubListen(s settings.BruitSettings, ohlcMap *shared_
 		switch resp := chanResp.(type) {
 		case *types.OHLCResponse:
 			if s.GetLoggingToConsole() {
-				log.Println("OHLCResponse")
-				log.Printf("new response: %#v\n", resp)
+				//log.Println("OHLCResponse")
+				//log.Printf("new response: %#v\n", resp)
 			}
-			client.State.OnOHLCResponse(*resp, ohlcMap)
+			//client.State.OnOHLCResponse(*resp, ohlcMap)
+			ch <- *resp
 		case *types.TradeResponse:
 			if s.GetLoggingToConsole() {
 				log.Println("TradeResponse")
