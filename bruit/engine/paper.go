@@ -8,7 +8,7 @@ import (
 )
 
 func NewPaperTradingEngine(parent BruitEngine) BruitEngine {
-	return newProduction(parent)
+	return newPaperTrading(parent)
 }
 
 func newPaperTrading(parent BruitEngine) BruitEngine {
@@ -19,19 +19,19 @@ func newPaperTrading(parent BruitEngine) BruitEngine {
 type PaperTrading struct {
 	BruitEngine
 
-	/*c  clients.BruitCryptoClient
-	s  settings.BruitSettings
-	db *influx.DB*/
+	//c  clients.BruitCryptoClient
+	//s  settings.BruitSettings
+	//db *influx.DB
 }
 
 func (p *PaperTrading) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB, str shared_types.Strategy) {
-	/*p.s = s
-	p.c = c
-	p.db = db
+	//p.s = s
+	//p.c = c
+	//p.db = db
 
-	p.s.InitSettings()
-	p.c.InitClient(s)
-	p.db.InitDB()*/
+	//p.s.InitSettings()
+	//p.c.InitClient(s)
+	//p.db.InitDB()
 }
 
 func (p *PaperTrading) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
@@ -40,8 +40,8 @@ func (p *PaperTrading) Run(s settings.BruitSettings, c clients.BruitCryptoClient
 
 	go c.PubDecoder(s)
 
-	ohlcMap := shared_types.OHLCVals{}
-	go c.PubListen(s, &ohlcMap, db.GetTradeWriter())
+	//ohlcMap := shared_types.OHLCVals{}
+	//go c.PubListen(s, &ohlcMap, db.GetTradeWriter())
 
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
 	c.SubscribeToHoldingsOHLC(s, 1)
