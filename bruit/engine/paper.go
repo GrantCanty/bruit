@@ -2,9 +2,12 @@ package engine
 
 import (
 	"bruit/bruit/clients"
+	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
+	"log"
+	"time"
 )
 
 func NewPaperTradingEngine(parent BruitEngine) BruitEngine {
@@ -38,15 +41,30 @@ func (p *PaperTrading) Run(s settings.BruitSettings, c clients.BruitCryptoClient
 	s.Add(1)
 	defer s.Done()
 
-	go c.PubDecoder(s)
+	var OHLCch chan types.OHLCResponse
+	OHLCch = make(chan types.OHLCResponse)
+
+	var Tradech chan types.TradeResponse
+	Tradech = make(chan types.TradeResponse)
+
+	go c.PubDecoder(s, OHLCch, Tradech)
 
 	//ohlcMap := shared_types.OHLCVals{}
-	//go c.PubListen(s, &ohlcMap, db.GetTradeWriter())
+	//go c.PubListen(s, OHLCch, Tradech)
 
-	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
-	c.SubscribeToHoldingsOHLC(s, 1)
+	go func(ohlc chan types.OHLCResponse, trade chan types.TradeResponse) {
+		for {
+			select {
+				case res := <-ohlc:
+					log.Println("received response in Run function: ", time.Now())
+					log.Println("ohlcResponse res: ", res)
+					
+				case res := <-trade:
+					log.Println("tradeResponse res: ", res)
+				}
 
-	<-s.CtxDone()
+		}
+	}(OHLCch, Tradech)
 }
 
 func (p *PaperTrading) Stop() {

@@ -3,8 +3,6 @@ package clients
 import (
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/settings"
-
-	"github.com/influxdata/influxdb-client-go/v2/api"
 )
 
 type BruitCryptoClient interface {
@@ -29,13 +27,11 @@ type BruitCryptoClient interface {
 	SubscribeToOpenOrders(s settings.BruitSettings, token string)
 
 	//decoders
-	PubDecoder(s settings.BruitSettings)
+	PubDecoder(s settings.BruitSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse)
 	BookDecoder(s settings.BruitSettings)
 	PrivDecoder(s settings.BruitSettings)
 
 	//listeners
-	//PubListen(s settings.BruitSettings, ohlcMap *shared_types.OHLCVals, tradesWriter api.WriteAPI)
-	PubListen(s settings.BruitSettings, ch chan types.OHLCResponse, tradesWriter api.WriteAPI)
 
 	//orders
 	CancelAll(s settings.BruitSettings, token string)

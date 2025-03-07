@@ -99,7 +99,6 @@ func (client *KrakenClient) DeferChanClose(s settings.BruitSettings) {
 }
 
 func (client *KrakenClient) closeChannelsAndConnections() {
-	close(client.WebSocket.GetPubChan())
 	close(client.WebSocket.GetBookChan())
 	close(client.WebSocket.GetPrivChan())
 

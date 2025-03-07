@@ -16,34 +16,41 @@ type WebSocketClient struct {
 	bookSocket ws_client.Socket
 	privSocket ws_client.Socket
 
-	pubChan      chan interface{}
 	bookChan     chan interface{} // this chan contains the final book data
 	bookJSONChan chan interface{} // this chan contains the most recently decoded data from the book subscription
 	privChan     chan interface{}
 }
 
-func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.LoggingSettings) {
-	var resp interface{}
+func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.LoggingSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse) {
+	//var resp interface{}
 	byteResponse := []byte(response)
 
-	resp, err := decoders.OhlcResponseDecoder(byteResponse, logger.GetLoggingConsole()) // these funcs need to accept LoggingSettings struct so they can take both DBlogging and ConsoleLogging
+	if ohlcResp, err := decoders.OhlcResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
+        OHLCch <- *ohlcResp
+        return
+    }
+	if tradeResp, err := decoders.TradeResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
+        Tradech <- *tradeResp
+        return
+    }
+
+	/*resp, err := decoders.OhlcResponseDecoder(byteResponse, logger.GetLoggingConsole()) // these funcs need to accept LoggingSettings struct so they can take both DBlogging and ConsoleLogging
 	if err != nil {
 		resp, err = decoders.TradeResponseDecoder(byteResponse, logger.GetLoggingConsole())
 		if err != nil {
-			resp, err = decoders.HbResponseDecoder(byteResponse, logger.GetLoggingConsole())
+	*/
+	_, err := decoders.HbResponseDecoder(byteResponse, logger.GetLoggingConsole())
+	if err != nil {
+		_, err = decoders.ServerConnectionStatusResponseDecoder(byteResponse, logger.GetLoggingConsole())
+		if err != nil {
+			_, err = decoders.OhlcSubscriptionResponseDecoder(byteResponse, logger.GetLoggingConsole())
 			if err != nil {
-				resp, err = decoders.ServerConnectionStatusResponseDecoder(byteResponse, logger.GetLoggingConsole())
-				if err != nil {
-					resp, err = decoders.OhlcSubscriptionResponseDecoder(byteResponse, logger.GetLoggingConsole())
-					if err != nil {
-						log.Println(string("\033[31m"), "Received response of unknown data type: ", response)
-					}
-				}
+				log.Println(string("\033[31m"), "Received response of unknown data type: ", response)
 			}
 		}
-	}
-
-	client.pubChan <- resp
+	}/*
+		}
+	}*/
 	return
 }
 
@@ -153,7 +160,7 @@ func (client *WebSocketClient) PrivJsonDecoder(response string, logger settings.
 }
 
 func (ws *WebSocketClient) InitChannels() {
-	ws.pubChan = make(chan interface{})
+	//ws.pubChan = make(chan interface{})
 	ws.bookChan = make(chan interface{})
 	ws.bookJSONChan = make(chan interface{})
 	ws.privChan = make(chan interface{})
@@ -221,10 +228,6 @@ func (ws WebSocketClient) GetPrivSocket() ws_client.Socket {
 
 func (ws *WebSocketClient) GetPrivSocketPointer() *ws_client.Socket {
 	return &ws.privSocket
-}
-
-func (ws *WebSocketClient) GetPubChan() chan interface{} {
-	return ws.pubChan
 }
 
 func (ws *WebSocketClient) GetBookChan() chan interface{} {

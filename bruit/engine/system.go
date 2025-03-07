@@ -40,22 +40,24 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	s.Add(1)
 	defer s.Done()
 
-	var ch chan types.OHLCResponse
-	ch = make(chan types.OHLCResponse)
+	var OHLCch chan types.OHLCResponse
+	OHLCch = make(chan types.OHLCResponse)
 
-	go c.PubDecoder(s)
+	var Tradech chan types.TradeResponse
+	Tradech = make(chan types.TradeResponse)
 
-	//ohlcMap := shared_types.OHLCVals{}
-	go c.PubListen(s, ch, db.GetTradeWriter())
+	go c.PubDecoder(s, OHLCch, Tradech)
 
-	go func(ch chan types.OHLCResponse) {
+	go func(ohlc chan types.OHLCResponse, trade chan types.TradeResponse) {
 		for {
 			select {
-			case res := <-ch:
-				log.Println("resssszszszs: ", res)
-			}
+				case res := <-ohlc:
+					log.Println("ohlcResponse res: ", res)
+				case res := <-trade:
+					log.Println("tradeResponse res: ", res)
+				}
 		}
-	}(ch)
+	}(OHLCch, Tradech)
 
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
 	c.SubscribeToHoldingsOHLC(s, 1)

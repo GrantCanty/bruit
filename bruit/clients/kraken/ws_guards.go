@@ -117,7 +117,7 @@ func PrivSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 }
 
 func AreChannelsInit(ws *web_socket.WebSocketClient) bool {
-	if ws.GetPubChan() != nil && ws.GetPrivChan() != nil && ws.GetBookChan() != nil {
+	if ws.GetPrivChan() != nil && ws.GetBookChan() != nil {
 		return true
 	} else {
 		return false
