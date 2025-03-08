@@ -27,7 +27,7 @@ type BruitCryptoClient interface {
 	SubscribeToOpenOrders(s settings.BruitSettings, token string)
 
 	//decoders
-	PubDecoder(s settings.BruitSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse)
+	PubDecoder(s settings.BruitSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCSubch chan types.OHLCSuccessResponse)
 	BookDecoder(s settings.BruitSettings)
 	PrivDecoder(s settings.BruitSettings)
 
@@ -37,4 +37,7 @@ type BruitCryptoClient interface {
 	CancelAll(s settings.BruitSettings, token string)
 	CancelOrder(s settings.BruitSettings, token string, tradeIDs []string)
 	AddOrder(s settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool)
+
+	//testing
+	HandleOHLCSuccessResponse(resp types.OHLCSuccessResponse)
 }

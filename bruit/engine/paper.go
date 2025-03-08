@@ -47,7 +47,7 @@ func (p *PaperTrading) Run(s settings.BruitSettings, c clients.BruitCryptoClient
 	var Tradech chan types.TradeResponse
 	Tradech = make(chan types.TradeResponse)
 
-	go c.PubDecoder(s, OHLCch, Tradech)
+	//go c.PubDecoder(s, OHLCch, Tradech)
 
 	//ohlcMap := shared_types.OHLCVals{}
 	//go c.PubListen(s, OHLCch, Tradech)

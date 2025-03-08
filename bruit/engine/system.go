@@ -46,18 +46,24 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	var Tradech chan types.TradeResponse
 	Tradech = make(chan types.TradeResponse)
 
-	go c.PubDecoder(s, OHLCch, Tradech)
+	var OHLCSubch chan types.OHLCSuccessResponse
+	OHLCSubch = make(chan types.OHLCSuccessResponse)
 
-	go func(ohlc chan types.OHLCResponse, trade chan types.TradeResponse) {
+	go c.PubDecoder(s, OHLCch, Tradech, OHLCSubch)
+
+	go func(ohlc chan types.OHLCResponse, trade chan types.TradeResponse, ohlcsub chan types.OHLCSuccessResponse) {
 		for {
 			select {
 				case res := <-ohlc:
 					log.Println("ohlcResponse res: ", res)
 				case res := <-trade:
 					log.Println("tradeResponse res: ", res)
+				case res := <-ohlcsub:
+					log.Println("ohlcsub res: ", res)
+					c.HandleOHLCSuccessResponse(res)
 				}
 		}
-	}(OHLCch, Tradech)
+	}(OHLCch, Tradech, OHLCSubch)
 
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
 	c.SubscribeToHoldingsOHLC(s, 1)

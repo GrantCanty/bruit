@@ -21,8 +21,7 @@ type WebSocketClient struct {
 	privChan     chan interface{}
 }
 
-func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.LoggingSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse) {
-	//var resp interface{}
+func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.LoggingSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCsubch chan types.OHLCSuccessResponse) {
 	byteResponse := []byte(response)
 
 	if ohlcResp, err := decoders.OhlcResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
@@ -33,24 +32,17 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.L
         Tradech <- *tradeResp
         return
     }
+	if _, err := decoders.HbResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
+		return
+	}
+	if _, err := decoders.ServerConnectionStatusResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
+		return
+	}
+	if ohlcSubResp, err := decoders.OhlcSubscriptionResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
+		OHLCsubch <- *ohlcSubResp
+		return
+	}
 
-	/*resp, err := decoders.OhlcResponseDecoder(byteResponse, logger.GetLoggingConsole()) // these funcs need to accept LoggingSettings struct so they can take both DBlogging and ConsoleLogging
-	if err != nil {
-		resp, err = decoders.TradeResponseDecoder(byteResponse, logger.GetLoggingConsole())
-		if err != nil {
-	*/
-	_, err := decoders.HbResponseDecoder(byteResponse, logger.GetLoggingConsole())
-	if err != nil {
-		_, err = decoders.ServerConnectionStatusResponseDecoder(byteResponse, logger.GetLoggingConsole())
-		if err != nil {
-			_, err = decoders.OhlcSubscriptionResponseDecoder(byteResponse, logger.GetLoggingConsole())
-			if err != nil {
-				log.Println(string("\033[31m"), "Received response of unknown data type: ", response)
-			}
-		}
-	}/*
-		}
-	}*/
 	return
 }
 

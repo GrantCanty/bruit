@@ -90,7 +90,7 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 	client.SubscribeToOHLC(s, pairs, interval)
 }
 
-func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse) {
+func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCsubch chan types.OHLCSuccessResponse) {
 	s.Add(1)
 	defer s.Done()
 
@@ -100,7 +100,7 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 
 	ws_client.ReceiveLocker(client.WebSocket.GetPubSocketPointer())
 	client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		client.WebSocket.PubJsonDecoder(message, s.GetLoggingSettings(), OHLCch, Tradech)
+		client.WebSocket.PubJsonDecoder(message, s.GetLoggingSettings(), OHLCch, Tradech, OHLCsubch)
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
 
