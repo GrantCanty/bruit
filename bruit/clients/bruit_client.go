@@ -23,7 +23,7 @@ type BruitCryptoClient interface {
 	SubscribeToTrades(s settings.BruitSettings, pairs []string)
 	SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, depth int)
 	SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int)
-	SubscribeToOrderBook(s settings.BruitSettings, pairs []string, depth int)
+	SubscribeToOrderBook(s settings.BruitSettings, depth int)
 	SubscribeToOpenOrders(s settings.BruitSettings, token string)
 
 	//decoders

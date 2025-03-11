@@ -3,7 +3,7 @@ package state
 import (
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/shared_types"
-	"log"
+	//"log"
 	"strconv"
 	"time"
 )
@@ -29,7 +29,7 @@ func (sm StateManager) GetChannelID(metaData shared_types.SubscriptionMetaData) 
 	return metaData.GetChannelID()
 }
 
-func (sm *StateManager) HandleOHLCSuccessResponse(resp *types.OHLCSuccessResponse) {
+/*func (sm *StateManager) HandleOHLCSuccessResponse(resp *types.OHLCSuccessResponse) {
 	if _, found := sm.Client.subscriptions[resp.GetMetaData()]; found {
 		sm.Client.subscriptions[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}
 	} else {
@@ -39,7 +39,7 @@ func (sm *StateManager) HandleOHLCSuccessResponse(resp *types.OHLCSuccessRespons
 		sm.Client.subscriptions[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}
 	}
 	log.Println("subscription list: ", sm.Client.subscriptions)
-}
+}*/
 
 func (sm *StateManager) OnOHLCResponse(data types.OHLCResponse, ohlcMap *shared_types.OHLCVals) {
 	/**

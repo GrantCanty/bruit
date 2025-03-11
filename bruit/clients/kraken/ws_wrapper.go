@@ -111,24 +111,33 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 // ORDER BOOK SOCKET METHODS
 
 // Subscribe to the order book.
-func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, pairs []string, depth int) {
+func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth int) {
+	holdings := client.GetHoldingsWithoutStaking()
+	
 	if err := BookSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
 	}
 
-	sub, err := json.Marshal(&types.Subscribe{
-		Event: "subscribe",
-		Subscription: &types.BookSubscription{
-			Depth: depth,
-			Name:  "book",
-		},
-		Pair: pairs,
-	})
-	if err != nil {
-		log.Println("error marshaling: ", err)
+	var pairs []types.Pairs
+
+	for _, holding := range holdings {
+		for _, pair := range client.State.Client.GetAssetPairs() {
+			if holding == pair.Base && strings.Join([]string{"Z", s.GetBaseCurrency()}, "") == pair.Quote {
+				var p types.Pairs
+				p.WS = pair.WsName
+				p.Rest = pair.AltName
+				pairs = append(pairs, p)
+			} else {
+				log.Println("ERROR: Pair could not find match ", pair, pair.Base)
+			}
+		}
 	}
-	log.Println(string(sub))
-	client.WebSocket.GetBookSocketPointer().SendBinary(sub)
+	log.Println("pairs: ", pairs)
+	var wsPairs []string
+	for _, pair := range pairs {
+		wsPairs = append(wsPairs, pair.WS)
+	}
+	client.WebSocket.SubscribeToOrderBook(wsPairs, depth)
 }
 
 func (client *KrakenClient) BookDecoder(s settings.BruitSettings) {

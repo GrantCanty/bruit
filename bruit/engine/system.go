@@ -2,11 +2,11 @@ package engine
 
 import (
 	"bruit/bruit/clients"
-	"bruit/bruit/clients/kraken/types"
+	//"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
-	"log"
+	//"log"
 )
 
 func NewSystemsTestingEngine(parent BruitEngine) BruitEngine {
@@ -40,7 +40,7 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	s.Add(1)
 	defer s.Done()
 
-	var OHLCch chan types.OHLCResponse
+	/*var OHLCch chan types.OHLCResponse
 	OHLCch = make(chan types.OHLCResponse)
 
 	var Tradech chan types.TradeResponse
@@ -66,7 +66,11 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	}(OHLCch, Tradech, OHLCSubch)
 
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
-	c.SubscribeToHoldingsOHLC(s, 1)
+	c.SubscribeToHoldingsOHLC(s, 1)*/
+
+	c.SubscribeToOrderBook(s, 10)
+
+	c.BookDecoder(s)
 
 	<-s.CtxDone()
 }

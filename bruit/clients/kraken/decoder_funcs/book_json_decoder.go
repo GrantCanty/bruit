@@ -46,6 +46,50 @@ func InitialBookResponseDecoder(byteResponse []byte, now time.Time, testing bool
 	return &ob, err
 }
 
+func SnapshotBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.SnapshotBookRespV2WS, error) {
+	reader := bytes.NewReader(byteResponse)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	if testing == true {
+		log.Println("in incremental ask or bid decoder func")
+	}
+
+	var book types.SnapshotBookRespV2WS
+
+	err := decoder.Decode(&book)
+	if err != nil {
+		if testing == true {
+			log.Println("initialBookResponseDecoder error: ", err)
+		}
+		return nil, err
+	}
+
+	return &book, nil
+} 
+
+func UpdateBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.UpdateBookRespV2WS, error) {
+	reader := bytes.NewReader(byteResponse)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	if testing == true {
+		log.Println("in update book response decoder func")
+	}
+
+	// decodes byteResponse
+	var book types.UpdateBookRespV2WS
+	err := decoder.Decode(&book)
+	if err != nil {
+		if testing == true {
+			log.Println("updateBookResponseDecoder error: ", err)
+		}
+		return nil, err
+	}
+
+	return &book, err
+}
+
 func IncrementalAskOrBidDecoder(byteResponse []byte, testing bool) (*types.UpdateBookWithAsksOrBidsResp, error) {
 	reader := bytes.NewReader(byteResponse)
 	decoder := json.NewDecoder(reader)

@@ -7,6 +7,17 @@ type Subscribe struct {
 	Token        string      `json:"token,omitempty"`
 }
 
+type SubscribeV2 struct {
+	Method string `json:"method"`
+	Params ParamsV2 `json:"params"`
+}
+
+type ParamsV2 struct {
+	Channel string `json:"channel"`
+	Symbol []string `json:"symbol"`
+	Depth int `json:"depth"`
+}
+
 type NameAndToken struct {
 	Name  string `json:"name"`
 	Token string `json:"token,omitempty"`

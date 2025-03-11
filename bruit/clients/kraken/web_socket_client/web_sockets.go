@@ -8,7 +8,6 @@ import (
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
-	"time"
 )
 
 type WebSocketClient struct {
@@ -47,8 +46,18 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.L
 }
 
 func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.LoggingSettings) {
-	now := time.Now()
-	var resp interface{}
+	byteResponse := []byte(response)
+
+	if resp, err := decoders.UpdateBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
+		log.Println(resp)
+		return
+	}
+	if resp, err := decoders.SnapshotBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
+		log.Println(resp)
+		return
+	}
+	//if resp, err = 
+	/*var resp interface{}
 	byteResponse := []byte(response)
 
 	resp, err := decoders.InitialBookResponseDecoder(byteResponse, now, logger.GetLoggingConsole())
@@ -69,7 +78,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				}
 			}
 		}
-	}
+	}*/
 	/*log.Println("resp from boonJsonDecoder: ", resp)
 	byteResponse := []byte(response)
 
@@ -105,7 +114,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 		}
 		ob.Bids = append(ob.Bids, types.Level{Price: price, Volume: vol})
 	}*/
-	client.bookJSONChan <- resp
+	//client.bookJSONChan <- resp
 	return
 }
 
@@ -192,9 +201,25 @@ func (ws *WebSocketClient) SubscribeToOpenOrders(token string) {
 	ws.privSocket.SendBinary(sub)
 }
 
+func (ws *WebSocketClient) SubscribeToOrderBook(pairs []string, depth int) {
+	log.Println(pairs)
+	sub, err := json.Marshal(&types.SubscribeV2{
+		Method: "subscribe",
+		Params: types.ParamsV2{
+			Depth: depth,
+			Channel:  "book",
+			Symbol: pairs,
+		},
+	})
+	if err != nil {
+		log.Println("error marshaling: ", err)
+	}
+	ws.bookSocket.SendBinary(sub)
+}
+
 func (client *WebSocketClient) InitSockets() { // used to initialized public and private sockets
 	ws_client.PublicInit(&client.pubSocket, kraken_data.GetPubWSUrl())
-	ws_client.BookInit(&client.bookSocket, kraken_data.GetPubWSUrl())
+	ws_client.BookInit(&client.bookSocket, kraken_data.GetV2WsURL())
 	ws_client.PrivateInit(&client.privSocket, kraken_data.GetPrivWSUrl())
 }
 

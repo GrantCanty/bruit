@@ -114,6 +114,7 @@ func (client *KrakenClient) closeChannelsAndConnections() {
 }
 
 func (client KrakenClient) GetHoldingsWithoutStaking() []string {
+	// add mutex locking when reading. no race conditions should be allowed
 	tmp := client.State.Account.GetBalancesWithoutStaking()
 	var bals []string
 	for i := range tmp {
@@ -123,6 +124,7 @@ func (client KrakenClient) GetHoldingsWithoutStaking() []string {
 }
 
 func (client KrakenClient) GetHoldingsWithStaking() []string {
+	// add mutex locking when reading. no race conditions should be allowed
 	tmp := client.State.Account.GetBalancesWithStaking()
 	var bals []string
 	for i := range tmp {
