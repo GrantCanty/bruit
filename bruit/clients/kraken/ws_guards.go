@@ -80,7 +80,7 @@ func BookSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 
 	if !client.GetBookSocket().IsConnected {
 		client.GetBookSocketPointer().OnConnected = func(socket ws_client.Socket) {
-			log.Println("Connected to book server")
+			log.Println("BookSocketGuard: Connected to book server")
 		}
 
 		client.GetBookSocketPointer().Connect()

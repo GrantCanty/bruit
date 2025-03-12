@@ -21,13 +21,13 @@ func (k *KrakenClient) InitClient(s settings.BruitSettings) {
 	k.initWebSockets()
 	k.initKeys()
 	k.initState()
-
 }
 
 func (client *KrakenClient) initWebSockets() {
 	if !AreChannelsInit(&client.WebSocket) {
 		client.WebSocket.InitChannels()
 	}
+	client.WebSocket.InitBook()
 	client.socketInit()
 }
 
@@ -50,7 +50,7 @@ func (k *KrakenClient) initState() {
 	k.State.Init(*bals, *assets, *pairs)
 }
 
-//loads the api keys from the .env file
+// loads the api keys from the .env file
 func (k *KrakenClient) initKeys() {
 	env, err := env.Read("CLIENT")
 	if err != nil {

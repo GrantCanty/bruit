@@ -1,15 +1,17 @@
 package web_socket
 
 import (
-	"bruit/bruit/clients/kraken/types"
+	/*"bruit/bruit/clients/kraken/types"
 	"fmt"
 	"hash/crc32"
 	"strings"
 
-	"github.com/shopspring/decimal"
+	"github.com/shopspring/decimal"*/
 )
 
-func GetCheckSumInput(bids []types.Level, asks []types.Level) string {
+//orderBook := make(map[string]*types.V2OrderBookMutex)
+
+/*func GetCheckSumInput(bids []types.Level, asks []types.Level) string {
 	var str strings.Builder
 	for _, level := range asks[:10] {
 		price := level.Price.StringFixed(5)
@@ -56,3 +58,4 @@ func getPriceAndVolume(ino interface{}) (decimal.Decimal, decimal.Decimal, int) 
 	}
 	return price, volume, len(el)
 }
+*/

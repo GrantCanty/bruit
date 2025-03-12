@@ -1,6 +1,6 @@
 package web_socket
 
-import (
+/*import (
 	"bruit/bruit/clients/kraken/types"
 	"log"
 	"sort"
@@ -71,3 +71,4 @@ func CreateInitial(book map[string]interface{}, key string) []types.Level {
 	}
 	return list
 }
+*/

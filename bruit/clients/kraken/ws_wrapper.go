@@ -38,7 +38,7 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 		}
 	}
 
-	if found == false {
+	if !found {
 		log.Println("Interval is not supported for Kraken Client OHLC Subscription")
 		return
 	}
@@ -113,7 +113,7 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 // Subscribe to the order book.
 func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth int) {
 	holdings := client.GetHoldingsWithoutStaking()
-	
+
 	if err := BookSocketGuard(&client.WebSocket); err != nil {
 		panic(err)
 	}
@@ -140,10 +140,10 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 	client.WebSocket.SubscribeToOrderBook(wsPairs, depth)
 }
 
-// need a way to save the books to a struct. on message, we read 
+// need a way to save the books to a struct. on message, we read
 // the struct back so we can see how to update it and then save the copy back to the struct
 // then send the struct to the chan
-func (client *KrakenClient) BookDecoder(s settings.BruitSettings) {
+func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan types.BookRespV2Update) {
 	s.Add(1)
 	defer s.Done()
 
@@ -153,7 +153,8 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings) {
 
 	ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
 	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		client.WebSocket.BookJsonDecoder(message, s.GetLoggingSettings())
+		log.Println("BookDecoder message: ", message)
+		client.WebSocket.BookJsonDecoder(message, s.GetLoggingSettings(), Bookch)
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
 

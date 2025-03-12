@@ -8,10 +8,6 @@ import (
 
 type emptyEngine int
 
-func (e emptyEngine) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db influx.DB) {
-
-}
-
 func (e emptyEngine) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db influx.DB) {
 	return
 }

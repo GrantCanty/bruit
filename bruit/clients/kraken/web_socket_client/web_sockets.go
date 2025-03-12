@@ -8,10 +8,13 @@ import (
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"log"
+	"sync"
+	"time"
 )
 
 type MessageTypeIdentifier struct {
-    Type string `json:"type"`
+	Channel string `json:"channel"`
+	Type    string `json:"type"`
 }
 
 type WebSocketClient struct {
@@ -22,19 +25,22 @@ type WebSocketClient struct {
 	bookChan     chan interface{} // this chan contains the final book data
 	bookJSONChan chan interface{} // this chan contains the most recently decoded data from the book subscription
 	privChan     chan interface{}
+
+	orderBooks      map[string]*types.OrderBookWithMutex
+	orderBooksMutex sync.RWMutex
 }
 
 func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.LoggingSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCsubch chan types.OHLCSuccessResponse) {
 	byteResponse := []byte(response)
 
 	if ohlcResp, err := decoders.OhlcResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
-        OHLCch <- *ohlcResp
-        return
-    }
+		OHLCch <- *ohlcResp
+		return
+	}
 	if tradeResp, err := decoders.TradeResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
-        Tradech <- *tradeResp
-        return
-    }
+		Tradech <- *tradeResp
+		return
+	}
 	if _, err := decoders.HbResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
 		return
 	}
@@ -49,31 +55,62 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.L
 	return
 }
 
-func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.LoggingSettings) {
+func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.LoggingSettings, Bookch chan types.BookRespV2Update) {
 	byteResponse := []byte(response)
 
 	var msgType MessageTypeIdentifier
-    if err := json.Unmarshal(byteResponse, &msgType); err != nil {
-        log.Println("Error identifying message type:", err)
-        return
-    }
+	if err := json.Unmarshal(byteResponse, &msgType); err != nil {
+		log.Println("Error identifying message type:", err)
+		return
+	}
 
-	switch msgType.Type {
-    case "update":
-        if resp, err := decoders.UpdateBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
-            log.Println(resp)
-        } else {
-            log.Println("Error decoding update:", err)
-        }
-    case "snapshot":
-        if resp, err := decoders.SnapshotBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
-            log.Println(resp)
-        } else {
-            log.Println("Error decoding snapshot:", err)
-        }
-    default:
-        log.Println("Unknown message type:", msgType.Type)
-    }
+	switch msgType.Channel {
+	case "book":
+		switch msgType.Type {
+		case "update":
+			if resp, err := decoders.UpdateBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
+				log.Println(resp)
+			} else {
+				log.Println("Error decoding update:", err)
+			}
+		case "snapshot":
+			t := time.Now()
+			if resp, err := decoders.SnapshotBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
+				symbol := resp.Data[0].Symbol
+
+				client.orderBooksMutex.Lock()
+
+				book := &types.OrderBookWithMutex{
+					Book: &types.BookRespV2Update{
+						BookRespV2Snapshot: types.BookRespV2Snapshot{
+							Symbol:   symbol,
+							Asks:     resp.Data[0].Asks,
+							Bids:     resp.Data[0].Bids,
+							Checksum: resp.Data[0].Checksum,
+						},
+						Timestamp: t,
+					},
+					Mutex: sync.RWMutex{},
+				}
+				client.orderBooks[symbol] = book
+				client.orderBooksMutex.Unlock()
+				Bookch <- *book.Book
+
+				log.Println(resp)
+			} else {
+				log.Println("Error decoding snapshot:", err)
+			}
+		default:
+			log.Println("Unknown message type:", msgType.Type)
+		}
+	case "status":
+		if resp, err := decoders.SuccessBookResponseDecoverV2(byteResponse, logger.GetLoggingConsole()); err == nil {
+			log.Println(resp)
+		} else {
+			log.Println("Error decoding success:", err)
+		}
+
+	}
 
 	/*if resp, err := decoders.UpdateBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
 		log.Println(resp)
@@ -83,8 +120,8 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 		log.Println(resp)
 		return
 	}*/
-	
-	//if resp, err = 
+
+	//if resp, err =
 	/*var resp interface{}
 	byteResponse := []byte(response)
 
@@ -189,10 +226,13 @@ func (client *WebSocketClient) PrivJsonDecoder(response string, logger settings.
 }
 
 func (ws *WebSocketClient) InitChannels() {
-	//ws.pubChan = make(chan interface{})
 	ws.bookChan = make(chan interface{})
 	ws.bookJSONChan = make(chan interface{})
 	ws.privChan = make(chan interface{})
+}
+
+func (ws *WebSocketClient) InitBook() {
+	ws.orderBooks = make(map[string]*types.OrderBookWithMutex)
 }
 
 func (ws *WebSocketClient) SubscribeToTrades(pairs []string) {
@@ -234,9 +274,9 @@ func (ws *WebSocketClient) SubscribeToOrderBook(pairs []string, depth int) {
 	sub, err := json.Marshal(&types.SubscribeV2{
 		Method: "subscribe",
 		Params: types.ParamsV2{
-			Depth: depth,
-			Channel:  "book",
-			Symbol: pairs,
+			Depth:   depth,
+			Channel: "book",
+			Symbol:  pairs,
 		},
 	})
 	if err != nil {

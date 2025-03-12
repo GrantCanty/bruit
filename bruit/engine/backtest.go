@@ -5,8 +5,6 @@ import (
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
-	"bruit/bruit/shared_types"
-	"log"
 )
 
 func NewBackTestEngine(parent BruitEngine) BruitEngine {
@@ -24,24 +22,6 @@ type BackTest struct {
 	s  settings.BruitSettings
 	db *influx.DB*/
 	ohlcData types.OHLCResp
-}
-
-func (p *BackTest) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB, str shared_types.Strategy) {
-	/*p.s = s
-	p.c = c
-	p.db = db*/
-
-	/*s.InitSettings()
-	c.InitClient(s)
-	p.db.InitDB()*/
-
-	ohlcData, err := c.GetOHLC("DOT/USD", 5)
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(ohlcData)
-
-	return
 }
 
 func (p *BackTest) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {

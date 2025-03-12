@@ -5,9 +5,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"log"
+
 	//"fmt"
-	"strings"
 	"hash/crc32"
+	"strings"
 	//"strconv"
 	//"reflect"
 )
@@ -21,7 +22,7 @@ func verifyLevel(resp []types.LevelsV2WS, strBuilder *strings.Builder) {
 	var price string
 	var qty string
 
-	for ask := range(resp) {
+	for ask := range resp {
 		level = resp[ask]
 		priceNum = level.Price
 		qtyNum = level.Quantity
@@ -54,10 +55,7 @@ func verifyChecksumSnapshot(resp types.SnapshotBookRespV2WS) bool {
 
 	cs := crc32.Checksum([]byte(priceAsks.String()), crc32q)
 
-	if cs == resp.Data[0].Checksum {
-		return true
-	}
-	return false
+	return cs == resp.Data[0].Checksum
 }
 
 /*func InitialBookResponseDecoder(byteResponse []byte, now time.Time, testing bool) (*types.BookDecodedResp, error) {
@@ -93,7 +91,7 @@ func SnapshotBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.Sn
 	decoder := json.NewDecoder(reader)
 	decoder.DisallowUnknownFields()
 
-	if testing == true {
+	if testing {
 		log.Println("in SnapshotBookResponseDecoderV2 func")
 	}
 
@@ -101,7 +99,7 @@ func SnapshotBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.Sn
 
 	err := decoder.Decode(&book)
 	if err != nil {
-		if testing == true {
+		if testing {
 			log.Println("SnapshotBookResponseDecoderV2 error: ", err)
 		}
 		return nil, err
@@ -112,14 +110,14 @@ func SnapshotBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.Sn
 	}
 
 	return &book, nil
-} 
+}
 
 func UpdateBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.UpdateBookRespV2WS, error) {
 	reader := bytes.NewReader(byteResponse)
 	decoder := json.NewDecoder(reader)
 	decoder.DisallowUnknownFields()
 
-	if testing == true {
+	if testing {
 		log.Println("in UpdateBookResponseDecoderV2 func")
 	}
 
@@ -127,7 +125,7 @@ func UpdateBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.Upda
 	var book types.UpdateBookRespV2WS
 	err := decoder.Decode(&book)
 	if err != nil {
-		if testing == true {
+		if testing {
 			log.Println("UpdateBookResponseDecoderV2 error: ", err)
 		}
 		return nil, err
@@ -136,6 +134,28 @@ func UpdateBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.Upda
 	//verifyChecksum(book)
 
 	return &book, err
+}
+
+func SuccessBookResponseDecoverV2(byteResponse []byte, testing bool) (*types.SuccessBookResponseV2WS, error) {
+	reader := bytes.NewReader(byteResponse)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	if testing {
+		log.Println("in SuccessBookResponseDecoverV2 func")
+	}
+
+	// decodes byteResponse
+	var conn types.SuccessBookResponseV2WS
+	err := decoder.Decode(&conn)
+	if err != nil {
+		if testing {
+			log.Println("SuccessBookResponseDecoverV2 error: ", err)
+		}
+		return nil, err
+	}
+
+	return &conn, err
 }
 
 /*func IncrementalAskOrBidDecoder(byteResponse []byte, testing bool) (*types.UpdateBookWithAsksOrBidsResp, error) {

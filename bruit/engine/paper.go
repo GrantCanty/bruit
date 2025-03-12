@@ -5,7 +5,6 @@ import (
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
-	"bruit/bruit/shared_types"
 	"log"
 	"time"
 )
@@ -27,16 +26,6 @@ type PaperTrading struct {
 	//db *influx.DB
 }
 
-func (p *PaperTrading) Init(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB, str shared_types.Strategy) {
-	//p.s = s
-	//p.c = c
-	//p.db = db
-
-	//p.s.InitSettings()
-	//p.c.InitClient(s)
-	//p.db.InitDB()
-}
-
 func (p *PaperTrading) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
 	s.Add(1)
 	defer s.Done()
@@ -55,13 +44,13 @@ func (p *PaperTrading) Run(s settings.BruitSettings, c clients.BruitCryptoClient
 	go func(ohlc chan types.OHLCResponse, trade chan types.TradeResponse) {
 		for {
 			select {
-				case res := <-ohlc:
-					log.Println("received response in Run function: ", time.Now())
-					log.Println("ohlcResponse res: ", res)
-					
-				case res := <-trade:
-					log.Println("tradeResponse res: ", res)
-				}
+			case res := <-ohlc:
+				log.Println("received response in Run function: ", time.Now())
+				log.Println("ohlcResponse res: ", res)
+
+			case res := <-trade:
+				log.Println("tradeResponse res: ", res)
+			}
 
 		}
 	}(OHLCch, Tradech)
