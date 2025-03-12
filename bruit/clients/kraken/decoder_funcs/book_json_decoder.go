@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"log"
-	"time"
 	//"fmt"
 	"strings"
 	"hash/crc32"
@@ -42,6 +41,7 @@ func verifyLevel(resp []types.LevelsV2WS, strBuilder *strings.Builder) {
 	}
 }
 
+// make verifyLevel run in parallel
 func verifyChecksumSnapshot(resp types.SnapshotBookRespV2WS) bool {
 	crc32q := crc32.MakeTable(crc32.IEEE)
 
@@ -55,7 +55,6 @@ func verifyChecksumSnapshot(resp types.SnapshotBookRespV2WS) bool {
 	cs := crc32.Checksum([]byte(priceAsks.String()), crc32q)
 
 	if cs == resp.Data[0].Checksum {
-		log.Println("checksums match")
 		return true
 	}
 	return false
@@ -108,7 +107,9 @@ func SnapshotBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.Sn
 		return nil, err
 	}
 
-	verifyChecksumSnapshot(book)
+	if ok := verifyChecksumSnapshot(book); ok && testing {
+		log.Println("checksums match")
+	}
 
 	return &book, nil
 } 

@@ -4,6 +4,7 @@ import (
 	"time"
 	"strings"
 	"strconv"
+	"sync"
 )
 
 type BaseRespV2WS struct {
@@ -53,4 +54,9 @@ func (n *NumericString) UnmarshalJSON(data []byte) error {
 // Convert to float when needed
 func (n NumericString) Float64() (float64, error) {
     return strconv.ParseFloat(string(n), 64)
+}
+
+type V2OrderBookMutex struct {
+	Mutex sync.RWMutex
+	BookRespV2Update
 }

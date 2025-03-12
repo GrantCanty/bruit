@@ -140,6 +140,9 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 	client.WebSocket.SubscribeToOrderBook(wsPairs, depth)
 }
 
+// need a way to save the books to a struct. on message, we read 
+// the struct back so we can see how to update it and then save the copy back to the struct
+// then send the struct to the chan
 func (client *KrakenClient) BookDecoder(s settings.BruitSettings) {
 	s.Add(1)
 	defer s.Done()
