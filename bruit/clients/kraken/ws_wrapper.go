@@ -150,6 +150,7 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings) {
 
 	ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
 	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
+		log.Println("messageeeee: ", message)
 		client.WebSocket.BookJsonDecoder(message, s.GetLoggingSettings())
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())

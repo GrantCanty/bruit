@@ -2,6 +2,8 @@ package types
 
 import (
 	"time"
+	"strings"
+	"strconv"
 )
 
 type BaseRespV2WS struct {
@@ -36,6 +38,19 @@ type BookRespV2Update struct {
 }
 
 type LevelsV2WS struct {
-	Price float64 `json:"price"`
-	Quantity float64 `json:"qty"` 
+	Price NumericString `json:"price"`
+	Quantity NumericString `json:"qty"` 
+}
+
+type NumericString string
+
+func (n *NumericString) UnmarshalJSON(data []byte) error {
+    // Strip the quotes and keep as string
+    *n = NumericString(strings.Trim(string(data), "\""))
+    return nil
+}
+
+// Convert to float when needed
+func (n NumericString) Float64() (float64, error) {
+    return strconv.ParseFloat(string(n), 64)
 }

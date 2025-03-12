@@ -10,6 +10,10 @@ import (
 	"log"
 )
 
+type MessageTypeIdentifier struct {
+    Type string `json:"type"`
+}
+
 type WebSocketClient struct {
 	pubSocket  ws_client.Socket
 	bookSocket ws_client.Socket
@@ -48,14 +52,38 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.L
 func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.LoggingSettings) {
 	byteResponse := []byte(response)
 
-	if resp, err := decoders.UpdateBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
+	var msgType MessageTypeIdentifier
+    if err := json.Unmarshal(byteResponse, &msgType); err != nil {
+        log.Println("Error identifying message type:", err)
+        return
+    }
+
+	switch msgType.Type {
+    case "update":
+        if resp, err := decoders.UpdateBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
+            log.Println(resp)
+        } else {
+            log.Println("Error decoding update:", err)
+        }
+    case "snapshot":
+        if resp, err := decoders.SnapshotBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
+            log.Println(resp)
+        } else {
+            log.Println("Error decoding snapshot:", err)
+        }
+    default:
+        log.Println("Unknown message type:", msgType.Type)
+    }
+
+	/*if resp, err := decoders.UpdateBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
 		log.Println(resp)
 		return
 	}
 	if resp, err := decoders.SnapshotBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
 		log.Println(resp)
 		return
-	}
+	}*/
+	
 	//if resp, err = 
 	/*var resp interface{}
 	byteResponse := []byte(response)
