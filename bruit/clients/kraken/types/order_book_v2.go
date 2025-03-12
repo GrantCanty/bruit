@@ -26,14 +26,14 @@ type BookRespV2Snapshot struct {
 	Symbol string `json:"symbol"`
 	Bids []LevelsV2WS `json:"bids"`
 	Asks []LevelsV2WS `json:"asks"`
-	Checksum int `json:"checksum"`
+	Checksum uint32 `json:"checksum"`
 }
 
 type BookRespV2Update struct {
 	Symbol string `json:"symbol"`
 	Bids []LevelsV2WS `json:"bids"`
 	Asks []LevelsV2WS `json:"asks"`
-	Checksum int `json:"checksum"`
+	Checksum uint32 `json:"checksum"`
 	Timestamp time.Time `json:"timestamp"`
 }
 

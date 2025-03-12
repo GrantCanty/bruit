@@ -13,68 +13,49 @@ import (
 	//"reflect"
 )
 
-/*func BookJsonDecoder(response string, testing bool) []interface{} {
-var resp []interface{}
-//byteResponse := []byte(response)
-log.Println(response)
-
-/*_, err := hbResponseDecoder(byteResponse, testing)
-if err != nil {
-	resp, err = rr()
-}*/
-
-func verifyChecksumSnapshot(resp types.SnapshotBookRespV2WS) bool {
-	crc32q := crc32.MakeTable(crc32.IEEE)
-	
+// make this run in parallel
+func verifyLevel(resp []types.LevelsV2WS, strBuilder *strings.Builder) {
 	var level types.LevelsV2WS
-	
-	var pricenum types.NumericString
-	var qtynum types.NumericString
+	var priceNum types.NumericString
+	var qtyNum types.NumericString
 
 	var price string
 	var qty string
 
+	for ask := range(resp) {
+		level = resp[ask]
+		priceNum = level.Price
+		qtyNum = level.Quantity
+		//log.Println("og: ", priceNum, qtyNum)
+
+		price = strings.Replace(string(priceNum), ".", "", -1)
+		qty = strings.Replace(string(qtyNum), ".", "", -1)
+		//log.Println("no decimal: ", price, qty)
+
+		price = strings.TrimLeft(price, "0")
+		qty = strings.TrimLeft(qty, "0")
+		//log.Println("trimmed left: ", price, qty)
+
+		strBuilder.WriteString(price)
+		strBuilder.WriteString(qty)
+		//log.Println("priceAsks: ", strBuilder.String())
+	}
+}
+
+func verifyChecksumSnapshot(resp types.SnapshotBookRespV2WS) bool {
+	crc32q := crc32.MakeTable(crc32.IEEE)
+
 	var priceAsks strings.Builder
 	var priceBids strings.Builder
 
-	for ask := range(resp.Data[0].Asks) {
-		level = resp.Data[0].Asks[ask]
-		pricenum = level.Price
-		qtynum = level.Quantity
-		log.Println("og: ", pricenum, qtynum)
-
-		price = strings.Replace(string(pricenum), ".", "", -1)
-		qty = strings.Replace(string(qtynum), ".", "", -1)
-		log.Println(price, qty)
-
-		price = strings.TrimLeft(price, "0")
-		qty = strings.TrimLeft(qty, "0")
-		log.Println(price, qty)
-
-		priceAsks.WriteString(price)
-		priceAsks.WriteString(qty)
-		log.Println("priceAsks: ", priceAsks.String())
-	}
-
-	for bid := range(resp.Data[0].Bids) {
-		level = resp.Data[0].Bids[bid]
-		pricenum = level.Price
-		qtynum = level.Quantity
-
-		price = strings.Replace(string(pricenum), ".", "", -1)
-		qty = strings.Replace(string(qtynum), ".", "", -1)
-
-		price = strings.TrimLeft(price, "0")
-		qty = strings.TrimLeft(qty, "0")
-
-		priceBids.WriteString(price)
-		priceBids.WriteString(qty)
-	}
+	verifyLevel(resp.Data[0].Asks, &priceAsks)
+	verifyLevel(resp.Data[0].Bids, &priceBids)
 	priceAsks.WriteString(priceBids.String())
 
 	cs := crc32.Checksum([]byte(priceAsks.String()), crc32q)
 
 	if cs == resp.Data[0].Checksum {
+		log.Println("checksums match")
 		return true
 	}
 	return false
