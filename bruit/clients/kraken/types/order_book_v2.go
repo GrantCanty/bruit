@@ -5,6 +5,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/utils"
 )
 
 type BaseRespV2WS struct {
@@ -29,8 +32,20 @@ type BookRespV2Snapshot struct {
 	Checksum uint32       `json:"checksum"`
 }
 
+type BookRespV2SnapshotJSON struct {
+	Symbol   string       `json:"symbol"`
+	Bids     *treemap.Map `json:"bids"`
+	Asks     *treemap.Map `json:"asks"`
+	Checksum uint32       `json:"checksum"`
+}
+
 type BookRespV2Update struct {
 	BookRespV2Snapshot
+	Timestamp time.Time `json:"timestamp"`
+}
+
+type BookRespV2UpdateJSON struct {
+	BookRespV2SnapshotJSON
 	Timestamp time.Time `json:"timestamp"`
 }
 
@@ -57,6 +72,11 @@ type OrderBookWithMutex struct {
 	Mutex sync.RWMutex
 }
 
+type OrderBookWithMutexTree struct {
+	Book  *BookRespV2UpdateJSON
+	Mutex sync.RWMutex
+}
+
 type BookRespV2Success struct {
 	Version      string `json:"version"`
 	System       string `json:"system"`
@@ -67,4 +87,38 @@ type BookRespV2Success struct {
 type SuccessBookResponseV2WS struct {
 	BaseRespV2WS
 	Data []BookRespV2Success
+}
+
+func NumericStringComparator(a, b interface{}) int {
+	// Convert strings to float64 for numeric comparison
+	var numA float64
+	var errA error
+	var numB float64
+	var errB error
+
+	aNumStr, okA := a.(NumericString)
+	bNumStr, okB := b.(NumericString)
+
+	if okA && okB {
+		numA, errA = strconv.ParseFloat(string(aNumStr), 64)
+		numB, errB = strconv.ParseFloat(string(bNumStr), 64)
+	}
+	if b, ok := b.(NumericString); ok {
+		numB, errB = strconv.ParseFloat(string(b), 64)
+	}
+
+	if errA != nil || errB != nil {
+		// Fallback to string comparison if parsing fails
+		return utils.StringComparator(string(aNumStr), string(bNumStr))
+	}
+
+	// Numeric comparison
+	switch {
+	case numA < numB:
+		return -1
+	case numA > numB:
+		return 1
+	default:
+		return 0
+	}
 }

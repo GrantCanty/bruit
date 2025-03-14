@@ -32,7 +32,7 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	defer s.Done()
 
 	//var OHLCch chan types.OHLCResponse
-	/*OHLCch := make(chan types.OHLCResponse)
+	OHLCch := make(chan types.OHLCResponse)
 
 	//var Tradech chan types.TradeResponse
 	Tradech := make(chan types.TradeResponse)
@@ -41,7 +41,6 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	OHLCSubch := make(chan types.OHLCSuccessResponse)
 
 	go c.PubDecoder(s, OHLCch, Tradech, OHLCSubch)
-
 	go func(ohlc chan types.OHLCResponse, trade chan types.TradeResponse, ohlcsub chan types.OHLCSuccessResponse) {
 		for {
 			select {
@@ -57,17 +56,14 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	}(OHLCch, Tradech, OHLCSubch)
 
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
-	c.SubscribeToHoldingsOHLC(s, 1)*/
+	c.SubscribeToHoldingsOHLC(s, 1)
 
-	orderBookCh := make(chan types.BookRespV2Update)
+	orderBookCh := make(chan types.BookRespV2UpdateJSON)
 
 	go c.BookDecoder(s, orderBookCh)
-	go func(book chan types.BookRespV2Update) {
-		for {
-			select {
-			case res := <-book:
-				log.Println(res)
-			}
+	go func(book chan types.BookRespV2UpdateJSON) {
+		for res := range book {
+			log.Println("orderbook: ", res)
 		}
 	}(orderBookCh)
 

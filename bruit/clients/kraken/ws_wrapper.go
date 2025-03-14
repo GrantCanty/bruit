@@ -143,7 +143,7 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 // need a way to save the books to a struct. on message, we read
 // the struct back so we can see how to update it and then save the copy back to the struct
 // then send the struct to the chan
-func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan types.BookRespV2Update) {
+func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan types.BookRespV2UpdateJSON) {
 	s.Add(1)
 	defer s.Done()
 
@@ -153,7 +153,6 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 
 	ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
 	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
-		log.Println("BookDecoder message: ", message)
 		client.WebSocket.BookJsonDecoder(message, s.GetLoggingSettings(), Bookch)
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())

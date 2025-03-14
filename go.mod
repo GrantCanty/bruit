@@ -1,8 +1,9 @@
 module bruit
 
-go 1.17
+go 1.23
 
 require (
+	github.com/emirpasic/gods v1.18.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/influxdata/influxdb-client-go/v2 v2.9.2
 	github.com/joho/godotenv v1.4.0

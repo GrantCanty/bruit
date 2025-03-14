@@ -3,6 +3,7 @@ package state
 import (
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/shared_types"
+	"sync"
 )
 
 /**
@@ -17,6 +18,7 @@ type StateManager struct {
 type AccountManager struct {
 	balancesWithStaking    types.AccountBalanceResp
 	balancesWithoutStaking types.AccountBalanceResp
+	mutex                  sync.Mutex
 }
 
 type ClientManager struct {

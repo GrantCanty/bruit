@@ -28,7 +28,7 @@ type BruitCryptoClient interface {
 
 	//decoders
 	PubDecoder(s settings.BruitSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCSubch chan types.OHLCSuccessResponse)
-	BookDecoder(s settings.BruitSettings, Bookch chan types.BookRespV2Update)
+	BookDecoder(s settings.BruitSettings, Bookch chan types.BookRespV2UpdateJSON)
 	PrivDecoder(s settings.BruitSettings)
 
 	//listeners

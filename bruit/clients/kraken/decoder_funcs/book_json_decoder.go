@@ -4,16 +4,47 @@ import (
 	"bruit/bruit/clients/kraken/types"
 	"bytes"
 	"encoding/json"
-	"log"
-
-	//"fmt"
 	"hash/crc32"
+	"log"
 	"strings"
-	//"strconv"
-	//"reflect"
+
+	"github.com/emirpasic/gods/maps/treemap"
 )
 
 // make this run in parallel
+func verifyLevelTree(resp treemap.Map, strBuilder *strings.Builder) {
+	var priceNum types.NumericString
+	var qtyNum types.NumericString
+	var ok bool
+
+	var price string
+	var qty string
+
+	respItt := resp.Iterator()
+	for respItt.Begin(); respItt.Next(); {
+		priceNum, ok = respItt.Key().(types.NumericString)
+		if !ok {
+			log.Printf("Expected float64 key, got %T\n %d", respItt.Key(), respItt.Key())
+			continue
+		}
+
+		qtyNum, ok = respItt.Value().(types.NumericString)
+		if !ok {
+			log.Printf("Expected float64 key, got %T\n %d", respItt.Value(), respItt.Value())
+			continue
+		}
+
+		price = strings.Replace(string(priceNum), ".", "", -1)
+		qty = strings.Replace(string(qtyNum), ".", "", -1)
+
+		price = strings.TrimLeft(price, "0")
+		qty = strings.TrimLeft(qty, "0")
+
+		strBuilder.WriteString(price)
+		strBuilder.WriteString(qty)
+	}
+}
+
 func verifyLevel(resp []types.LevelsV2WS, strBuilder *strings.Builder) {
 	var level types.LevelsV2WS
 	var priceNum types.NumericString
@@ -26,19 +57,15 @@ func verifyLevel(resp []types.LevelsV2WS, strBuilder *strings.Builder) {
 		level = resp[ask]
 		priceNum = level.Price
 		qtyNum = level.Quantity
-		//log.Println("og: ", priceNum, qtyNum)
 
 		price = strings.Replace(string(priceNum), ".", "", -1)
 		qty = strings.Replace(string(qtyNum), ".", "", -1)
-		//log.Println("no decimal: ", price, qty)
 
 		price = strings.TrimLeft(price, "0")
 		qty = strings.TrimLeft(qty, "0")
-		//log.Println("trimmed left: ", price, qty)
 
 		strBuilder.WriteString(price)
 		strBuilder.WriteString(qty)
-		//log.Println("priceAsks: ", strBuilder.String())
 	}
 }
 
@@ -51,40 +78,25 @@ func verifyChecksumSnapshot(resp types.SnapshotBookRespV2WS) bool {
 
 	verifyLevel(resp.Data[0].Asks, &priceAsks)
 	verifyLevel(resp.Data[0].Bids, &priceBids)
+
 	priceAsks.WriteString(priceBids.String())
-
 	cs := crc32.Checksum([]byte(priceAsks.String()), crc32q)
-
 	return cs == resp.Data[0].Checksum
 }
 
-/*func InitialBookResponseDecoder(byteResponse []byte, now time.Time, testing bool) (*types.BookDecodedResp, error) {
-	reader := bytes.NewReader(byteResponse)
-	decoder := json.NewDecoder(reader)
-	decoder.DisallowUnknownFields()
+func VerifyChecksumUpdate(book types.BookRespV2UpdateJSON, resp types.UpdateBookRespV2WS) bool {
+	crc32q := crc32.MakeTable(crc32.IEEE)
 
-	if testing == true {
-		log.Println("in initial book response decoder func")
-	}
+	var priceAsks strings.Builder
+	var priceBids strings.Builder
 
-	// decodes byteResponse
-	var book types.InitialBookResp
-	err := decoder.Decode(&book)
-	if err != nil {
-		if testing == true {
-			log.Println("initialBookResponseDecoder error: ", err)
-		}
-		return nil, err
-	}
+	verifyLevelTree(*book.Asks, &priceAsks)
+	verifyLevelTree(*book.Bids, &priceBids)
 
-	// transfer data from book to ob
-	var ob types.BookDecodedResp
-	ob.TimeReceived = now
-	ob.Asks = book.Levels["as"]
-	ob.Bids = book.Levels["bs"]
-
-	return &ob, err
-}*/
+	priceAsks.WriteString(priceBids.String())
+	cs := crc32.Checksum([]byte(priceAsks.String()), crc32q)
+	return cs == resp.Data[0].Checksum
+}
 
 func SnapshotBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.SnapshotBookRespV2WS, error) {
 	reader := bytes.NewReader(byteResponse)
@@ -131,8 +143,6 @@ func UpdateBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.Upda
 		return nil, err
 	}
 
-	//verifyChecksum(book)
-
 	return &book, err
 }
 
@@ -157,106 +167,3 @@ func SuccessBookResponseDecoverV2(byteResponse []byte, testing bool) (*types.Suc
 
 	return &conn, err
 }
-
-/*func IncrementalAskOrBidDecoder(byteResponse []byte, testing bool) (*types.UpdateBookWithAsksOrBidsResp, error) {
-	reader := bytes.NewReader(byteResponse)
-	decoder := json.NewDecoder(reader)
-	decoder.DisallowUnknownFields()
-
-	if testing == true {
-		log.Println("in incremental ask or bid decoder func")
-	}
-
-	// decodes byteResponse
-	var asksOrBids types.UpdateBookWithAsksOrBidsResp
-
-	err := decoder.Decode(&asksOrBids)
-	if err != nil {
-		if testing == true {
-			log.Println("incrementalAskOrBidDecoder error: ", err)
-		}
-		return nil, err
-	}
-
-	return &asksOrBids, nil
-
-}
-
-func IncrementalAskAndBidDecoder(byteResponse []byte, testing bool) (*types.UpdateBookWithAsksAndBidsResp, error) {
-	reader := bytes.NewReader(byteResponse)
-	decoder := json.NewDecoder(reader)
-	decoder.DisallowUnknownFields()
-
-	if testing == true {
-		log.Println("in incremental ask and bid decoder func")
-	}
-
-	// decodes byteResponse
-	var asksAndBids types.UpdateBookWithAsksAndBidsResp
-	err := decoder.Decode(&asksAndBids)
-	if err != nil {
-		if testing == true {
-			log.Println("incrementalAskAndBidDecoder erroor: ", err)
-		}
-		return nil, err
-	}
-
-	return &asksAndBids, nil
-}*/
-
-/*func BookSubscriptionResponseDecoder(byteResponse []byte, testing bool) (*types.BookSuccessResponse, error) {
-	reader := bytes.NewReader(byteResponse)
-	decoder := json.NewDecoder(reader)
-	decoder.DisallowUnknownFields()
-
-	if testing == true {
-		log.Println("in ohlc subscription response func")
-	}
-	var ohlc types.BookSuccessResponse
-	err := decoder.Decode(&ohlc)
-	if err != nil {
-		if testing == true {
-			log.Println("ohlc subscription response error", err)
-		}
-		return nil, err
-	}
-	return &ohlc, err
-}*/
-
-/*var resp []interface{}
-var ob types.BookDecodedResp
-
-err := json.Unmarshal(byteResponse, &resp)
-if err != nil {
-	return nil, err
-}
-
-for _, element := range resp[1].(map[string]interface{})["as"].([]interface{}) {
-	priceStr := element.([]interface{})[0].(string)
-	price, err := decimal.NewFromString(priceStr)
-	if err != nil {
-		return nil, err
-	}
-	volStr := element.([]interface{})[1].(string)
-	vol, err := decimal.NewFromString(volStr)
-	if err != nil {
-		return nil, err
-	}
-	ob.Asks = append(ob.Asks, types.Level{Price: price, Volume: vol})
-}
-
-for _, element := range resp[1].(map[string]interface{})["bs"].([]interface{}) {
-	priceStr := element.([]interface{})[0].(string)
-	price, err := decimal.NewFromString(priceStr)
-	if err != nil {
-		return nil, err
-	}
-	volStr := element.([]interface{})[1].(string)
-	vol, err := decimal.NewFromString(volStr)
-	if err != nil {
-		return nil, err
-	}
-	ob.Bids = append(ob.Bids, types.Level{Price: price, Volume: vol})
-}
-return &ob, nil
-*/

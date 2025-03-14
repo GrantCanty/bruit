@@ -16,17 +16,25 @@ func (am *AccountManager) initAccount(bals types.AccountBalanceResp) {
 	am.balancesWithoutStaking = newBals
 }
 
-func (am AccountManager) GetBalancesWithStaking() types.AccountBalanceResp {
-	return am.balancesWithStaking
+func (am *AccountManager) GetBalancesWithStaking() types.AccountBalanceResp {
+	am.mutex.Lock()
+	tmp := am.balancesWithStaking
+	am.mutex.Unlock()
+
+	return tmp
 }
 
-func (am AccountManager) GetBalancesWithoutStaking() types.AccountBalanceResp {
-	return am.balancesWithoutStaking
+func (am *AccountManager) GetBalancesWithoutStaking() types.AccountBalanceResp {
+	am.mutex.Lock()
+	tmp := am.balancesWithoutStaking
+	am.mutex.Unlock()
+
+	return tmp
 }
 
 func CopyMap(bals types.AccountBalanceResp) types.AccountBalanceResp {
-	var newMap types.AccountBalanceResp
-	newMap = make(types.AccountBalanceResp)
+	//var newMap types.AccountBalanceResp
+	newMap := make(types.AccountBalanceResp)
 	for pair, amount := range bals {
 		newMap[pair] = amount
 	}
@@ -53,8 +61,8 @@ func ProcessStakingBalances(bals types.AccountBalanceResp) {
 }
 
 func CopyBals(bals types.AccountBalanceResp) types.AccountBalanceResp {
-	var balsCopy types.AccountBalanceResp
-	balsCopy = make(types.AccountBalanceResp)
+	//var balsCopy types.AccountBalanceResp
+	balsCopy := make(types.AccountBalanceResp)
 	for pair, amount := range bals {
 		balsCopy[pair] = amount
 	}
