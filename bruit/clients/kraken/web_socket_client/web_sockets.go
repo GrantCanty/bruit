@@ -126,9 +126,10 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 					panic("checksums don't match")
 				}
 
+				bookCopy := types.DeepCopyOrderBook(*book)
 				client.orderBooksMutex.Unlock()
 				client.orderBooks[symbol].Mutex.Unlock()
-				Bookch <- *book
+				Bookch <- bookCopy
 			}
 
 		case "snapshot":

@@ -122,3 +122,43 @@ func NumericStringComparator(a, b interface{}) int {
 		return 0
 	}
 }
+
+func DeepCopyOrderBook(original BookRespV2UpdateJSON) BookRespV2UpdateJSON {
+	// Create a new book
+	copy := BookRespV2UpdateJSON{
+		// Copy basic fields directly
+		Timestamp: original.Timestamp,
+		BookRespV2SnapshotJSON: BookRespV2SnapshotJSON{
+			Symbol:   original.Symbol,
+			Bids:     nil,
+			Asks:     nil,
+			Checksum: original.Checksum,
+		},
+
+		// Add any other simple fields from your struct
+	}
+
+	// Create new treemaps for bids and asks
+	copy.Bids = treemap.NewWith(NumericStringComparator) // Assuming you're using a custom comparator
+	copy.Bids = treemap.NewWith(func(key interface{}, value interface{}) int {
+		return -NumericStringComparator(key, value) // Descending order
+	})
+
+	copy.Asks = treemap.NewWith(NumericStringComparator)
+
+	// Copy all bid entries
+	for _, k := range original.Bids.Keys() {
+		v, _ := original.Bids.Get(k)
+		copy.Bids.Put(k, v)
+	}
+
+	// Copy all ask entries
+	for _, k := range original.Asks.Keys() {
+		v, _ := original.Asks.Get(k)
+		copy.Asks.Put(k, v)
+	}
+
+	// Copy any other maps or complex structures in the order book
+
+	return copy
+}

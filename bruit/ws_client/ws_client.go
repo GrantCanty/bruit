@@ -40,6 +40,7 @@ type Socket struct {
 	OnPingReceived    func(data string, socket Socket)
 	OnPongReceived    func(data string, socket Socket)
 	IsConnected       bool
+	isConnectedMu     sync.RWMutex
 	Timeout           time.Duration
 	sendMu            *sync.Mutex // Prevent "concurrent write to websocket connection"
 	receiveMu         *sync.Mutex
@@ -93,7 +94,7 @@ func (socket *Socket) Connect() {
 		if resp != nil {
 			logger.Error.Println("HTTP Response ", resp.StatusCode, " status: ", resp.Status)
 		}
-		socket.IsConnected = false
+		socket.SetIsConnected(false)
 		if socket.OnConnectError != nil {
 			socket.OnConnectError(err, *socket)
 		}
@@ -103,7 +104,7 @@ func (socket *Socket) Connect() {
 	logger.Info.Println("Connected to server")
 
 	if socket.OnConnected != nil {
-		socket.IsConnected = true
+		socket.SetIsConnected(true)
 		socket.OnConnected(*socket)
 	}
 
@@ -130,7 +131,7 @@ func (socket *Socket) Connect() {
 		result := defaultCloseHandler(code, text)
 		logger.Warning.Println("Disconnected from server ", result)
 		if socket.OnDisconnected != nil {
-			socket.IsConnected = false
+			socket.SetIsConnected(false)
 			socket.OnDisconnected(errors.New(text), *socket)
 		}
 		return result
@@ -147,7 +148,7 @@ func (socket *Socket) Connect() {
 			if err != nil {
 				logger.Error.Println("read:", err)
 				if socket.OnDisconnected != nil {
-					socket.IsConnected = false
+					socket.SetIsConnected(false)
 					socket.OnDisconnected(err, *socket)
 				}
 				return
@@ -202,7 +203,7 @@ func (socket *Socket) Close() {
 	}
 	socket.Conn.Close()
 	if socket.OnDisconnected != nil {
-		socket.IsConnected = false
+		socket.SetIsConnected(false)
 		socket.OnDisconnected(err, *socket)
 	}
 }
@@ -273,4 +274,17 @@ func IsInit(socket Socket) bool {
 		return false
 	}
 	return true
+}
+
+func (socket *Socket) GetIsConnected() bool {
+	socket.isConnectedMu.RLock()
+	defer socket.isConnectedMu.RUnlock()
+	return socket.IsConnected
+}
+
+// Safe setter for IsConnected
+func (socket *Socket) SetIsConnected(value bool) {
+	socket.isConnectedMu.Lock()
+	defer socket.isConnectedMu.Unlock()
+	socket.IsConnected = value
 }
