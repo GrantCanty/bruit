@@ -7,26 +7,6 @@ import (
 	"log"
 )
 
-func (client *KrakenClient) BookListen(s settings.BruitSettings, book *types.BookDecodedResp) {
-	s.Add(1)
-	defer s.Done()
-
-	//var book types.BookDecodedResp
-
-	for c := range client.WebSocket.GetBookJSONChan() {
-		log.Println("book listen: ", c)
-		switch v := c.(type) {
-		case *types.HeartBeat:
-			log.Println(v)
-		case *types.BookDecodedResp:
-			book = v
-		}
-	}
-
-	s.CtxDone()
-	log.Println("closing book listen func")
-}
-
 func (client *KrakenClient) PrivListen(s settings.BruitSettings) {
 	s.Add(1)
 	defer s.Done()

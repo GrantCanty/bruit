@@ -59,7 +59,7 @@ func (b *InitialBookResp) UnmarshalJSON(d []byte) error {
 	}
 	g := len(tmp)
 	if g != length {
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }
@@ -74,7 +74,7 @@ func (b *UpdateBookWithAsksOrBidsResp) UnmarshalJSON(d []byte) error {
 	g := len(tmp)
 	if g != length {
 		fmt.Println(tmp)
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }
@@ -89,7 +89,7 @@ func (b *UpdateBookWithAsksAndBidsResp) UnmarshalJSON(d []byte) error {
 	g := len(tmp)
 	if g != length {
 		fmt.Println(tmp)
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }
@@ -104,7 +104,7 @@ func (l *Level) UnmarshalJSON(d []byte) error {
 	g := len(tmp)
 	if g != length {
 		fmt.Println(tmp)
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }

@@ -129,7 +129,7 @@ func (t *TradeResponse) UnmarshalJSON(d []byte) error {
 	}
 	var g int = len(tmp)
 	if g != length {
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }
@@ -144,7 +144,7 @@ func (t *TradeDataResponse) UnmarshalJSON(d []byte) error {
 	}
 	var g int = len(tmp)
 	if g != length {
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }
@@ -158,7 +158,7 @@ func (o *OpenOrdersResponse) UnmarshalJSON(d []byte) error {
 	}
 	var g int = len(tmp)
 	if g != length {
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }
@@ -172,7 +172,7 @@ func (ohlc *OHLCResponse) UnmarshalJSON(d []byte) error {
 	}
 	g := len(tmp)
 	if g != length {
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }
@@ -186,7 +186,7 @@ func (c *WSCandles) UnmarshalJSON(d []byte) error {
 	}
 	g := len(tmp)
 	if g != length {
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }

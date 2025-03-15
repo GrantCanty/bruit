@@ -62,23 +62,22 @@ func (k *KrakenClient) initKeys() {
 func (client *KrakenClient) socketInit() {
 
 	// if all sockets are not init, init connections
-	if IsPubSocketInit(client.WebSocket) == nil && IsPrivSocketInit(client.WebSocket) == nil && IsBookSocketInit(client.WebSocket) == nil {
+	if IsPubSocketInit(&client.WebSocket) == nil && IsPrivSocketInit(&client.WebSocket) == nil && IsBookSocketInit(&client.WebSocket) == nil {
 		log.Println("connections are already init")
 		return
 	}
 	client.WebSocket.InitSockets()
 
 	// checks to see that sockets are actually init. should switch this to send an error message
-	if err := IsPubSocketInit(client.WebSocket); err != nil { // guard clause checker
+	if err := IsPubSocketInit(&client.WebSocket); err != nil { // guard clause checker
 		panic(err)
 	}
-	if err := IsBookSocketInit(client.WebSocket); err != nil { // guard clause checker
+	if err := IsBookSocketInit(&client.WebSocket); err != nil { // guard clause checker
 		panic(err)
 	}
-	if err := IsPrivSocketInit(client.WebSocket); err != nil { // guard clause checker
+	if err := IsPrivSocketInit(&client.WebSocket); err != nil { // guard clause checker
 		panic(err)
 	}
-	return
 }
 
 func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResponse) {
@@ -99,7 +98,6 @@ func (client *KrakenClient) DeferChanClose(s settings.BruitSettings) {
 }
 
 func (client *KrakenClient) closeChannelsAndConnections() {
-	close(client.WebSocket.GetBookChan())
 	close(client.WebSocket.GetPrivChan())
 
 	if client.WebSocket.GetPubSocket().IsConnected {

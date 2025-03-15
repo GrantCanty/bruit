@@ -1,6 +1,8 @@
 package types
 
 import (
+	"hash/crc32"
+	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -126,16 +128,13 @@ func NumericStringComparator(a, b interface{}) int {
 func DeepCopyOrderBook(original BookRespV2UpdateJSON) BookRespV2UpdateJSON {
 	// Create a new book
 	copy := BookRespV2UpdateJSON{
-		// Copy basic fields directly
-		Timestamp: original.Timestamp,
 		BookRespV2SnapshotJSON: BookRespV2SnapshotJSON{
 			Symbol:   original.Symbol,
 			Bids:     nil,
 			Asks:     nil,
 			Checksum: original.Checksum,
 		},
-
-		// Add any other simple fields from your struct
+		Timestamp: original.Timestamp,
 	}
 
 	// Create new treemaps for bids and asks
@@ -158,7 +157,92 @@ func DeepCopyOrderBook(original BookRespV2UpdateJSON) BookRespV2UpdateJSON {
 		copy.Asks.Put(k, v)
 	}
 
-	// Copy any other maps or complex structures in the order book
-
 	return copy
+}
+
+// make this run in parallel
+func verifyLevelTree(resp treemap.Map, strBuilder *strings.Builder) {
+	var priceNum NumericString
+	var qtyNum NumericString
+	var ok bool
+
+	var price string
+	var qty string
+
+	respItt := resp.Iterator()
+	for respItt.Begin(); respItt.Next(); {
+		priceNum, ok = respItt.Key().(NumericString)
+		if !ok {
+			log.Printf("Expected float64 key, got %T\n %d", respItt.Key(), respItt.Key())
+			continue
+		}
+
+		qtyNum, ok = respItt.Value().(NumericString)
+		if !ok {
+			log.Printf("Expected float64 key, got %T\n %d", respItt.Value(), respItt.Value())
+			continue
+		}
+
+		price = strings.Replace(string(priceNum), ".", "", -1)
+		qty = strings.Replace(string(qtyNum), ".", "", -1)
+
+		price = strings.TrimLeft(price, "0")
+		qty = strings.TrimLeft(qty, "0")
+
+		strBuilder.WriteString(price)
+		strBuilder.WriteString(qty)
+	}
+}
+
+func verifyLevel(resp []LevelsV2WS, strBuilder *strings.Builder) {
+	var level LevelsV2WS
+	var priceNum NumericString
+	var qtyNum NumericString
+
+	var price string
+	var qty string
+
+	for ask := range resp {
+		level = resp[ask]
+		priceNum = level.Price
+		qtyNum = level.Quantity
+
+		price = strings.Replace(string(priceNum), ".", "", -1)
+		qty = strings.Replace(string(qtyNum), ".", "", -1)
+
+		price = strings.TrimLeft(price, "0")
+		qty = strings.TrimLeft(qty, "0")
+
+		strBuilder.WriteString(price)
+		strBuilder.WriteString(qty)
+	}
+}
+
+// make verifyLevel run in parallel
+func VerifyChecksumSnapshot(resp SnapshotBookRespV2WS) bool {
+	crc32q := crc32.MakeTable(crc32.IEEE)
+
+	var priceAsks strings.Builder
+	var priceBids strings.Builder
+
+	verifyLevel(resp.Data[0].Asks, &priceAsks)
+	verifyLevel(resp.Data[0].Bids, &priceBids)
+
+	priceAsks.WriteString(priceBids.String())
+	cs := crc32.Checksum([]byte(priceAsks.String()), crc32q)
+	return cs == resp.Data[0].Checksum
+}
+
+func VerifyChecksumUpdate(book BookRespV2UpdateJSON, resp UpdateBookRespV2WS) bool {
+	crc32q := crc32.MakeTable(crc32.IEEE)
+
+	var priceAsks strings.Builder
+	var priceBids strings.Builder
+
+	verifyLevelTree(*book.Asks, &priceAsks)
+	verifyLevelTree(*book.Bids, &priceBids)
+
+	priceAsks.WriteString(priceBids.String())
+	cs := crc32.Checksum([]byte(priceAsks.String()), crc32q)
+	return cs == resp.Data[0].Checksum
 }

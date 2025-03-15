@@ -81,7 +81,7 @@ func (f *FeesInfo) UnmarshalJSON(d []byte) error {
 	}
 	g := len(tmp)
 	if g != length {
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }
@@ -117,7 +117,7 @@ func (c *RestCandles) UnmarshalJSON(d []byte) error {
 	}
 	g := len(tmp)
 	if g != length {
-		return fmt.Errorf("Lengths don't match: %d != %d", g, length)
+		return fmt.Errorf("lengths don't match: %d != %d", g, length)
 	}
 	return nil
 }

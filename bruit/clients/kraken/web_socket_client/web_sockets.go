@@ -19,9 +19,7 @@ type WebSocketClient struct {
 	bookSocket ws_client.Socket
 	privSocket ws_client.Socket
 
-	bookChan     chan interface{} // this chan contains the final book data
-	bookJSONChan chan interface{} // this chan contains the most recently decoded data from the book subscription
-	privChan     chan interface{}
+	privChan chan interface{}
 
 	// switch to ordered map instead
 	orderBooks      map[string]*types.OrderBookWithMutexTree
@@ -54,8 +52,6 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.L
 		OHLCsubch <- *ohlcSubResp
 		return
 	}
-
-	return
 }
 
 func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.LoggingSettings, Bookch chan types.BookRespV2UpdateJSON, bookDepth int) {
@@ -123,7 +119,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 					}
 				}
 
-				if ok := decoders.VerifyChecksumUpdate(*book, *resp); !ok {
+				if ok := types.VerifyChecksumUpdate(*book, *resp); !ok {
 					panic("checksums don't match")
 				}
 
@@ -172,11 +168,8 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				client.orderBooksMutex.Unlock()
 				Bookch <- *book.Book
 			}
-
 		}
 	}
-
-	return
 }
 
 func (client *WebSocketClient) PrivJsonDecoder(response string, logger settings.LoggingSettings) {
@@ -194,36 +187,10 @@ func (client *WebSocketClient) PrivJsonDecoder(response string, logger settings.
 		}
 	}
 
-	//if testing == true {
-	//	log.Println(reflect.TypeOf(resp), resp)
-	//}
 	client.privChan <- resp
-	return //resp
-
-	/*var resp interface{}
-	byteResponse := []byte(response)
-
-	resp, err := decoders.OhlcResponseDecoder(byteResponse, l.GetLoggingConsole()) // these funcs need to accept LoggingSettings struct so they can take both DBlogging and ConsoleLogging
-	if err != nil {
-		resp, err = decoders.HbResponseDecoder(byteResponse, l.GetLoggingConsole())
-		if err != nil {
-			resp, err = decoders.ServerConnectionStatusResponseDecoder(byteResponse, l.GetLoggingConsole())
-			if err != nil {
-				resp, err = decoders.OhlcSubscriptionResponseDecoder(byteResponse, l.GetLoggingConsole())
-				if err != nil {
-					log.Println(string("\033[31m"), "Received response of unknown data type: ", response)
-				}
-			}
-		}
-	}
-
-	client.pubChan <- resp
-	return*/
 }
 
 func (ws *WebSocketClient) InitChannels() {
-	ws.bookChan = make(chan interface{})
-	ws.bookJSONChan = make(chan interface{})
 	ws.privChan = make(chan interface{})
 }
 
@@ -232,18 +199,21 @@ func (ws *WebSocketClient) InitBook() {
 }
 
 func (ws *WebSocketClient) SubscribeToTrades(pairs []string) {
-	sub, _ := json.Marshal(&types.Subscribe{
+	sub, err := json.Marshal(&types.Subscribe{
 		Event: "subscribe",
 		Subscription: &types.NameAndToken{
 			Name: "trade",
 		},
 		Pair: pairs,
 	})
+	if err != nil {
+		log.Println("error marshaling: ", err)
+	}
 	ws.pubSocket.SendBinary(sub)
 }
 
 func (ws *WebSocketClient) SubscribeToOHLC(pairs []string, interval int) {
-	sub, _ := json.Marshal(&types.Subscribe{
+	sub, err := json.Marshal(&types.Subscribe{
 		Event: "subscribe",
 		Subscription: &types.OHLCSubscription{
 			Interval: interval,
@@ -251,17 +221,23 @@ func (ws *WebSocketClient) SubscribeToOHLC(pairs []string, interval int) {
 		},
 		Pair: pairs,
 	})
+	if err != nil {
+		log.Println("error marshaling: ", err)
+	}
 	ws.pubSocket.SendBinary(sub)
 }
 
 func (ws *WebSocketClient) SubscribeToOpenOrders(token string) {
-	sub, _ := json.Marshal(&types.Subscribe{
+	sub, err := json.Marshal(&types.Subscribe{
 		Event: "subscribe",
 		Subscription: &types.NameAndToken{
 			Name:  "openOrders",
 			Token: token,
 		},
 	})
+	if err != nil {
+		log.Println("error marshaling: ", err)
+	}
 	ws.privSocket.SendBinary(sub)
 }
 
@@ -309,14 +285,6 @@ func (ws WebSocketClient) GetPrivSocket() ws_client.Socket {
 
 func (ws *WebSocketClient) GetPrivSocketPointer() *ws_client.Socket {
 	return &ws.privSocket
-}
-
-func (ws *WebSocketClient) GetBookChan() chan interface{} {
-	return ws.bookChan
-}
-
-func (ws *WebSocketClient) GetBookJSONChan() chan interface{} {
-	return ws.bookJSONChan
 }
 
 func (ws *WebSocketClient) GetPrivChan() chan interface{} {
