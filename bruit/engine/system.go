@@ -31,13 +31,8 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	s.Add(1)
 	defer s.Done()
 
-	//var OHLCch chan types.OHLCResponse
 	OHLCch := make(chan types.OHLCResponse)
-
-	//var Tradech chan types.TradeResponse
 	Tradech := make(chan types.TradeResponse)
-
-	//var OHLCSubch chan types.OHLCSuccessResponse
 	OHLCSubch := make(chan types.OHLCSuccessResponse)
 
 	go c.PubDecoder(s, OHLCch, Tradech, OHLCSubch)

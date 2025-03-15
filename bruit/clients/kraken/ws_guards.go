@@ -85,7 +85,7 @@ func BookSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 		}
 
 		// add something here for locking access to the Book Socket
-		log.Println("Connecting to pub server...")
+		log.Println("Connecting to book server...")
 		client.GetBookSocketPointer().Connect()
 
 		ws_client.ReceiveUnlocker(client.GetBookSocketPointer())

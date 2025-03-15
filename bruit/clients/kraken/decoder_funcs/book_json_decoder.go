@@ -55,7 +55,7 @@ func UpdateBookResponseDecoderV2(byteResponse []byte, testing bool) (*types.Upda
 	return &book, err
 }
 
-func SuccessBookResponseDecoverV2(byteResponse []byte, testing bool) (*types.SuccessBookResponseV2WS, error) {
+func StatusBookResponseV2WS(byteResponse []byte, testing bool) (*types.StatusBookResponseV2WS, error) {
 	reader := bytes.NewReader(byteResponse)
 	decoder := json.NewDecoder(reader)
 	decoder.DisallowUnknownFields()
@@ -65,11 +65,33 @@ func SuccessBookResponseDecoverV2(byteResponse []byte, testing bool) (*types.Suc
 	}
 
 	// decodes byteResponse
-	var conn types.SuccessBookResponseV2WS
+	var conn types.StatusBookResponseV2WS
 	err := decoder.Decode(&conn)
 	if err != nil {
 		if testing {
 			log.Println("SuccessBookResponseDecoverV2 error: ", err)
+		}
+		return nil, err
+	}
+
+	return &conn, err
+}
+
+func SubscribeResponseV2WS(byteResponse []byte, testing bool) (*types.SubscribeResponseV2WS, error) {
+	reader := bytes.NewReader(byteResponse)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	if testing {
+		log.Println("in SubscribeResponseV2WS func")
+	}
+
+	// decodes byteResponse
+	var conn types.SubscribeResponseV2WS
+	err := decoder.Decode(&conn)
+	if err != nil {
+		if testing {
+			log.Println("SubscribeResponseV2WS error: ", err)
 		}
 		return nil, err
 	}

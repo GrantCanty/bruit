@@ -105,7 +105,6 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
 
 	<-s.CtxDone()
-	return
 }
 
 // ORDER BOOK SOCKET METHODS
@@ -158,7 +157,6 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
 
 	<-s.CtxDone()
-	return
 }
 
 // PRIVATE SOCKET METHODS

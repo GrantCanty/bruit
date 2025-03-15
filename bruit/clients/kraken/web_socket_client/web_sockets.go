@@ -21,7 +21,6 @@ type WebSocketClient struct {
 
 	privChan chan interface{}
 
-	// switch to ordered map instead
 	orderBooks      map[string]*types.OrderBookWithMutexTree
 	orderBooksMutex sync.RWMutex
 }
@@ -61,6 +60,8 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 	if err := json.Unmarshal(byteResponse, &msgType); err != nil {
 		log.Println("Error identifying message type:", err)
 		return
+	} else {
+		log.Println("got message: ", msgType, err)
 	}
 
 	switch msgType.Channel {
@@ -126,6 +127,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				client.orderBooksMutex.Unlock()
 				client.orderBooks[symbol].Mutex.Unlock()
 				Bookch <- bookCopy
+				break
 			}
 
 		case "snapshot":
@@ -164,7 +166,27 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				client.orderBooks[symbol] = book
 				client.orderBooksMutex.Unlock()
 				Bookch <- *book.Book
+				break
 			}
+		default:
+			log.Println("default 2. unsuccessful attempt at unmarshalling data ", response)
+		}
+	case "status":
+		switch msgType.Type {
+		case "update":
+			if resp, err := decoders.StatusBookResponseV2WS(byteResponse, logger.GetLoggingConsole()); err == nil {
+				log.Println("StatusBookResponseV2WS resp: ", resp)
+			} else {
+				log.Println("error in StatusBookResponseV2WS switch: ", err)
+			}
+		default:
+			log.Println("in update part of switch. unknown data response: ", response)
+		}
+	default:
+		if resp, err := decoders.SubscribeResponseV2WS(byteResponse, logger.GetLoggingConsole()); err == nil {
+			log.Println("SubscribeResponseV2WS resp: ", resp)
+		} else {
+			log.Println("default 1. unsuccessful attempt at unmarshalling data ", response, err)
 		}
 	}
 }

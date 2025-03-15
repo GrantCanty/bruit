@@ -79,16 +79,16 @@ type OrderBookWithMutexTree struct {
 	Mutex sync.RWMutex
 }
 
-type BookRespV2Success struct {
+type BookRespV2Status struct {
 	Version      string `json:"version"`
 	System       string `json:"system"`
 	VersionAPI   string `json:"api_version"`
 	ConnectionID int    `json:"connection_id"`
 }
 
-type SuccessBookResponseV2WS struct {
+type StatusBookResponseV2WS struct {
 	BaseRespV2WS
-	Data []BookRespV2Success
+	Data []BookRespV2Status
 }
 
 func NumericStringComparator(a, b interface{}) int {
@@ -245,4 +245,21 @@ func VerifyChecksumUpdate(book BookRespV2UpdateJSON, resp UpdateBookRespV2WS) bo
 	priceAsks.WriteString(priceBids.String())
 	cs := crc32.Checksum([]byte(priceAsks.String()), crc32q)
 	return cs == resp.Data[0].Checksum
+}
+
+type SubscribeResponseV2WS struct {
+	Error   string `json:"error"`
+	Method  string `json:"method"`
+	Result  RespResultV2Subscrib
+	Success bool      `json:"success"`
+	TimeIn  time.Time `json:"time_in"`
+	TimeOut time.Time `json:"time_out"`
+	Symbol  string    `json:"symbol"`
+}
+
+type RespResultV2Subscrib struct {
+	Channel  string `json:"channel"`
+	Depth    int    `json:"depth"`
+	Snapshot bool   `json:"snapshot"`
+	Symbol   string `json:"symbol"`
 }
