@@ -59,15 +59,16 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	c.SubscribeToHoldingsOHLC(s, 1)
 
 	orderBookCh := make(chan types.BookRespV2UpdateJSON)
+	var bookDepth int = 10
 
-	go c.BookDecoder(s, orderBookCh)
+	go c.BookDecoder(s, orderBookCh, bookDepth)
 	go func(book chan types.BookRespV2UpdateJSON) {
 		for res := range book {
 			log.Println("orderbook: ", res)
 		}
 	}(orderBookCh)
 
-	c.SubscribeToOrderBook(s, 10)
+	c.SubscribeToOrderBook(s, bookDepth)
 
 	<-s.CtxDone()
 }
