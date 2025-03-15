@@ -55,7 +55,6 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.L
 }
 
 func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.LoggingSettings, Bookch chan types.BookRespV2UpdateJSON, bookDepth int) {
-	startTime := time.Now()
 	byteResponse := []byte(response)
 
 	var msgType MessageTypeIdentifier
@@ -106,7 +105,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				if book.Bids.Size() > bookDepth {
 					keys := book.Bids.Keys()
 
-					for i := 10; i < len(keys); i++ {
+					for i := bookDepth; i < len(keys); i++ {
 						book.Bids.Remove(keys[i])
 					}
 				}
@@ -114,7 +113,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				if book.Asks.Size() > bookDepth {
 					keys := book.Asks.Keys()
 
-					for i := 10; i < len(keys); i++ {
+					for i := bookDepth; i < len(keys); i++ {
 						book.Asks.Remove(keys[i])
 					}
 				}
@@ -127,8 +126,6 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				client.orderBooksMutex.Unlock()
 				client.orderBooks[symbol].Mutex.Unlock()
 				Bookch <- bookCopy
-				endTime := time.Now()
-				log.Println("runtime of update: ", endTime.Sub(startTime))
 			}
 
 		case "snapshot":
