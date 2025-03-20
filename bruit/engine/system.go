@@ -3,6 +3,7 @@ package engine
 import (
 	"bruit/bruit/clients"
 	"bruit/bruit/clients/kraken/types"
+	"bruit/bruit/shared_types"
 	"log"
 
 	//"bruit/bruit/clients/kraken/types"
@@ -35,12 +36,15 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	Tradech := make(chan types.TradeResponse)
 	OHLCSubch := make(chan types.OHLCSuccessResponse)
 
+	ohlcMap := shared_types.OHLCVals{}
+
 	go c.PubDecoder(s, OHLCch, Tradech, OHLCSubch)
-	go func(ohlc chan types.OHLCResponse, trade chan types.TradeResponse, ohlcsub chan types.OHLCSuccessResponse) {
+	go func(ohlc chan types.OHLCResponse, trade chan types.TradeResponse, ohlcsub chan types.OHLCSuccessResponse, ohlcMap *shared_types.OHLCVals) {
 		for {
 			select {
 			case res := <-ohlc:
 				log.Println("ohlcResponse res: ", res)
+				c.HandleOHLCResponse(res, ohlcMap)
 			case res := <-trade:
 				log.Println("tradeResponse res: ", res)
 			case res := <-ohlcsub:
@@ -48,7 +52,7 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 				c.HandleOHLCSuccessResponse(res)
 			}
 		}
-	}(OHLCch, Tradech, OHLCSubch)
+	}(OHLCch, Tradech, OHLCSubch, &ohlcMap)
 
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
 	c.SubscribeToHoldingsOHLC(s, 1)

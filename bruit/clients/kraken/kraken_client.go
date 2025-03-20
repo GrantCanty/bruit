@@ -8,6 +8,7 @@ import (
 	web_socket "bruit/bruit/clients/kraken/web_socket_client"
 	"bruit/bruit/env"
 	"bruit/bruit/settings"
+	"bruit/bruit/shared_types"
 	"log"
 )
 
@@ -127,4 +128,8 @@ func (client *KrakenClient) GetHoldingsWithStaking() []string {
 		bals = append(bals, i)
 	}
 	return bals
+}
+
+func (client *KrakenClient) HandleOHLCResponse(data types.OHLCResponse, ohlcMap *shared_types.OHLCVals) {
+	client.State.OnOHLCResponse(data, ohlcMap)
 }

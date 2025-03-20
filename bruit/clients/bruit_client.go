@@ -3,6 +3,7 @@ package clients
 import (
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/settings"
+	"bruit/bruit/shared_types"
 )
 
 type BruitCryptoClient interface {
@@ -31,13 +32,12 @@ type BruitCryptoClient interface {
 	BookDecoder(s settings.BruitSettings, Bookch chan types.BookRespV2UpdateJSON, bookDepth int)
 	PrivDecoder(s settings.BruitSettings)
 
-	//listeners
-
 	//orders
 	CancelAll(s settings.BruitSettings, token string)
 	CancelOrder(s settings.BruitSettings, token string, tradeIDs []string)
 	AddOrder(s settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool)
 
-	//testing
+	//Handlers
 	HandleOHLCSuccessResponse(resp types.OHLCSuccessResponse)
+	HandleOHLCResponse(data types.OHLCResponse, ohlcMap *shared_types.OHLCVals)
 }
