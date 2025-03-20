@@ -15,7 +15,7 @@ func (c *KrakenClient) GetAssets() (*types.AssetInfoResp, error) {
 	if err != nil {
 		return nil, err
 	}
-	//data, found := (*resp.(*types.AssetResp))["ASD"]
+
 	return resp.(*types.AssetInfoResp), err
 }
 

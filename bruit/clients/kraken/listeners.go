@@ -2,7 +2,6 @@ package kraken
 
 import (
 	"bruit/bruit/clients/kraken/types"
-	//web_socket "bruit/bruit/clients/kraken/web_socket_client"
 	"bruit/bruit/settings"
 	"log"
 )

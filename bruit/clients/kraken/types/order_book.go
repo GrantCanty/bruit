@@ -1,6 +1,6 @@
 package types
 
-import (
+/*import (
 	"encoding/json"
 	"fmt"
 	"time"
@@ -108,3 +108,4 @@ func (l *Level) UnmarshalJSON(d []byte) error {
 	}
 	return nil
 }
+*/

@@ -274,7 +274,9 @@ func (ws WSCandles) GetVolume() decimal.Decimal {
 }
 
 func (ws *WSCandles) SetVolume(num decimal.Decimal) {
-	ws.Volume = num
+	if num.GreaterThan(ws.Volume) {
+		ws.Volume = num
+	}
 }
 
 func (ws WSCandles) GetCount() int {

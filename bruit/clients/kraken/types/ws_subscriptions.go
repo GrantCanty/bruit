@@ -8,14 +8,14 @@ type Subscribe struct {
 }
 
 type SubscribeV2 struct {
-	Method string `json:"method"`
+	Method string   `json:"method"`
 	Params ParamsV2 `json:"params"`
 }
 
 type ParamsV2 struct {
-	Channel string `json:"channel"`
-	Symbol []string `json:"symbol"`
-	Depth int `json:"depth"`
+	Channel string   `json:"channel"`
+	Symbol  []string `json:"symbol"`
+	Depth   int      `json:"depth"`
 }
 
 type NameAndToken struct {
@@ -33,11 +33,6 @@ type OHLCSubscription struct {
 	Interval int    `json:"interval"`
 	Name     string `json:"name"`
 }
-
-/*type TradesSubscription struct {
-	Name string
-
-}*/
 
 type BookSubscription struct {
 	Depth int    `json:"depth"`
