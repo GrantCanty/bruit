@@ -9,8 +9,9 @@ import (
 )
 
 type Node struct {
-	Data Candle
-	Next *Node
+	Data     Candle
+	Next     *Node
+	Previous *Node
 }
 
 type List struct {
@@ -36,6 +37,7 @@ func (l *List) AddToEnd(n *Node) {
 	}
 	tmp := l.Last
 	tmp.Next = n
+	n.Previous = tmp
 	l.Last = n
 	l.Length++
 }
@@ -51,6 +53,22 @@ func (l List) Print(locker *sync.RWMutex) {
 	for tmp != nil {
 		fmt.Println(string("\033[34m"), tmp.Data, string("\033[0m"))
 		tmp = tmp.Next
+	}
+	locker.RUnlock()
+	fmt.Println()
+}
+
+func (l List) PrintReverse(locker *sync.RWMutex) {
+	locker.RLock()
+
+	if l.IsEmpty() {
+		return
+	}
+
+	tmp := l.Last
+	for tmp != nil {
+		fmt.Println(string("\033[34m"), tmp.Data, string("\033[0m"))
+		tmp = tmp.Previous
 	}
 	locker.RUnlock()
 	fmt.Println()
@@ -77,7 +95,7 @@ func (l *List) AddCandle(newCandle Candle, emptyCandles Candle, interval int) { 
 	since := time.Since(l.GetLast().Data.GetEndTime().Time).Minutes()
 	if since < time.Duration(interval).Minutes() { // if the time since the close of the last candle is less than the time of the connection's interval, the candle you received will just be added to the end
 		newCandle.SetStartTime(l.GetLast().Data.GetEndTime().Time)
-		node := Node{Data: newCandle, Next: nil}
+		node := Node{Data: newCandle, Next: nil, Previous: nil}
 		l.AddToEnd(&node)
 	} else {
 		newNodeCount := int(int(since) / interval)
@@ -91,10 +109,10 @@ func (l *List) AddCandle(newCandle Candle, emptyCandles Candle, interval int) { 
 			emptyCandles.SetStartTime(emptyCandles.GetStartTime().Time.Add(time.Minute * time.Duration(interval)))
 			emptyCandles.SetEndTime(emptyCandles.GetEndTime().Time.Add(time.Minute * time.Duration(interval)))
 
-			node := Node{Data: emptyCandles, Next: nil}
+			node := Node{Data: emptyCandles, Next: nil, Previous: nil}
 			l.AddToEnd(&node)
 		}
-		node := Node{Data: newCandle, Next: nil}
+		node := Node{Data: newCandle, Next: nil, Previous: nil}
 		l.AddToEnd(&node)
 	}
 }

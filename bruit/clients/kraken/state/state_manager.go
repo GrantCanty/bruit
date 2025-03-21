@@ -3,7 +3,6 @@ package state
 import (
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/shared_types"
-	//"log"
 	"strconv"
 	"time"
 )
@@ -29,31 +28,8 @@ func (sm StateManager) GetChannelID(metaData shared_types.SubscriptionMetaData) 
 	return metaData.GetChannelID()
 }
 
-/*func (sm *StateManager) HandleOHLCSuccessResponse(resp *types.OHLCSuccessResponse) {
-	if _, found := sm.Client.subscriptions[resp.GetMetaData()]; found {
-		sm.Client.subscriptions[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}
-	} else {
-		if sm.Client.subscriptions == nil {
-			sm.Client.subscriptions = make(map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData)
-		}
-		sm.Client.subscriptions[resp.GetMetaData()] = types.KrakenOHLCSubscriptionData{Interval: resp.Subscription.Interval, Status: resp.Status}
-	}
-	log.Println("subscription list: ", sm.Client.subscriptions)
-}*/
-
 func (sm *StateManager) OnOHLCResponse(data types.OHLCResponse, ohlcMap *shared_types.OHLCVals) {
-	/**
-	*  Add:
-	*  OHLCResponseHandler func to add responses to a LL. should delete the head if length is too long (ex: 10,000)
-	*  CalcTechnicals func to recalculate the values of technical indicators
-	*  Eval func to evaluate if buy/sell condition is met
-	*  PlaceOrder func depending on Eval func
-	**/
 	sm.handleOHLCResponse(data, ohlcMap)
-	//oo := ohlcMap.Vals
-	//gg := (*(*ohlcMap).GetVals()[data.ChannelID]).GetList()
-	//fmt.Println(gg)
-
 	ohlcMap.GetData()[data.GetMetaData()].GetList().Print(ohlcMap.GetMutex())
 }
 

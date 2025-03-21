@@ -44,7 +44,7 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 			select {
 			case res := <-ohlc:
 				log.Println("ohlcResponse res: ", res)
-				c.HandleOHLCResponse(res, ohlcMap)
+				HandleOHLCResponse(s, c, db, res, ohlcMap)
 			case res := <-trade:
 				log.Println("tradeResponse res: ", res)
 			case res := <-ohlcsub:
@@ -79,4 +79,15 @@ func (p *SystemsTesting) Stop() {
 func (p *SystemsTesting) Wait(s settings.BruitSettings, c clients.BruitCryptoClient) {
 	go c.DeferChanClose(s)
 	s.Wait()
+}
+
+func HandleOHLCResponse(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB, data types.OHLCResponse, ohlcMap *shared_types.OHLCVals) {
+	/**
+	*  Add:
+	*  OHLCResponseHandler func to add responses to a LL. should delete the head if length is too long (ex: 10,000)
+	*  CalcTechnicals func to recalculate the values of technical indicators
+	*  Eval func to evaluate if buy/sell condition is met
+	*  PlaceOrder func depending on Eval func
+	**/
+	c.HandleOHLCResponse(data, ohlcMap)
 }
