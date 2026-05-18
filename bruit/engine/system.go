@@ -3,13 +3,10 @@ package engine
 import (
 	"bruit/bruit/clients"
 	"bruit/bruit/clients/kraken/types"
-	"bruit/bruit/shared_types"
-	"log"
-
-	//"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
-	//"log"
+	"bruit/bruit/shared_types"
+	"log"
 )
 
 func NewSystemsTestingEngine(parent BruitEngine) BruitEngine {

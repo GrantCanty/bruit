@@ -33,7 +33,7 @@ type Socket struct {
 	ConnectionOptions ConnectionOptions
 	RequestHeader     http.Header
 	OnConnected       func(socket Socket)
-	OnTextMessage     func(message string, socket Socket)
+	OnTextMessage     func(message []byte, socket Socket)
 	OnBinaryMessage   func(data []byte, socket Socket)
 	OnConnectError    func(err error, socket Socket)
 	OnDisconnected    func(err error, socket Socket)
@@ -159,7 +159,7 @@ func (socket *Socket) Connect() {
 			case websocket.TextMessage:
 				socket.receiveMu.Lock()
 				if socket.OnTextMessage != nil {
-					socket.OnTextMessage(string(message), *socket)
+					socket.OnTextMessage(message, *socket)
 				}
 				socket.receiveMu.Unlock()
 			case websocket.BinaryMessage:

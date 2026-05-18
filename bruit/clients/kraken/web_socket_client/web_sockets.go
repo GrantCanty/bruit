@@ -30,9 +30,7 @@ type MessageTypeIdentifier struct {
 	Type    string `json:"type"`
 }
 
-func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.LoggingSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCsubch chan types.OHLCSuccessResponse) {
-	byteResponse := []byte(response)
-
+func (client *WebSocketClient) PubJsonDecoder(byteResponse []byte, logger settings.LoggingSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCsubch chan types.OHLCSuccessResponse) {
 	if ohlcResp, err := decoders.OhlcResponseDecoder(byteResponse, logger.GetLoggingConsole()); err == nil {
 		OHLCch <- *ohlcResp
 		return
@@ -53,9 +51,7 @@ func (client *WebSocketClient) PubJsonDecoder(response string, logger settings.L
 	}
 }
 
-func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.LoggingSettings, Bookch chan types.BookRespV2UpdateJSON, bookDepth int) {
-	byteResponse := []byte(response)
-
+func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger settings.LoggingSettings, Bookch chan types.BookRespV2UpdateJSON, bookDepth int) {
 	var msgType MessageTypeIdentifier
 	if err := json.Unmarshal(byteResponse, &msgType); err != nil {
 		log.Println("Error identifying message type:", err)
@@ -70,10 +66,20 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 		case "update":
 			if resp, err := decoders.UpdateBookResponseDecoderV2(byteResponse, logger.GetLoggingConsole()); err == nil {
 				symbol := resp.Data[0].Symbol
+				log.Println("symbol from book update: ", symbol)
 
 				client.orderBooksMutex.Lock()
+				log.Println("client.orderBooks: ", client.orderBooks)
+				if client.orderBooks[symbol] == nil {
+					client.orderBooksMutex.Unlock()
+					log.Printf("Warning: received book update for %s before snapshot was initialized\n", symbol)
+					return
+				}
 				client.orderBooks[symbol].Mutex.Lock()
 				book := client.orderBooks[symbol].Book
+				if !resp.Data[0].Timestamp.IsZero() {
+					book.Timestamp = resp.Data[0].Timestamp
+				}
 
 				for _, bid := range resp.Data[0].Bids {
 					if val, err := bid.Quantity.Float64(); err == nil {
@@ -149,15 +155,19 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 					asksMap.Put(ask.Price, ask.Quantity)
 				}
 
+				timestamp := resp.Data[0].Timestamp
+				if timestamp.IsZero() {
+					timestamp = t
+				}
 				book := &types.OrderBookWithMutexTree{
 					Book: &types.BookRespV2UpdateJSON{
 						BookRespV2SnapshotJSON: types.BookRespV2SnapshotJSON{
-							Symbol:   symbol,
-							Asks:     asksMap,
-							Bids:     bidsMap,
-							Checksum: resp.Data[0].Checksum,
+							Symbol:    symbol,
+							Asks:      asksMap,
+							Bids:      bidsMap,
+							Checksum:  resp.Data[0].Checksum,
+							Timestamp: timestamp,
 						},
-						Timestamp: t,
 					},
 					Mutex: sync.RWMutex{},
 				}
@@ -169,7 +179,7 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				break
 			}
 		default:
-			log.Println("default 2. unsuccessful attempt at unmarshalling data ", response)
+			log.Println("default 2. unsuccessful attempt at unmarshalling data ", string(byteResponse))
 		}
 	case "status":
 		switch msgType.Type {
@@ -180,20 +190,19 @@ func (client *WebSocketClient) BookJsonDecoder(response string, logger settings.
 				log.Println("error in StatusBookResponseV2WS switch: ", err)
 			}
 		default:
-			log.Println("in update part of switch. unknown data response: ", response)
+			log.Println("in update part of switch. unknown data response: ", string(byteResponse))
 		}
 	default:
 		if resp, err := decoders.SubscribeResponseV2WS(byteResponse, logger.GetLoggingConsole()); err == nil {
 			log.Println("SubscribeResponseV2WS resp: ", resp)
 		} else {
-			log.Println("default 1. unsuccessful attempt at unmarshalling data ", response, err)
+			log.Println("default 1. unsuccessful attempt at unmarshalling data ", string(byteResponse), err)
 		}
 	}
 }
 
-func (client *WebSocketClient) PrivJsonDecoder(response string, logger settings.LoggingSettings) {
+func (client *WebSocketClient) PrivJsonDecoder(byteResponse []byte, logger settings.LoggingSettings) {
 	var resp interface{}
-	byteResponse := []byte(response)
 
 	resp, err := decoders.OpenOrdersResponseDecoder(byteResponse, logger.GetLoggingConsole())
 	if err != nil {

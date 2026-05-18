@@ -99,7 +99,7 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 	}
 
 	ws_client.ReceiveLocker(client.WebSocket.GetPubSocketPointer())
-	client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
+	client.WebSocket.GetPubSocketPointer().OnTextMessage = func(message []byte, socket ws_client.Socket) {
 		client.WebSocket.PubJsonDecoder(message, s.GetLoggingSettings(), OHLCch, Tradech, OHLCsubch)
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocketPointer())
@@ -151,7 +151,7 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 	}
 
 	ws_client.ReceiveLocker(client.WebSocket.GetBookSocketPointer())
-	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
+	client.WebSocket.GetBookSocketPointer().OnTextMessage = func(message []byte, socket ws_client.Socket) {
 		client.WebSocket.BookJsonDecoder(message, s.GetLoggingSettings(), Bookch, bookDepth)
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocketPointer())
@@ -235,7 +235,7 @@ func (client *KrakenClient) PrivDecoder(s settings.BruitSettings) {
 	}
 
 	ws_client.ReceiveLocker(client.WebSocket.GetPrivSocketPointer())
-	client.WebSocket.GetPrivSocketPointer().OnTextMessage = func(message string, socket ws_client.Socket) {
+	client.WebSocket.GetPrivSocketPointer().OnTextMessage = func(message []byte, socket ws_client.Socket) {
 		client.WebSocket.PrivJsonDecoder(message, s.GetLoggingSettings())
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPrivSocketPointer())

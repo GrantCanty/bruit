@@ -25,3 +25,5 @@ testmain.go
 nm.go
 testyy.go
 /testing
+
+.geminiignore

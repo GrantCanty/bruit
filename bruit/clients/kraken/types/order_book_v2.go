@@ -28,27 +28,27 @@ type UpdateBookRespV2WS struct {
 }
 
 type BookRespV2Snapshot struct {
-	Symbol   string       `json:"symbol"`
-	Bids     []LevelsV2WS `json:"bids"`
-	Asks     []LevelsV2WS `json:"asks"`
-	Checksum uint32       `json:"checksum"`
+	Symbol    string       `json:"symbol"`
+	Bids      []LevelsV2WS `json:"bids"`
+	Asks      []LevelsV2WS `json:"asks"`
+	Checksum  uint32       `json:"checksum"`
+	Timestamp time.Time    `json:"timestamp"`
 }
 
 type BookRespV2SnapshotJSON struct {
-	Symbol   string       `json:"symbol"`
-	Bids     *treemap.Map `json:"bids"`
-	Asks     *treemap.Map `json:"asks"`
-	Checksum uint32       `json:"checksum"`
+	Symbol    string       `json:"symbol"`
+	Bids      *treemap.Map `json:"bids"`
+	Asks      *treemap.Map `json:"asks"`
+	Checksum  uint32       `json:"checksum"`
+	Timestamp time.Time    `json:"timestamp"`
 }
 
 type BookRespV2Update struct {
 	BookRespV2Snapshot
-	Timestamp time.Time `json:"timestamp"`
 }
 
 type BookRespV2UpdateJSON struct {
 	BookRespV2SnapshotJSON
-	Timestamp time.Time `json:"timestamp"`
 }
 
 type LevelsV2WS struct {
@@ -129,12 +129,12 @@ func DeepCopyOrderBook(original BookRespV2UpdateJSON) BookRespV2UpdateJSON {
 	// Create a new book
 	copy := BookRespV2UpdateJSON{
 		BookRespV2SnapshotJSON: BookRespV2SnapshotJSON{
-			Symbol:   original.Symbol,
-			Bids:     nil,
-			Asks:     nil,
-			Checksum: original.Checksum,
+			Symbol:    original.Symbol,
+			Bids:      nil,
+			Asks:      nil,
+			Checksum:  original.Checksum,
+			Timestamp: original.Timestamp,
 		},
-		Timestamp: original.Timestamp,
 	}
 
 	// Create new treemaps for bids and asks
