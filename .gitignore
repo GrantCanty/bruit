@@ -27,3 +27,7 @@ testyy.go
 /testing
 
 .geminiignore
+.DS_store
+
+*.md
+!README.md
