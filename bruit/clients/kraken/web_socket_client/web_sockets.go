@@ -291,27 +291,15 @@ func (client *WebSocketClient) InitSockets() { // used to initialized public and
 	ws_client.PrivateInit(&client.privSocket, kraken_data.GetPrivWSUrl())
 }
 
-func (ws WebSocketClient) GetPubSocket() ws_client.Socket {
-	return ws.pubSocket
-}
-
-func (ws *WebSocketClient) GetPubSocketPointer() *ws_client.Socket {
+func (ws *WebSocketClient) GetPubSocket() *ws_client.Socket {
 	return &ws.pubSocket
 }
 
-func (ws WebSocketClient) GetBookSocket() ws_client.Socket {
-	return ws.bookSocket
-}
-
-func (ws *WebSocketClient) GetBookSocketPointer() *ws_client.Socket {
+func (ws *WebSocketClient) GetBookSocket() *ws_client.Socket {
 	return &ws.bookSocket
 }
 
-func (ws WebSocketClient) GetPrivSocket() ws_client.Socket {
-	return ws.privSocket
-}
-
-func (ws *WebSocketClient) GetPrivSocketPointer() *ws_client.Socket {
+func (ws *WebSocketClient) GetPrivSocket() *ws_client.Socket {
 	return &ws.privSocket
 }
 

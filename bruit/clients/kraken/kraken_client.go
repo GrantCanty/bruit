@@ -101,14 +101,14 @@ func (client *KrakenClient) DeferChanClose(s settings.BruitSettings) {
 func (client *KrakenClient) closeChannelsAndConnections() {
 	close(client.WebSocket.GetPrivChan())
 
-	if client.WebSocket.GetPubSocket().IsConnected {
-		client.WebSocket.GetPubSocketPointer().Close()
+	if client.WebSocket.GetPubSocket().GetIsConnected() {
+		client.WebSocket.GetPubSocket().Close()
 	}
-	if client.WebSocket.GetBookSocket().IsConnected {
-		client.WebSocket.GetBookSocketPointer().Close()
+	if client.WebSocket.GetBookSocket().GetIsConnected() {
+		client.WebSocket.GetBookSocket().Close()
 	}
-	if client.WebSocket.GetPrivSocket().IsConnected {
-		client.WebSocket.GetPrivSocketPointer().Close()
+	if client.WebSocket.GetPrivSocket().GetIsConnected() {
+		client.WebSocket.GetPrivSocket().Close()
 	}
 }
 

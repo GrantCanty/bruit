@@ -15,16 +15,16 @@ func (sm *StateManager) Init(bals types.AccountBalanceResp, assets types.AssetIn
 	sm.Client.initPairs(pairs)
 }
 
-func (sm StateManager) GetSubscriptions() map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData {
+func (sm *StateManager) GetSubscriptions() map[shared_types.SubscriptionMetaData]shared_types.SubscriptionData {
 	return sm.Client.subscriptions
 }
 
-func (sm StateManager) GetInterval(metaData shared_types.SubscriptionMetaData) int {
+func (sm *StateManager) GetInterval(metaData shared_types.SubscriptionMetaData) int {
 	//log.Println("interval: ", sm.Client.subscriptions[metaData])
 	return sm.Client.subscriptions[metaData].GetData().(types.KrakenOHLCSubscriptionData).Interval
 }
 
-func (sm StateManager) GetChannelID(metaData shared_types.SubscriptionMetaData) int {
+func (sm *StateManager) GetChannelID(metaData shared_types.SubscriptionMetaData) int {
 	return metaData.GetChannelID()
 }
 

@@ -18,11 +18,11 @@ type Empty struct {
 
 var logger = logging.GetLogger(reflect.TypeOf(Empty{}).PkgPath()).SetLevel(logging.OFF)
 
-func (socket Socket) EnableLogging() {
+func (socket *Socket) EnableLogging() {
 	logger.SetLevel(logging.TRACE)
 }
 
-func (socket Socket) GetLogger() logging.Logger {
+func (socket *Socket) GetLogger() logging.Logger {
 	return logger
 }
 
@@ -32,13 +32,13 @@ type Socket struct {
 	Url               string
 	ConnectionOptions ConnectionOptions
 	RequestHeader     http.Header
-	OnConnected       func(socket Socket)
-	OnTextMessage     func(message []byte, socket Socket)
-	OnBinaryMessage   func(data []byte, socket Socket)
-	OnConnectError    func(err error, socket Socket)
-	OnDisconnected    func(err error, socket Socket)
-	OnPingReceived    func(data string, socket Socket)
-	OnPongReceived    func(data string, socket Socket)
+	OnConnected       func(socket *Socket)
+	OnTextMessage     func(message []byte, socket *Socket)
+	OnBinaryMessage   func(data []byte, socket *Socket)
+	OnConnectError    func(err error, socket *Socket)
+	OnDisconnected    func(err error, socket *Socket)
+	OnPingReceived    func(data string, socket *Socket)
+	OnPongReceived    func(data string, socket *Socket)
 	IsConnected       bool
 	isConnectedMu     sync.RWMutex
 	Timeout           time.Duration
@@ -96,7 +96,7 @@ func (socket *Socket) Connect() {
 		}
 		socket.SetIsConnected(false)
 		if socket.OnConnectError != nil {
-			socket.OnConnectError(err, *socket)
+			socket.OnConnectError(err, socket)
 		}
 		return
 	}
@@ -105,14 +105,14 @@ func (socket *Socket) Connect() {
 
 	if socket.OnConnected != nil {
 		socket.SetIsConnected(true)
-		socket.OnConnected(*socket)
+		socket.OnConnected(socket)
 	}
 
 	defaultPingHandler := socket.Conn.PingHandler()
 	socket.Conn.SetPingHandler(func(appData string) error {
 		logger.Trace.Println("Received PING from server")
 		if socket.OnPingReceived != nil {
-			socket.OnPingReceived(appData, *socket)
+			socket.OnPingReceived(appData, socket)
 		}
 		return defaultPingHandler(appData)
 	})
@@ -121,7 +121,7 @@ func (socket *Socket) Connect() {
 	socket.Conn.SetPongHandler(func(appData string) error {
 		logger.Trace.Println("Received PONG from server")
 		if socket.OnPongReceived != nil {
-			socket.OnPongReceived(appData, *socket)
+			socket.OnPongReceived(appData, socket)
 		}
 		return defaultPongHandler(appData)
 	})
@@ -132,7 +132,7 @@ func (socket *Socket) Connect() {
 		logger.Warning.Println("Disconnected from server ", result)
 		if socket.OnDisconnected != nil {
 			socket.SetIsConnected(false)
-			socket.OnDisconnected(errors.New(text), *socket)
+			socket.OnDisconnected(errors.New(text), socket)
 		}
 		return result
 	})
@@ -149,7 +149,7 @@ func (socket *Socket) Connect() {
 				logger.Error.Println("read:", err)
 				if socket.OnDisconnected != nil {
 					socket.SetIsConnected(false)
-					socket.OnDisconnected(err, *socket)
+					socket.OnDisconnected(err, socket)
 				}
 				return
 			}
@@ -159,13 +159,13 @@ func (socket *Socket) Connect() {
 			case websocket.TextMessage:
 				socket.receiveMu.Lock()
 				if socket.OnTextMessage != nil {
-					socket.OnTextMessage(message, *socket)
+					socket.OnTextMessage(message, socket)
 				}
 				socket.receiveMu.Unlock()
 			case websocket.BinaryMessage:
 				socket.receiveMu.Lock()
 				if socket.OnBinaryMessage != nil {
-					socket.OnBinaryMessage(message, *socket)
+					socket.OnBinaryMessage(message, socket)
 				}
 				socket.receiveMu.Unlock()
 			}
@@ -204,7 +204,7 @@ func (socket *Socket) Close() {
 	socket.Conn.Close()
 	if socket.OnDisconnected != nil {
 		socket.SetIsConnected(false)
-		socket.OnDisconnected(err, *socket)
+		socket.OnDisconnected(err, socket)
 	}
 }
 
@@ -248,28 +248,28 @@ func PrivateInit(socket *Socket, PrivWSUrl string) {
 	socket.bookConn = false
 }
 
-func IsPublicSocket(socket Socket) bool {
+func (socket *Socket) IsPublicSocket() bool {
 	if socket.publicConn == true && socket.privateConn == false && socket.bookConn == false {
 		return true
 	}
 	return false
 }
 
-func IsPrivateSocket(socket Socket) bool {
+func (socket *Socket) IsPrivateSocket() bool {
 	if socket.publicConn == false && socket.privateConn == true && socket.bookConn == false {
 		return true
 	}
 	return false
 }
 
-func IsBookSocket(socket Socket) bool {
+func (socket *Socket) IsBookSocket() bool {
 	if socket.publicConn == false && socket.privateConn == false && socket.bookConn == true {
 		return true
 	}
 	return false
 }
 
-func IsInit(socket Socket) bool {
+func (socket *Socket) IsInit() bool {
 	if socket.publicConn == false && socket.privateConn == false && socket.bookConn == false {
 		return false
 	}
