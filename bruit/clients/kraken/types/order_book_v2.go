@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"hash/crc32"
 	"log"
 	"strconv"
@@ -98,20 +99,34 @@ func NumericStringComparator(a, b interface{}) int {
 	var numB float64
 	var errB error
 
-	aNumStr, okA := a.(NumericString)
-	bNumStr, okB := b.(NumericString)
+	var strA string
+	var strB string
 
-	if okA && okB {
-		numA, errA = strconv.ParseFloat(string(aNumStr), 64)
-		numB, errB = strconv.ParseFloat(string(bNumStr), 64)
+	switch v := a.(type) {
+	case NumericString:
+		strA = string(v)
+		numA, errA = strconv.ParseFloat(strA, 64)
+	case string:
+		strA = v
+		numA, errA = strconv.ParseFloat(strA, 64)
+	default:
+		errA = fmt.Errorf("unsupported type for a: %T", a)
 	}
-	if b, ok := b.(NumericString); ok {
-		numB, errB = strconv.ParseFloat(string(b), 64)
+
+	switch v := b.(type) {
+	case NumericString:
+		strB = string(v)
+		numB, errB = strconv.ParseFloat(strB, 64)
+	case string:
+		strB = v
+		numB, errB = strconv.ParseFloat(strB, 64)
+	default:
+		errB = fmt.Errorf("unsupported type for b: %T", b)
 	}
 
 	if errA != nil || errB != nil {
 		// Fallback to string comparison if parsing fails
-		return utils.StringComparator(string(aNumStr), string(bNumStr))
+		return utils.StringComparator(strA, strB)
 	}
 
 	// Numeric comparison
@@ -138,7 +153,6 @@ func DeepCopyOrderBook(original BookRespV2UpdateJSON) BookRespV2UpdateJSON {
 	}
 
 	// Create new treemaps for bids and asks
-	copy.Bids = treemap.NewWith(NumericStringComparator) // Assuming you're using a custom comparator
 	copy.Bids = treemap.NewWith(func(key interface{}, value interface{}) int {
 		return -NumericStringComparator(key, value) // Descending order
 	})
