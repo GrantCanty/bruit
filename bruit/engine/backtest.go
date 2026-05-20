@@ -8,7 +8,7 @@ import (
 )
 
 func NewBackTestEngine(parent BruitEngine) BruitEngine {
-	return newProduction(parent)
+	return newBackTest(parent)
 }
 
 func newBackTest(parent BruitEngine) BruitEngine {
