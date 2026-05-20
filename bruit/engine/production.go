@@ -50,6 +50,8 @@ func (p *Production) Run(s settings.BruitSettings, c clients.BruitCryptoClient, 
 
 			case res := <-trade:
 				log.Println("tradeResponse res: ", res)
+			case <-s.CtxDone():
+				return
 			}
 
 		}

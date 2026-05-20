@@ -47,6 +47,8 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 			case res := <-ohlcsub:
 				log.Println("ohlcsub res: ", res)
 				c.HandleOHLCSuccessResponse(res)
+			case <-s.CtxDone():
+				return
 			}
 		}
 	}(OHLCch, Tradech, OHLCSubch, &ohlcMap)
