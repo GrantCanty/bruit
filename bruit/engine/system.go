@@ -61,8 +61,13 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 
 	go c.BookDecoder(s, orderBookCh, bookDepth)
 	go func(book chan types.BookRespV2UpdateJSON) {
-		for res := range book {
-			log.Println("orderbook: ", res)
+		for {
+			select {
+			case res := <-book:
+				log.Println("orderbook: ", res)
+			case <-s.CtxDone():
+				return
+			}
 		}
 	}(orderBookCh)
 
