@@ -30,11 +30,9 @@ func (p *Production) Run(s settings.BruitSettings, c clients.BruitCryptoClient, 
 	s.Add(1)
 	defer s.Done()
 
-	var OHLCch chan types.OHLCResponse
-	OHLCch = make(chan types.OHLCResponse)
-
-	var Tradech chan types.TradeResponse
-	Tradech = make(chan types.TradeResponse)
+	OHLCch := make(chan types.OHLCResponse, 1024)
+	Tradech := make(chan types.TradeResponse, 1024)
+	// OHLCSubch := make(chan types.OHLCSuccessResponse, 16)
 
 	//go c.PubDecoder(s, OHLCch, Tradech)
 

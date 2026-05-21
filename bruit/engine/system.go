@@ -29,9 +29,9 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	s.Add(1)
 	defer s.Done()
 
-	OHLCch := make(chan types.OHLCResponse)
-	Tradech := make(chan types.TradeResponse)
-	OHLCSubch := make(chan types.OHLCSuccessResponse)
+	OHLCch := make(chan types.OHLCResponse, 1024)
+	Tradech := make(chan types.TradeResponse, 1024)
+	OHLCSubch := make(chan types.OHLCSuccessResponse, 16)
 
 	ohlcMap := shared_types.OHLCVals{}
 
@@ -56,7 +56,7 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
 	c.SubscribeToHoldingsOHLC(s, 1)
 
-	orderBookCh := make(chan types.BookRespV2UpdateJSON)
+	orderBookCh := make(chan types.BookRespV2UpdateJSON, 1024)
 	var bookDepth int = 10
 
 	go c.BookDecoder(s, orderBookCh, bookDepth)

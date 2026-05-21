@@ -132,6 +132,7 @@ func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger setti
 				bookCopy := types.DeepCopyOrderBook(*book)
 				client.orderBooksMutex.Unlock()
 				client.orderBooks[symbol].Mutex.Unlock()
+				log.Printf("book ch write. %d elements in queue. %d spots left\n", len(Bookch), cap(Bookch)-len(Bookch))
 				Bookch <- bookCopy
 				break
 			}
@@ -175,6 +176,7 @@ func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger setti
 				client.orderBooksMutex.Lock()
 				client.orderBooks[symbol] = book
 				client.orderBooksMutex.Unlock()
+				log.Printf("book ch write (snapshot). %d elements in queue. %d spots left\n", len(Bookch), cap(Bookch)-len(Bookch))
 				Bookch <- *book.Book
 				break
 			}
