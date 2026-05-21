@@ -221,7 +221,7 @@ func (client *WebSocketClient) PrivJsonDecoder(byteResponse []byte, logger setti
 }
 
 func (ws *WebSocketClient) InitChannels() {
-	ws.privChan = make(chan interface{})
+	ws.privChan = make(chan interface{}, 256)
 }
 
 func (ws *WebSocketClient) InitBook() {
