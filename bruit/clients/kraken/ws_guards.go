@@ -60,6 +60,9 @@ func PubSocketGuard(client *web_socket.WebSocketClient) error { // checks if soc
 
 		log.Println("Connecting to pub server...")
 		socket.Connect()
+		if !socket.GetIsConnected() {
+			return errors.New("failed to connect to pub server")
+		}
 	}
 
 	return nil
@@ -85,6 +88,9 @@ func BookSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 
 		log.Println("Connecting to book server...")
 		socket.Connect()
+		if !socket.GetIsConnected() {
+			return errors.New("failed to connect to book server")
+		}
 	}
 	return nil
 }
@@ -108,6 +114,9 @@ func PrivSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 		}
 
 		socket.Connect()
+		if !socket.GetIsConnected() {
+			return errors.New("failed to connect to private server")
+		}
 	}
 	return nil
 }
