@@ -68,15 +68,17 @@ func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger setti
 				symbol := resp.Data[0].Symbol
 				log.Println("symbol from book update: ", symbol)
 
-				client.orderBooksMutex.Lock()
+				client.orderBooksMutex.RLock()
+				entry := client.orderBooks[symbol]
 				log.Println("client.orderBooks: ", client.orderBooks)
-				if client.orderBooks[symbol] == nil {
-					client.orderBooksMutex.Unlock()
+				if entry == nil {
+					client.orderBooksMutex.RUnlock()
 					log.Printf("Warning: received book update for %s before snapshot was initialized\n", symbol)
 					return
 				}
-				client.orderBooks[symbol].Mutex.Lock()
-				book := client.orderBooks[symbol].Book
+				entry.Mutex.Lock()
+				client.orderBooksMutex.RUnlock()
+				book := entry.Book
 				if !resp.Data[0].Timestamp.IsZero() {
 					book.Timestamp = resp.Data[0].Timestamp
 				}
@@ -130,8 +132,8 @@ func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger setti
 				}
 
 				bookCopy := types.DeepCopyOrderBook(*book)
-				client.orderBooksMutex.Unlock()
-				client.orderBooks[symbol].Mutex.Unlock()
+				//client.orderBooksMutex.Unlock()
+				entry.Mutex.Unlock()
 				log.Printf("book ch write. %d elements in queue. %d spots left\n", len(Bookch), cap(Bookch)-len(Bookch))
 				Bookch <- bookCopy
 				break
