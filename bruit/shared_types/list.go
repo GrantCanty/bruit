@@ -44,6 +44,7 @@ func (l *List) AddToEnd(n *Node) {
 
 func (l List) Print(locker *sync.RWMutex) {
 	locker.RLock()
+	defer locker.RUnlock()
 
 	if l.IsEmpty() {
 		return
@@ -54,12 +55,13 @@ func (l List) Print(locker *sync.RWMutex) {
 		fmt.Println(string("\033[34m"), tmp.Data, string("\033[0m"))
 		tmp = tmp.Next
 	}
-	locker.RUnlock()
+
 	fmt.Println()
 }
 
 func (l List) PrintReverse(locker *sync.RWMutex) {
 	locker.RLock()
+	defer locker.RUnlock()
 
 	if l.IsEmpty() {
 		return
@@ -70,7 +72,7 @@ func (l List) PrintReverse(locker *sync.RWMutex) {
 		fmt.Println(string("\033[34m"), tmp.Data, string("\033[0m"))
 		tmp = tmp.Previous
 	}
-	locker.RUnlock()
+
 	fmt.Println()
 }
 
