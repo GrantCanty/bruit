@@ -107,12 +107,14 @@ func (l *List) AddCandle(newCandle Candle, emptyCandles Candle, interval int) { 
 			last := l.GetLast()
 			close := last.Data.GetClose()
 
-			emptyCandles.SetCandle(last.Data.GetStartTime(), last.Data.GetEndTime(), close, close, close, close, zero, zero, 0)
-			emptyCandles.SetStartTime(emptyCandles.GetStartTime().Time.Add(time.Minute * time.Duration(interval)))
-			emptyCandles.SetEndTime(emptyCandles.GetEndTime().Time.Add(time.Minute * time.Duration(interval)))
+			emptyCandleCopyClone := emptyCandles.GetCandle()
+			emptyCandleCopyClone.SetCandle(last.Data.GetStartTime(), last.Data.GetEndTime(), close, close, close, close, zero, zero, 0)
+			emptyCandleCopyClone.SetStartTime(emptyCandleCopyClone.GetStartTime().Time.Add(time.Minute * time.Duration(interval)))
+			emptyCandleCopyClone.SetEndTime(emptyCandleCopyClone.GetEndTime().Time.Add(time.Minute * time.Duration(interval)))
 
-			node := Node{Data: emptyCandles, Next: nil, Previous: nil}
+			node := Node{Data: emptyCandleCopyClone, Next: nil, Previous: nil}
 			l.AddToEnd(&node)
+			emptyCandles = emptyCandleCopyClone
 		}
 		node := Node{Data: newCandle, Next: nil, Previous: nil}
 		l.AddToEnd(&node)
