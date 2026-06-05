@@ -17,12 +17,22 @@ func remove(slice []string, pos int) []string {
 
 // PUBLIC SOCKET METHODS
 
-func (client *KrakenClient) SubscribeToTrades(s settings.BruitSettings, pairs []string) {
+func (client *KrakenClient) SubscribeToTrades(s settings.BruitSettings, pairs []string) error {
 	if err := PubSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		if s.GetLoggingSettings().GetLoggingConsole() {
+			log.Printf("Error: %s", err)
+		}
+		return err
+
 	}
 
-	client.WebSocket.SubscribeToTrades(pairs)
+	if err := client.WebSocket.SubscribeToTrades(pairs); err != nil {
+		if s.GetLoggingSettings().GetLoggingConsole() {
+			log.Printf("Error: %s", err)
+		}
+		return err
+	}
+	return nil
 }
 
 /****
