@@ -92,6 +92,18 @@ type StatusBookResponseV2WS struct {
 	Data []BookRespV2Status
 }
 
+type UnsubscribeBookResponse struct {
+	Method string                `json:"method"` // value is "unsubscribe"
+	Params UnsubscribeBookParams `json:"params"`
+	ID     int                   `json:"req_id"`
+}
+
+type UnsubscribeBookParams struct {
+	Channel string   `json:"channel"`
+	Symbol  []string `json:"symbol"`
+	Depth   int      `json:"depth,omitempty"`
+}
+
 func NumericStringComparator(a, b interface{}) int {
 	// Convert strings to float64 for numeric comparison
 	var numA float64
