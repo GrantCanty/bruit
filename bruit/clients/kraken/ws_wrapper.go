@@ -234,6 +234,7 @@ func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, oty
 		Validate:  test,
 	})
 	client.WebSocket.GetPrivSocket().SendBinary(sub)
+	return nil
 }
 
 func (client *KrakenClient) PrivDecoder(s settings.BruitSettings) {
