@@ -203,9 +203,9 @@ func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) er
 	return nil
 }
 
-func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, tradeIDs []string) {
+func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, tradeIDs []string) error {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	sub, _ := json.Marshal(&types.CancelOrder{
@@ -214,11 +214,12 @@ func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, 
 		Txid:  tradeIDs,
 	})
 	client.WebSocket.GetPrivSocket().SendBinary(sub)
+	return nil
 }
 
-func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) {
+func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) error {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	test := strconv.FormatBool(testing)
