@@ -7,10 +7,14 @@ import (
 	"bruit/bruit/ws_client"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
 )
+
+var SubscribeToHoldingsOHLCError error = errors.New("No match for trading pair")
+var SubscribeToOHLCIntervalError error = errors.New("interval not supported")
 
 func remove(slice []string, pos int) []string {
 	return append(slice[:pos], slice[pos+1:]...)
@@ -20,17 +24,11 @@ func remove(slice []string, pos int) []string {
 
 func (client *KrakenClient) SubscribeToTrades(s settings.BruitSettings, pairs []string) error {
 	if err := PubSocketGuard(&client.WebSocket); err != nil {
-		if s.GetLoggingSettings().GetLoggingConsole() {
-			log.Printf("Error: %s", err)
-		}
 		return err
 
 	}
 
 	if err := client.WebSocket.SubscribeToTrades(pairs); err != nil {
-		if s.GetLoggingSettings().GetLoggingConsole() {
-			log.Printf("Error: %s", err)
-		}
 		return err
 	}
 	return nil
@@ -50,8 +48,7 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 	}
 
 	if !found {
-		log.Println("Interval is not supported for Kraken Client OHLC Subscription")
-		return errors.New("SubscribeToOHLC: interval not supported")
+		return fmt.Errorf("%s: %d", SubscribeToOHLCIntervalError, interval)
 	}
 
 	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
@@ -62,11 +59,10 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 	var wsPairs []string
 	for _, pair := range pairs {
 		_, err := client.GetOHLC(pair.Rest, interval)
-		wsPairs = append(wsPairs, pair.WS)
 		if err != nil {
 			return err
 		}
-		//log.Println(resp)
+		wsPairs = append(wsPairs, pair.WS)
 	}
 
 	client.WebSocket.SubscribeToOHLC(wsPairs, interval)
@@ -74,7 +70,7 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 }
 
 // search through assetResp in client manager from state package. if base and quote fields match the holding and base currency, add wsname to a slice
-func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int) {
+func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int) error {
 	holdings := client.GetHoldingsWithoutStaking()
 	var pairs []types.Pairs
 
@@ -92,7 +88,7 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 				}
 				client.State.OnOHLCResponse()*/
 			} else {
-				log.Println("ERROR: Pair could not find match ", pair, pair.Base)
+				return fmt.Errorf("%s: %v %v", SubscribeToHoldingsOHLCError, pair, pair.Base)
 			}
 		}
 	}
@@ -100,6 +96,7 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 	log.Println(pairs)
 
 	client.SubscribeToOHLC(s, pairs, interval)
+	return nil
 }
 
 func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCsubch chan types.OHLCSuccessResponse) {
