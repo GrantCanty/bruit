@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-var SubscribeToHoldingsOHLCError error = errors.New("No match for trading pair")
-var SubscribeToOHLCIntervalError error = errors.New("interval not supported")
+var ErrSubscribeToHoldingsOHLC error = errors.New("No match for trading pair")
+var ErrSubscribeToOHLCInterval error = errors.New("interval not supported")
 
 func remove(slice []string, pos int) []string {
 	return append(slice[:pos], slice[pos+1:]...)
@@ -48,7 +48,7 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 	}
 
 	if !found {
-		return fmt.Errorf("%s - interval: %d", SubscribeToOHLCIntervalError, interval)
+		return fmt.Errorf("%s - interval: %d", ErrSubscribeToOHLCInterval, interval)
 	}
 
 	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
@@ -88,7 +88,7 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 				}
 				client.State.OnOHLCResponse()*/
 			} else {
-				return fmt.Errorf("%s - pair: %v base: %v", SubscribeToHoldingsOHLCError, pair, pair.Base)
+				return fmt.Errorf("%s - pair: %v base: %v", ErrSubscribeToHoldingsOHLC, pair, pair.Base)
 			}
 		}
 	}
