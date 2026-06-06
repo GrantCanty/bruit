@@ -190,9 +190,9 @@ func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, toke
 	return nil
 }
 
-func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) {
+func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) error {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	sub, _ := json.Marshal(&types.Subscribe{
@@ -200,6 +200,7 @@ func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) {
 		Token: token,
 	})
 	client.WebSocket.GetPrivSocket().SendBinary(sub)
+	return nil
 }
 
 func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, tradeIDs []string) {
