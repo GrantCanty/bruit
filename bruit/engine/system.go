@@ -2,11 +2,14 @@ package engine
 
 import (
 	"bruit/bruit/clients"
+	"bruit/bruit/clients/kraken"
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/influx"
 	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
+	"bruit/bruit/ws_client"
 	"log"
+	"time"
 )
 
 func NewSystemsTestingEngine(parent BruitEngine) BruitEngine {
@@ -28,6 +31,8 @@ type SystemsTesting struct {
 func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClient, db *influx.DB) {
 	s.Add(1)
 	defer s.Done()
+
+	krakenClient := c.(*kraken.KrakenClient)
 
 	OHLCch := make(chan types.OHLCResponse, 1024)
 	Tradech := make(chan types.TradeResponse, 1024)
@@ -53,6 +58,37 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 		}
 	}(OHLCch, Tradech, OHLCSubch, &ohlcMap)
 
+	krakenClient.WebSocket.GetPubSocket().OnDisconnected = func(err error, socket *ws_client.Socket) {
+		log.Println("disconnected from pub socket: ", err)
+		go func() {
+			for i := 0; ; i++ {
+				// abort if the engine is shutting down
+				select {
+				case <-s.CtxDone():
+					return
+				default:
+				}
+
+				socket.Connect()
+				if socket.GetIsConnected() {
+					log.Println("successfully reconnected to pub socket")
+					break
+				}
+				// cap the shift to prevent integer overflow
+				shift := i
+				if shift > 7 {
+					shift = 7
+				}
+
+				// 32 << 7 = 4096
+				backoff := time.Duration(32 << shift)
+				time.Sleep(min(backoff, 4096) * time.Millisecond)
+			}
+
+			c.SubscribeToHoldingsOHLC(s, 1)
+		}()
+	}
+
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
 	c.SubscribeToHoldingsOHLC(s, 1)
 
@@ -70,6 +106,37 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 			}
 		}
 	}(orderBookCh)
+
+	krakenClient.WebSocket.GetBookSocket().OnDisconnected = func(err error, socket *ws_client.Socket) {
+		log.Println("disconnected from book socket: ", err)
+		go func() {
+			for i := 0; ; i++ {
+				// abort if the engine is shutting down
+				select {
+				case <-s.CtxDone():
+					return
+				default:
+				}
+
+				socket.Connect()
+				if socket.GetIsConnected() {
+					log.Println("successfully reconnected to book socket")
+					break
+				}
+				// cap the shift to prevent integer overflow
+				shift := i
+				if shift > 7 {
+					shift = 7
+				}
+
+				// 32 << 7 = 4096
+				backoff := time.Duration(32 << shift)
+				time.Sleep(min(backoff, 4096) * time.Millisecond)
+			}
+
+			c.SubscribeToOrderBook(s, bookDepth)
+		}()
+	}
 
 	c.SubscribeToOrderBook(s, bookDepth)
 
