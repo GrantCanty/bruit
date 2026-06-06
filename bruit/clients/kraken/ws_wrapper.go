@@ -6,6 +6,7 @@ import (
 	"bruit/bruit/settings"
 	"bruit/bruit/ws_client"
 	"encoding/json"
+	"errors"
 	"log"
 	"strconv"
 	"strings"
@@ -39,7 +40,7 @@ func (client *KrakenClient) SubscribeToTrades(s settings.BruitSettings, pairs []
 	*Add func to check if already subscribed to OHLC Stream
 	*Add func to get past OHLC data from rest API. Add to the candle map list
 *****/
-func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, interval int) {
+func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, interval int) error {
 	var found bool = false
 	for _, i := range kraken_data.GetOHLCIntervals() {
 		if i == interval {
@@ -50,11 +51,11 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 
 	if !found {
 		log.Println("Interval is not supported for Kraken Client OHLC Subscription")
-		return
+		return errors.New("SubscribeToOHLC: interval not supported")
 	}
 
 	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+		return err
 	}
 
 	// add func here that makes request to rest OHLC to get past OHLC data. data should then be added to the OHLC map
@@ -63,12 +64,13 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 		_, err := client.GetOHLC(pair.Rest, interval)
 		wsPairs = append(wsPairs, pair.WS)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		//log.Println(resp)
 	}
 
 	client.WebSocket.SubscribeToOHLC(wsPairs, interval)
+	return nil
 }
 
 // search through assetResp in client manager from state package. if base and quote fields match the holding and base currency, add wsname to a slice
