@@ -3,6 +3,7 @@ package ws_client
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -12,6 +13,8 @@ import (
 	"github.com/gorilla/websocket"
 	logging "github.com/sacOO7/go-logger"
 )
+
+var ErrSendBinary error = errors.New("failed to send binary on websocket")
 
 type Empty struct {
 }
@@ -130,9 +133,14 @@ func (socket *Socket) Connect() {
 	socket.Conn.SetCloseHandler(func(code int, text string) error {
 		result := defaultCloseHandler(code, text)
 		logger.Warning.Println("Disconnected from server ", result)
-		if socket.OnDisconnected != nil {
+
+		socket.receiveMu.Lock()
+		onDisconnected := socket.OnDisconnected
+		socket.receiveMu.Unlock()
+
+		if onDisconnected != nil {
 			socket.SetIsConnected(false)
-			socket.OnDisconnected(errors.New(text), socket)
+			onDisconnected(errors.New(text), socket)
 		}
 		return result
 	})
@@ -143,13 +151,20 @@ func (socket *Socket) Connect() {
 			if socket.Timeout != 0 {
 				socket.Conn.SetReadDeadline(time.Now().Add(socket.Timeout))
 			}
-			messageType, message, err := socket.Conn.ReadMessage()
 			socket.receiveMu.Unlock()
+
+			messageType, message, err := socket.Conn.ReadMessage()
+
 			if err != nil {
 				logger.Error.Println("read:", err)
-				if socket.OnDisconnected != nil {
+
+				socket.receiveMu.Lock()
+				onDisconnected := socket.OnDisconnected
+				socket.receiveMu.Unlock()
+
+				if onDisconnected != nil {
 					socket.SetIsConnected(false)
-					socket.OnDisconnected(err, socket)
+					onDisconnected(err, socket)
 				}
 				return
 			}
@@ -158,16 +173,20 @@ func (socket *Socket) Connect() {
 			switch messageType {
 			case websocket.TextMessage:
 				socket.receiveMu.Lock()
-				if socket.OnTextMessage != nil {
-					socket.OnTextMessage(message, socket)
-				}
+				onTextMessage := socket.OnTextMessage
 				socket.receiveMu.Unlock()
+
+				if onTextMessage != nil {
+					onTextMessage(message, socket)
+				}
 			case websocket.BinaryMessage:
 				socket.receiveMu.Lock()
-				if socket.OnBinaryMessage != nil {
-					socket.OnBinaryMessage(message, socket)
-				}
+				onBinaryMessage := socket.OnBinaryMessage
 				socket.receiveMu.Unlock()
+
+				if onBinaryMessage != nil {
+					onBinaryMessage(message, socket)
+				}
 			}
 		}
 	}()
@@ -181,12 +200,12 @@ func (socket *Socket) SendText(message string) {
 	}
 }
 
-func (socket *Socket) SendBinary(data []byte) {
+func (socket *Socket) SendBinary(data []byte) error {
 	err := socket.send(websocket.BinaryMessage, data)
 	if err != nil {
-		logger.Error.Println("write:", err)
-		return
+		return fmt.Errorf("%w - error message: %w", ErrSendBinary, err)
 	}
+	return nil
 }
 
 func (socket *Socket) send(messageType int, data []byte) error {

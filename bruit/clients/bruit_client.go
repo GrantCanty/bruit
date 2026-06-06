@@ -23,8 +23,8 @@ type BruitCryptoClient interface {
 	//ws subscriptions
 	SubscribeToTrades(s settings.BruitSettings, pairs []string) error
 	SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, depth int) error
-	SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int) error
-	SubscribeToOrderBook(s settings.BruitSettings, depth int) error
+	SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int) (skipped []string, err error)
+	SubscribeToOrderBook(s settings.BruitSettings, depth int) (skipped []string, err error)
 	SubscribeToOpenOrders(s settings.BruitSettings, token string) error
 
 	//decoders
