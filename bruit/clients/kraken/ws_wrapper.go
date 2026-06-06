@@ -91,7 +91,6 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 			}
 		}
 	}
-	//log.Println(pairs)
 	client.SubscribeToOHLC(s, pairs, interval)
 	return nil
 }
@@ -137,7 +136,6 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 			}
 		}
 	}
-	//log.Println("pairs: ", pairs)
 	var wsPairs []string
 	for _, pair := range pairs {
 		wsPairs = append(wsPairs, pair.WS)
@@ -173,19 +171,6 @@ func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, toke
 		return err
 	}
 
-	/*sub, err := json.Marshal(&types.Subscribe{
-		Event: "subscribe",
-		Subscription: &types.NameAndToken{
-			Name:  "openOrders",
-			Token: token,
-		},
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)*/
 	client.WebSocket.SubscribeToOpenOrders(token)
 	return nil
 }
