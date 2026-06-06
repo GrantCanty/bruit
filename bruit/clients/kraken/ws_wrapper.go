@@ -168,9 +168,9 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 
 // PRIVATE SOCKET METHODS
 
-func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, token string) {
+func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, token string) error {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	/*sub, err := json.Marshal(&types.Subscribe{
@@ -187,6 +187,7 @@ func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, toke
 
 	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)*/
 	client.WebSocket.SubscribeToOpenOrders(token)
+	return nil
 }
 
 func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) {
