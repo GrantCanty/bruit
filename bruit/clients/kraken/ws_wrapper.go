@@ -6,10 +6,14 @@ import (
 	"bruit/bruit/settings"
 	"bruit/bruit/ws_client"
 	"encoding/json"
-	"log"
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
+
+var ErrPairNotFound error = errors.New("No match for trading pair")
+var ErrSubscribeToOHLCInterval error = errors.New("interval not supported")
 
 func remove(slice []string, pos int) []string {
 	return append(slice[:pos], slice[pos+1:]...)
@@ -17,19 +21,23 @@ func remove(slice []string, pos int) []string {
 
 // PUBLIC SOCKET METHODS
 
-func (client *KrakenClient) SubscribeToTrades(s settings.BruitSettings, pairs []string) {
+func (client *KrakenClient) SubscribeToTrades(s settings.BruitSettings, pairs []string) error {
 	if err := PubSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
+
 	}
 
-	client.WebSocket.SubscribeToTrades(pairs)
+	if err := client.WebSocket.SubscribeToTrades(pairs); err != nil {
+		return err
+	}
+	return nil
 }
 
 /****
 	*Add func to check if already subscribed to OHLC Stream
 	*Add func to get past OHLC data from rest API. Add to the candle map list
 *****/
-func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, interval int) {
+func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, interval int) error {
 	var found bool = false
 	for _, i := range kraken_data.GetOHLCIntervals() {
 		if i == interval {
@@ -39,30 +47,29 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 	}
 
 	if !found {
-		log.Println("Interval is not supported for Kraken Client OHLC Subscription")
-		return
+		return fmt.Errorf("%s - interval: %d", ErrSubscribeToOHLCInterval, interval)
 	}
 
 	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+		return err
 	}
 
 	// add func here that makes request to rest OHLC to get past OHLC data. data should then be added to the OHLC map
 	var wsPairs []string
 	for _, pair := range pairs {
 		_, err := client.GetOHLC(pair.Rest, interval)
-		wsPairs = append(wsPairs, pair.WS)
 		if err != nil {
-			panic(err)
+			return err
 		}
-		//log.Println(resp)
+		wsPairs = append(wsPairs, pair.WS)
 	}
 
 	client.WebSocket.SubscribeToOHLC(wsPairs, interval)
+	return nil
 }
 
 // search through assetResp in client manager from state package. if base and quote fields match the holding and base currency, add wsname to a slice
-func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int) {
+func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int) error {
 	holdings := client.GetHoldingsWithoutStaking()
 	var pairs []types.Pairs
 
@@ -80,14 +87,12 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 				}
 				client.State.OnOHLCResponse()*/
 			} else {
-				log.Println("ERROR: Pair could not find match ", pair, pair.Base)
+				return fmt.Errorf("%s - pair: %v base: %v", ErrPairNotFound, pair, pair.Base)
 			}
 		}
 	}
-
-	log.Println(pairs)
-
 	client.SubscribeToOHLC(s, pairs, interval)
+	return nil
 }
 
 func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan types.OHLCResponse, Tradech chan types.TradeResponse, OHLCsubch chan types.OHLCSuccessResponse) {
@@ -110,11 +115,11 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 // ORDER BOOK SOCKET METHODS
 
 // Subscribe to the order book.
-func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth int) {
+func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth int) error {
 	holdings := client.GetHoldingsWithoutStaking()
 
 	if err := BookSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	var pairs []types.Pairs
@@ -127,16 +132,16 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 				p.Rest = pair.AltName
 				pairs = append(pairs, p)
 			} else {
-				log.Println("ERROR: Pair could not find match ", pair, pair.Base)
+				return fmt.Errorf("%s - pair: %v base: %v", ErrPairNotFound, pair, pair.Base)
 			}
 		}
 	}
-	log.Println("pairs: ", pairs)
 	var wsPairs []string
 	for _, pair := range pairs {
 		wsPairs = append(wsPairs, pair.WS)
 	}
 	client.WebSocket.SubscribeToOrderBook(wsPairs, depth)
+	return nil
 }
 
 // need a way to save the books to a struct. on message, we read
@@ -161,30 +166,18 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 
 // PRIVATE SOCKET METHODS
 
-func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, token string) {
+func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, token string) error {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
-	/*sub, err := json.Marshal(&types.Subscribe{
-		Event: "subscribe",
-		Subscription: &types.NameAndToken{
-			Name:  "openOrders",
-			Token: token,
-		},
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	client.WebSocket.GetPrivSocketPointer().SendBinary(sub)*/
 	client.WebSocket.SubscribeToOpenOrders(token)
+	return nil
 }
 
-func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) {
+func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) error {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	sub, _ := json.Marshal(&types.Subscribe{
@@ -192,11 +185,12 @@ func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) {
 		Token: token,
 	})
 	client.WebSocket.GetPrivSocket().SendBinary(sub)
+	return nil
 }
 
-func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, tradeIDs []string) {
+func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, tradeIDs []string) error {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	sub, _ := json.Marshal(&types.CancelOrder{
@@ -205,11 +199,12 @@ func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, 
 		Txid:  tradeIDs,
 	})
 	client.WebSocket.GetPrivSocket().SendBinary(sub)
+	return nil
 }
 
-func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) {
+func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, otype string, ttype string, pair string, vol string, price string, testing bool) error {
 	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	test := strconv.FormatBool(testing)
@@ -224,6 +219,7 @@ func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, oty
 		Validate:  test,
 	})
 	client.WebSocket.GetPrivSocket().SendBinary(sub)
+	return nil
 }
 
 func (client *KrakenClient) PrivDecoder(s settings.BruitSettings) {
@@ -241,5 +237,4 @@ func (client *KrakenClient) PrivDecoder(s settings.BruitSettings) {
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPrivSocket())
 
 	<-s.CtxDone()
-	return
 }

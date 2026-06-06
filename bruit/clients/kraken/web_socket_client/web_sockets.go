@@ -272,7 +272,7 @@ func (ws *WebSocketClient) InitBook() {
 	ws.orderBooks = make(map[string]*types.OrderBookWithMutexTree)
 }
 
-func (ws *WebSocketClient) SubscribeToTrades(pairs []string) {
+func (ws *WebSocketClient) SubscribeToTrades(pairs []string) error {
 	sub, err := json.Marshal(&types.Subscribe{
 		Event: "subscribe",
 		Subscription: &types.NameAndToken{
@@ -282,8 +282,10 @@ func (ws *WebSocketClient) SubscribeToTrades(pairs []string) {
 	})
 	if err != nil {
 		log.Println("error marshaling: ", err)
+		return err
 	}
 	ws.pubSocket.SendBinary(sub)
+	return nil
 }
 
 func (ws *WebSocketClient) SubscribeToOHLC(pairs []string, interval int) {

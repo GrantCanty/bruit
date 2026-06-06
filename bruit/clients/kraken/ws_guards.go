@@ -7,35 +7,47 @@ import (
 	"log"
 )
 
+var ErrNotPublicSocket error = errors.New("public socket function called on wrong socket")
+var ErrNotBookSocket error = errors.New("book socket function called on wrong socket")
+var ErrNotPrivSocket error = errors.New("private socket function called on wrong socket")
+
+var ErrPublicSocketNotInit error = errors.New("publicSocket is not initialized")
+var ErrBookSocketNotInit error = errors.New("bookSocket is not initialized")
+var ErrPrivSocketNotInit error = errors.New("privateSocket is not initialized")
+
+var ErrFailedToConnectToPubServer error = errors.New("failed to connect to pub server")
+var ErrFailedToConnectToBookServer error = errors.New("failed to connect to book server")
+var ErrFailedToConnectToPrivServer error = errors.New("failed to connect to private server")
+
 func IsPubSocketInit(client *web_socket.WebSocketClient) error {
 	if !client.GetPubSocket().IsInit() {
-		return errors.New("krakenClient is not initialized")
+		return ErrPublicSocketNotInit
 	}
 
 	if !client.GetPubSocket().IsPublicSocket() {
-		return errors.New("public socket function called on a private socket")
+		return ErrNotPublicSocket
 	}
 	return nil // nil means that socket is init
 }
 
 func IsBookSocketInit(client *web_socket.WebSocketClient) error { // checks if socket is init and public. returns error if either is not true
 	if !client.GetBookSocket().IsInit() {
-		return errors.New("bookSocket is not initialized")
+		return ErrBookSocketNotInit
 	}
 
 	if !client.GetBookSocket().IsBookSocket() {
-		return errors.New("public/private socket function called on a book socket")
+		return ErrNotBookSocket
 	}
 	return nil
 }
 
 func IsPrivSocketInit(client *web_socket.WebSocketClient) error { // checks if socket is init and public. returns error if either is not true
 	if !client.GetPrivSocket().IsInit() {
-		return errors.New("krakenClient is not initialized")
+		return ErrPrivSocketNotInit
 	}
 
 	if !client.GetPrivSocket().IsPrivateSocket() {
-		return errors.New("public socket function called on a private socket")
+		return ErrNotPrivSocket
 	}
 	return nil
 }
@@ -46,11 +58,11 @@ func PubSocketGuard(client *web_socket.WebSocketClient) error { // checks if soc
 	defer ws_client.ReceiveUnlocker(socket)
 
 	if !socket.IsInit() {
-		return errors.New("krakenClient is not initialized")
+		return ErrPublicSocketNotInit
 	}
 
 	if !socket.IsPublicSocket() {
-		return errors.New("public socket function called on a private socket")
+		return ErrNotPublicSocket
 	}
 
 	if !socket.GetIsConnected() {
@@ -61,7 +73,7 @@ func PubSocketGuard(client *web_socket.WebSocketClient) error { // checks if soc
 		log.Println("Connecting to pub server...")
 		socket.Connect()
 		if !socket.GetIsConnected() {
-			return errors.New("failed to connect to pub server")
+			return ErrFailedToConnectToPubServer
 		}
 	}
 
@@ -74,11 +86,11 @@ func BookSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 	defer ws_client.ReceiveUnlocker(socket)
 
 	if !socket.IsInit() {
-		return errors.New("bookSocket is not initialized")
+		return ErrBookSocketNotInit
 	}
 
 	if !socket.IsBookSocket() {
-		return errors.New("public/private socket function called on a book socket")
+		return ErrNotBookSocket
 	}
 
 	if !socket.GetIsConnected() {
@@ -89,7 +101,7 @@ func BookSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 		log.Println("Connecting to book server...")
 		socket.Connect()
 		if !socket.GetIsConnected() {
-			return errors.New("failed to connect to book server")
+			return ErrFailedToConnectToBookServer
 		}
 	}
 	return nil
@@ -101,11 +113,11 @@ func PrivSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 	defer ws_client.ReceiveUnlocker(socket)
 
 	if !socket.IsInit() {
-		return errors.New("krakenClient is not initialized")
+		return ErrPrivSocketNotInit
 	}
 
 	if !socket.IsPrivateSocket() {
-		return errors.New("public socket function called on a private socket")
+		return ErrNotPrivSocket
 	}
 
 	if !socket.GetIsConnected() {
@@ -115,7 +127,7 @@ func PrivSocketGuard(client *web_socket.WebSocketClient) error { // checks if so
 
 		socket.Connect()
 		if !socket.GetIsConnected() {
-			return errors.New("failed to connect to private server")
+			return ErrFailedToConnectToPrivServer
 		}
 	}
 	return nil

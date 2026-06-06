@@ -21,9 +21,9 @@ type BruitCryptoClient interface {
 	GetPrivateWebSokcetKey() (*types.PrivWSKeyResp, error)
 
 	//ws subscriptions
-	SubscribeToTrades(s settings.BruitSettings, pairs []string)
-	SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, depth int)
-	SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int)
+	SubscribeToTrades(s settings.BruitSettings, pairs []string) error
+	SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, depth int) error
+	SubscribeToHoldingsOHLC(s settings.BruitSettings, interval int) error
 	SubscribeToOrderBook(s settings.BruitSettings, depth int)
 	SubscribeToOpenOrders(s settings.BruitSettings, token string)
 
