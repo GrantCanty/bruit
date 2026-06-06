@@ -8,12 +8,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 )
 
-var ErrSubscribeToHoldingsOHLC error = errors.New("No match for trading pair")
+var ErrPairNotFound error = errors.New("No match for trading pair")
 var ErrSubscribeToOHLCInterval error = errors.New("interval not supported")
 
 func remove(slice []string, pos int) []string {
@@ -88,13 +87,11 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 				}
 				client.State.OnOHLCResponse()*/
 			} else {
-				return fmt.Errorf("%s - pair: %v base: %v", ErrSubscribeToHoldingsOHLC, pair, pair.Base)
+				return fmt.Errorf("%s - pair: %v base: %v", ErrPairNotFound, pair, pair.Base)
 			}
 		}
 	}
-
-	log.Println(pairs)
-
+	//log.Println(pairs)
 	client.SubscribeToOHLC(s, pairs, interval)
 	return nil
 }
@@ -119,11 +116,11 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 // ORDER BOOK SOCKET METHODS
 
 // Subscribe to the order book.
-func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth int) {
+func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth int) error {
 	holdings := client.GetHoldingsWithoutStaking()
 
 	if err := BookSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+		return err
 	}
 
 	var pairs []types.Pairs
@@ -136,16 +133,17 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 				p.Rest = pair.AltName
 				pairs = append(pairs, p)
 			} else {
-				log.Println("ERROR: Pair could not find match ", pair, pair.Base)
+				return fmt.Errorf("%s - pair: %v base: %v", ErrPairNotFound, pair, pair.Base)
 			}
 		}
 	}
-	log.Println("pairs: ", pairs)
+	//log.Println("pairs: ", pairs)
 	var wsPairs []string
 	for _, pair := range pairs {
 		wsPairs = append(wsPairs, pair.WS)
 	}
 	client.WebSocket.SubscribeToOrderBook(wsPairs, depth)
+	return nil
 }
 
 // need a way to save the books to a struct. on message, we read
