@@ -1,12 +1,10 @@
 package kraken
 
 import (
-	kraken_data "bruit/bruit/clients/kraken/client_data"
 	"bruit/bruit/clients/kraken/types"
 	"bruit/bruit/settings"
 	"bruit/bruit/ws_client"
 	"encoding/json"
-	"errors"
 	"log"
 	"strconv"
 	"strings"
@@ -41,20 +39,7 @@ func (client *KrakenClient) SubscribeToTrades(s settings.BruitSettings, pairs []
 	*Add func to get past OHLC data from rest API. Add to the candle map list
 *****/
 func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []types.Pairs, interval int) error {
-	var found bool = false
-	for _, i := range kraken_data.GetOHLCIntervals() {
-		if i == interval {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		log.Println("Interval is not supported for Kraken Client OHLC Subscription")
-		return errors.New("SubscribeToOHLC: interval not supported")
-	}
-
-	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
+	if err := verifyInterval(client, interval); err != nil {
 		return err
 	}
 
