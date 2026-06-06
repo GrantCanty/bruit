@@ -48,7 +48,7 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 	}
 
 	if !found {
-		return fmt.Errorf("%s: %d", SubscribeToOHLCIntervalError, interval)
+		return fmt.Errorf("%s - interval: %d", SubscribeToOHLCIntervalError, interval)
 	}
 
 	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
@@ -88,7 +88,7 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 				}
 				client.State.OnOHLCResponse()*/
 			} else {
-				return fmt.Errorf("%s: %v %v", SubscribeToHoldingsOHLCError, pair, pair.Base)
+				return fmt.Errorf("%s - pair: %v base: %v", SubscribeToHoldingsOHLCError, pair, pair.Base)
 			}
 		}
 	}
