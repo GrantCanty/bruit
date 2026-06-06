@@ -252,5 +252,4 @@ func (client *KrakenClient) PrivDecoder(s settings.BruitSettings) {
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPrivSocket())
 
 	<-s.CtxDone()
-	return
 }
