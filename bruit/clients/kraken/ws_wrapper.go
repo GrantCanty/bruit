@@ -11,6 +11,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var ErrPairNotFound error = errors.New("No match for trading pair")
@@ -119,8 +120,35 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocket())
 
-	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+	var err error
+	maxRetries := 5
+	backoff := 32 * time.Millisecond
+
+	for i := 0; i < maxRetries; i++ {
+		err = PubSocketGuard(&client.WebSocket)
+		if err == nil {
+			break
+		}
+
+		if errors.Is(err, ErrPubSocketNotInit) || errors.Is(err, ErrNotPubSocket) {
+			log.Fatalf("FATAL - Dev configuration error in PubDecoder: %v", err)
+		}
+
+		log.Printf("Warning: Connection attempt %d failed: %v. Retrying in %v...", i+1, err, backoff)
+
+		select {
+		case <-s.CtxDone():
+			return
+		case <-time.After(backoff):
+		}
+
+		backoff *= 2
+
+	}
+
+	if err != nil {
+		log.Printf("ERROR - PubDecoder failed to establish a connection to the Kraken WebSocket server after %d attempts: %v\n", maxRetries, err)
+		return
 	}
 
 	<-s.CtxDone()
@@ -183,8 +211,35 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocket())
 
-	if err := BookSocketGuard(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+	var err error
+	maxRetries := 5
+	backoff := 32 * time.Millisecond
+
+	for i := 0; i < maxRetries; i++ {
+		err = BookSocketGuard(&client.WebSocket)
+		if err == nil {
+			break
+		}
+
+		if errors.Is(err, ErrBookSocketNotInit) || errors.Is(err, ErrNotBookSocket) {
+			log.Fatalf("FATAL - Dev configuration error in BookDecoder: %v", err)
+		}
+
+		log.Printf("Warning: Connection attempt %d failed: %v. Retrying in %v...", i+1, err, backoff)
+
+		select {
+		case <-s.CtxDone():
+			return
+		case <-time.After(backoff):
+		}
+
+		backoff *= 2
+
+	}
+
+	if err != nil {
+		log.Printf("ERROR - BookDecoder failed to establish a connection to the Kraken WebSocket server after %d attempts: %v\n", maxRetries, err)
+		return
 	}
 
 	<-s.CtxDone()
@@ -278,8 +333,35 @@ func (client *KrakenClient) PrivDecoder(s settings.BruitSettings) {
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPrivSocket())
 
-	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+	var err error
+	maxRetries := 5
+	backoff := 32 * time.Millisecond
+
+	for i := 0; i < maxRetries; i++ {
+		err = PrivSocketGuard(&client.WebSocket)
+		if err == nil {
+			break
+		}
+
+		if errors.Is(err, ErrPrivSocketNotInit) || errors.Is(err, ErrNotPrivSocket) {
+			log.Fatalf("FATAL - Dev configuration error in PrivDecoder: %v", err)
+		}
+
+		log.Printf("Warning: Connection attempt %d failed: %v. Retrying in %v...", i+1, err, backoff)
+
+		select {
+		case <-s.CtxDone():
+			return
+		case <-time.After(backoff):
+		}
+
+		backoff *= 2
+
+	}
+
+	if err != nil {
+		log.Printf("ERROR - PrivDecoder failed to establish a connection to the Kraken WebSocket server after %d attempts: %v\n", maxRetries, err)
+		return
 	}
 
 	<-s.CtxDone()
