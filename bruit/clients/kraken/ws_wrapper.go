@@ -14,7 +14,15 @@ import (
 )
 
 var ErrPairNotFound error = errors.New("No match for trading pair")
-var ErrSubscribeToOHLCInterval error = errors.New("interval not supported")
+var ErrSubscribeToOHLCInterval error = errors.New("Interval not supported")
+
+var ErrFailedToMarshalCancelAll error = errors.New("Failed to marshal CancelAll message")
+var ErrFailedToMarshalCancelOrder error = errors.New("Failed to marshal CancelOrder message")
+var ErrFailedToMarshalAddOrder error = errors.New("Failed to marshal AddOrder message")
+
+var ErrFailedToSendCancelAll error = errors.New("Failed to send CancelAll message")
+var ErrFailedToSendCancelOrder error = errors.New("Failed to send CancelOrder message")
+var ErrFailedToSendAddOrder error = errors.New("Failed to send AddOrder message")
 
 func remove(slice []string, pos int) []string {
 	return append(slice[:pos], slice[pos+1:]...)
@@ -65,8 +73,7 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 		wsPairs = append(wsPairs, pair.WS)
 	}
 
-	client.WebSocket.SubscribeToOHLC(wsPairs, interval)
-	return nil
+	return client.WebSocket.SubscribeToOHLC(wsPairs, interval)
 }
 
 // search through assetResp in client manager from state package. if base and quote fields match the holding and base currency, add wsname to a slice
@@ -96,7 +103,9 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 		return nil, fmt.Errorf("%w - zero trading pairs matched for holdings: %v", ErrPairNotFound, holdings)
 	}
 
-	client.SubscribeToOHLC(s, pairs, interval)
+	if err := client.SubscribeToOHLC(s, pairs, interval); err != nil {
+		return nil, err
+	}
 	return skipped, nil
 }
 
@@ -155,7 +164,9 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 	for _, pair := range pairs {
 		wsPairs = append(wsPairs, pair.WS)
 	}
-	client.WebSocket.SubscribeToOrderBook(wsPairs, depth)
+	if err := client.WebSocket.SubscribeToOrderBook(wsPairs, depth); err != nil {
+		return nil, err
+	}
 	return skipped, nil
 }
 
@@ -186,8 +197,7 @@ func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, toke
 		return err
 	}
 
-	client.WebSocket.SubscribeToOpenOrders(token)
-	return nil
+	return client.WebSocket.SubscribeToOpenOrders(token)
 }
 
 func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) error {
@@ -195,11 +205,18 @@ func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) er
 		return err
 	}
 
-	sub, _ := json.Marshal(&types.Subscribe{
+	sub, err := json.Marshal(&types.Subscribe{
 		Event: "cancelAll",
 		Token: token,
 	})
-	client.WebSocket.GetPrivSocket().SendBinary(sub)
+
+	if err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToMarshalCancelAll, err)
+	}
+
+	if err := client.WebSocket.GetPrivSocket().SendBinary(sub); err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToSendCancelAll, err)
+	}
 	return nil
 }
 
@@ -208,12 +225,19 @@ func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, 
 		return err
 	}
 
-	sub, _ := json.Marshal(&types.CancelOrder{
+	sub, err := json.Marshal(&types.CancelOrder{
 		Event: "cancelOrder",
 		Token: token,
 		Txid:  tradeIDs,
 	})
-	client.WebSocket.GetPrivSocket().SendBinary(sub)
+
+	if err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToMarshalCancelOrder, err)
+	}
+
+	if err := client.WebSocket.GetPrivSocket().SendBinary(sub); err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToSendCancelOrder, err)
+	}
 	return nil
 }
 
@@ -223,7 +247,7 @@ func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, oty
 	}
 
 	test := strconv.FormatBool(testing)
-	sub, _ := json.Marshal(&types.Order{
+	sub, err := json.Marshal(&types.Order{
 		WsToken:   token,
 		Event:     "addOrder",
 		OrderType: otype,
@@ -233,7 +257,14 @@ func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, oty
 		Price:     price,
 		Validate:  test,
 	})
-	client.WebSocket.GetPrivSocket().SendBinary(sub)
+
+	if err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToMarshalAddOrder, err)
+	}
+
+	if err := client.WebSocket.GetPrivSocket().SendBinary(sub); err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToSendAddOrder, err)
+	}
 	return nil
 }
 

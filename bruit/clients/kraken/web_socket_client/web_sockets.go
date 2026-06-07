@@ -281,14 +281,13 @@ func (ws *WebSocketClient) SubscribeToTrades(pairs []string) error {
 		Pair: pairs,
 	})
 	if err != nil {
-		log.Println("error marshaling: ", err)
+		//log.Println("error marshaling: ", err)
 		return err
 	}
-	ws.pubSocket.SendBinary(sub)
-	return nil
+	return ws.pubSocket.SendBinary(sub)
 }
 
-func (ws *WebSocketClient) SubscribeToOHLC(pairs []string, interval int) {
+func (ws *WebSocketClient) SubscribeToOHLC(pairs []string, interval int) error {
 	sub, err := json.Marshal(&types.Subscribe{
 		Event: "subscribe",
 		Subscription: &types.OHLCSubscription{
@@ -298,12 +297,13 @@ func (ws *WebSocketClient) SubscribeToOHLC(pairs []string, interval int) {
 		Pair: pairs,
 	})
 	if err != nil {
-		log.Println("error marshaling: ", err)
+		//log.Println("error marshaling: ", err)
+		return err
 	}
-	ws.pubSocket.SendBinary(sub)
+	return ws.pubSocket.SendBinary(sub)
 }
 
-func (ws *WebSocketClient) SubscribeToOpenOrders(token string) {
+func (ws *WebSocketClient) SubscribeToOpenOrders(token string) error {
 	sub, err := json.Marshal(&types.Subscribe{
 		Event: "subscribe",
 		Subscription: &types.NameAndToken{
@@ -312,12 +312,13 @@ func (ws *WebSocketClient) SubscribeToOpenOrders(token string) {
 		},
 	})
 	if err != nil {
-		log.Println("error marshaling: ", err)
+		//log.Println("error marshaling: ", err)
+		return err
 	}
-	ws.privSocket.SendBinary(sub)
+	return ws.privSocket.SendBinary(sub)
 }
 
-func (ws *WebSocketClient) SubscribeToOrderBook(pairs []string, depth int) {
+func (ws *WebSocketClient) SubscribeToOrderBook(pairs []string, depth int) error {
 	log.Println(pairs)
 	sub, err := json.Marshal(&types.SubscribeV2{
 		Method: "subscribe",
@@ -328,12 +329,13 @@ func (ws *WebSocketClient) SubscribeToOrderBook(pairs []string, depth int) {
 		},
 	})
 	if err != nil {
-		log.Println("error marshaling: ", err)
+		//log.Println("error marshaling: ", err)
+		return err
 	}
-	ws.bookSocket.SendBinary(sub)
+	return ws.bookSocket.SendBinary(sub)
 }
 
-func (ws *WebSocketClient) UnsubscribeFromBook(pair string, depth int) {
+func (ws *WebSocketClient) UnsubscribeFromBook(pair string, depth int) error {
 	log.Println(pair)
 	unsub, err := json.Marshal(&types.UnsubscribeBookResponse{
 		Method: "unsubscribe",
@@ -344,11 +346,11 @@ func (ws *WebSocketClient) UnsubscribeFromBook(pair string, depth int) {
 		},
 	})
 	if err != nil {
-		log.Println("error marshaling: ", err)
-	} else {
-		log.Println("unsub: ", string(unsub))
-		ws.bookSocket.SendBinary(unsub)
+		//log.Println("error marshaling: ", err)
+		return err
 	}
+	//log.Println("unsub: ", string(unsub))
+	return ws.bookSocket.SendBinary(unsub)
 }
 
 func (client *WebSocketClient) InitSockets() { // used to initialized public and private sockets
