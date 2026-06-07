@@ -11,8 +11,8 @@ func newEmpty() BruitSettings {
 	return &emptySettings{}
 }
 
-func (e emptySettings) InitSettings() {
-	return
+func (e emptySettings) InitSettings() error {
+	return nil
 }
 
 func (e emptySettings) Wait() {
@@ -39,8 +39,8 @@ func (e emptySettings) GetLoggingSettings() LoggingSettings {
 	return LoggingSettings{}
 }
 
-func (e *emptySettings) Load() {
-	return
+func (e *emptySettings) Load() error {
+	return nil
 }
 
 func (e *emptySettings) GetBaseCurrency() string {

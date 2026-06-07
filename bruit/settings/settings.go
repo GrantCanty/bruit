@@ -2,9 +2,12 @@ package settings
 
 import (
 	"bruit/bruit/env"
+	"errors"
 	"log"
 	"strconv"
 )
+
+var ErrBadRunTimeSettings error = errors.New("bad runtime settings - incorrect count of true/false")
 
 type settings struct {
 	BruitSettings
@@ -23,10 +26,13 @@ func newDefaults(parent BruitSettings) BruitSettings {
 	return &settings{BruitSettings: parent}
 }
 
-func (s *settings) InitSettings() {
-	s.Load()
+func (s *settings) InitSettings() error {
+	if err := s.Load(); err != nil {
+		return err
+	}
 	s.ConcurrencySettings.Init()
 	s.GlobalSettings.Init(s.runTimes, s.logging)
+	return nil
 }
 
 func (s *settings) Wait() {
@@ -55,10 +61,10 @@ func (s *settings) GetLoggingSettings() LoggingSettings {
 	return s.GlobalSettings.Logging
 }
 
-func (s *settings) Load() {
+func (s *settings) Load() error {
 	configs, err := env.Read("CONFIG")
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	s.initRunTimes(configs)
@@ -88,6 +94,7 @@ func (s *settings) Load() {
 			log.Println("db")
 		}
 	}
+	return nil
 }
 
 func getKeys(m map[string]bool) []string {
@@ -110,16 +117,16 @@ func (s *settings) makeRunTimes() {
 	s.runTimes["ISSYSTEMSTESTING"] = false
 }
 
-func (s *settings) initRunTimes(configs map[string]string) {
+func (s *settings) initRunTimes(configs map[string]string) error {
 	s.makeRunTimes()
 	keys := getKeys(s.runTimes)
-	var err interface{}
+	var err error
 
 	var trueCount, falseCount int = 0, 0
 	for i := 0; i < len(s.runTimes); i++ {
 		s.runTimes[keys[i]], err = strconv.ParseBool(configs[keys[i]])
 		if err != nil {
-			panic(err)
+			return err
 		}
 		if s.runTimes[keys[i]] == true {
 			trueCount++
@@ -129,8 +136,9 @@ func (s *settings) initRunTimes(configs map[string]string) {
 
 	}
 	if trueCount != 1 || falseCount != 3 {
-		panic("Incorrect count of true and false runtimes")
+		return ErrBadRunTimeSettings
 	}
+	return nil
 }
 
 func (s *settings) makeLogging() {
@@ -140,17 +148,18 @@ func (s *settings) makeLogging() {
 	s.logging["ISLOGGINGTODB"] = false
 }
 
-func (s *settings) initLogging(configs map[string]string) {
+func (s *settings) initLogging(configs map[string]string) error {
 	s.makeLogging()
 	keys := getKeys(s.logging)
-	var err interface{}
+	var err error
 
 	for i := 0; i < len(s.logging); i++ {
 		s.logging[keys[i]], err = strconv.ParseBool(configs[keys[i]])
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
+	return nil
 }
 
 func (s *settings) GetBaseCurrency() string {

@@ -9,7 +9,7 @@ import (
 )
 
 type BruitClient interface {
-	Init(cli clients.BruitCryptoClient)
+	Init(cli clients.BruitCryptoClient) error
 	Run()
 	Wait()
 	Stop()
@@ -22,9 +22,11 @@ type Client struct {
 	DB           influx.DB
 }
 
-func (c *Client) Init(cli clients.BruitCryptoClient) {
+func (c *Client) Init(cli clients.BruitCryptoClient) error {
 	c.Settings = settings.NewDefaultSettings(c.Settings)
-	c.Settings.InitSettings()
+	if err := c.Settings.InitSettings(); err != nil {
+		return err
+	}
 
 	switch {
 	case c.Settings.IsProduction():
@@ -60,7 +62,7 @@ func (c *Client) Init(cli clients.BruitCryptoClient) {
 
 	c.DB = influx.DB{}
 
-	return
+	return nil
 }
 
 func (c *Client) Run() {
