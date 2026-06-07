@@ -9,8 +9,11 @@ import (
 	"bruit/bruit/env"
 	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
+	"errors"
 	"log"
 )
+
+var ErrConnectionsAlreadInit error = errors.New("connections are already init")
 
 type KrakenClient struct {
 	WebSocket web_socket.WebSocketClient
@@ -32,53 +35,57 @@ func (client *KrakenClient) initWebSockets() {
 	client.socketInit()
 }
 
-func (k *KrakenClient) initState() {
+func (k *KrakenClient) initState() error {
 	bals, err := k.GetAccountBalances()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	assets, err := k.GetAssets()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	pairs, err := k.GetAssetPairs()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	k.State.Init(*bals, *assets, *pairs)
+	return nil
 }
 
 // loads the api keys from the .env file
-func (k *KrakenClient) initKeys() {
+func (k *KrakenClient) initKeys() error {
 	env, err := env.Read("CLIENT")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	kraken_data.LoadKeys(env)
+	return nil
 }
 
-func (client *KrakenClient) socketInit() {
+func (client *KrakenClient) socketInit() error {
 
 	// if all sockets are not init, init connections
 	if IsPubSocketInit(&client.WebSocket) == nil && IsPrivSocketInit(&client.WebSocket) == nil && IsBookSocketInit(&client.WebSocket) == nil {
-		log.Println("connections are already init")
-		return
+		//log.Println("connections are already init")
+		return ErrConnectionsAlreadInit
 	}
 	client.WebSocket.InitSockets()
 
 	// checks to see that sockets are actually init. should switch this to send an error message
 	if err := IsPubSocketInit(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+		return err
 	}
 	if err := IsBookSocketInit(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+		return err
 	}
 	if err := IsPrivSocketInit(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
 func (client *KrakenClient) HandleOHLCSuccessResponse(resp types.OHLCSuccessResponse) {
