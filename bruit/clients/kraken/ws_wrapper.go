@@ -11,10 +11,19 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var ErrPairNotFound error = errors.New("No match for trading pair")
-var ErrSubscribeToOHLCInterval error = errors.New("interval not supported")
+var ErrSubscribeToOHLCInterval error = errors.New("Interval not supported")
+
+var ErrFailedToMarshalCancelAll error = errors.New("Failed to marshal CancelAll message")
+var ErrFailedToMarshalCancelOrder error = errors.New("Failed to marshal CancelOrder message")
+var ErrFailedToMarshalAddOrder error = errors.New("Failed to marshal AddOrder message")
+
+var ErrFailedToSendCancelAll error = errors.New("Failed to send CancelAll message")
+var ErrFailedToSendCancelOrder error = errors.New("Failed to send CancelOrder message")
+var ErrFailedToSendAddOrder error = errors.New("Failed to send AddOrder message")
 
 func remove(slice []string, pos int) []string {
 	return append(slice[:pos], slice[pos+1:]...)
@@ -65,8 +74,7 @@ func (client *KrakenClient) SubscribeToOHLC(s settings.BruitSettings, pairs []ty
 		wsPairs = append(wsPairs, pair.WS)
 	}
 
-	client.WebSocket.SubscribeToOHLC(wsPairs, interval)
-	return nil
+	return client.WebSocket.SubscribeToOHLC(wsPairs, interval)
 }
 
 // search through assetResp in client manager from state package. if base and quote fields match the holding and base currency, add wsname to a slice
@@ -96,7 +104,9 @@ func (client *KrakenClient) SubscribeToHoldingsOHLC(s settings.BruitSettings, in
 		return nil, fmt.Errorf("%w - zero trading pairs matched for holdings: %v", ErrPairNotFound, holdings)
 	}
 
-	client.SubscribeToOHLC(s, pairs, interval)
+	if err := client.SubscribeToOHLC(s, pairs, interval); err != nil {
+		return nil, err
+	}
 	return skipped, nil
 }
 
@@ -110,8 +120,35 @@ func (client *KrakenClient) PubDecoder(s settings.BruitSettings, OHLCch chan typ
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPubSocket())
 
-	if err := PubSocketGuard(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+	var err error
+	maxRetries := 5
+	backoff := 32 * time.Millisecond
+
+	for i := 0; i < maxRetries; i++ {
+		err = PubSocketGuard(&client.WebSocket)
+		if err == nil {
+			break
+		}
+
+		if errors.Is(err, ErrPubSocketNotInit) || errors.Is(err, ErrNotPubSocket) {
+			log.Fatalf("FATAL - Dev configuration error in PubDecoder: %v", err)
+		}
+
+		log.Printf("Warning: Connection attempt %d failed: %v. Retrying in %v...", i+1, err, backoff)
+
+		select {
+		case <-s.CtxDone():
+			return
+		case <-time.After(backoff):
+		}
+
+		backoff *= 2
+
+	}
+
+	if err != nil {
+		log.Printf("ERROR - PubDecoder failed to establish a connection to the Kraken WebSocket server after %d attempts: %v\n", maxRetries, err)
+		return
 	}
 
 	<-s.CtxDone()
@@ -155,7 +192,9 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 	for _, pair := range pairs {
 		wsPairs = append(wsPairs, pair.WS)
 	}
-	client.WebSocket.SubscribeToOrderBook(wsPairs, depth)
+	if err := client.WebSocket.SubscribeToOrderBook(wsPairs, depth); err != nil {
+		return nil, err
+	}
 	return skipped, nil
 }
 
@@ -172,8 +211,35 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocket())
 
-	if err := BookSocketGuard(&client.WebSocket); err != nil { // guard clause checker
-		panic(err)
+	var err error
+	maxRetries := 5
+	backoff := 32 * time.Millisecond
+
+	for i := 0; i < maxRetries; i++ {
+		err = BookSocketGuard(&client.WebSocket)
+		if err == nil {
+			break
+		}
+
+		if errors.Is(err, ErrBookSocketNotInit) || errors.Is(err, ErrNotBookSocket) {
+			log.Fatalf("FATAL - Dev configuration error in BookDecoder: %v", err)
+		}
+
+		log.Printf("Warning: Connection attempt %d failed: %v. Retrying in %v...", i+1, err, backoff)
+
+		select {
+		case <-s.CtxDone():
+			return
+		case <-time.After(backoff):
+		}
+
+		backoff *= 2
+
+	}
+
+	if err != nil {
+		log.Printf("ERROR - BookDecoder failed to establish a connection to the Kraken WebSocket server after %d attempts: %v\n", maxRetries, err)
+		return
 	}
 
 	<-s.CtxDone()
@@ -186,8 +252,7 @@ func (client *KrakenClient) SubscribeToOpenOrders(s settings.BruitSettings, toke
 		return err
 	}
 
-	client.WebSocket.SubscribeToOpenOrders(token)
-	return nil
+	return client.WebSocket.SubscribeToOpenOrders(token)
 }
 
 func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) error {
@@ -195,11 +260,18 @@ func (client *KrakenClient) CancelAll(s settings.BruitSettings, token string) er
 		return err
 	}
 
-	sub, _ := json.Marshal(&types.Subscribe{
+	sub, err := json.Marshal(&types.Subscribe{
 		Event: "cancelAll",
 		Token: token,
 	})
-	client.WebSocket.GetPrivSocket().SendBinary(sub)
+
+	if err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToMarshalCancelAll, err)
+	}
+
+	if err := client.WebSocket.GetPrivSocket().SendBinary(sub); err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToSendCancelAll, err)
+	}
 	return nil
 }
 
@@ -208,12 +280,19 @@ func (client *KrakenClient) CancelOrder(s settings.BruitSettings, token string, 
 		return err
 	}
 
-	sub, _ := json.Marshal(&types.CancelOrder{
+	sub, err := json.Marshal(&types.CancelOrder{
 		Event: "cancelOrder",
 		Token: token,
 		Txid:  tradeIDs,
 	})
-	client.WebSocket.GetPrivSocket().SendBinary(sub)
+
+	if err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToMarshalCancelOrder, err)
+	}
+
+	if err := client.WebSocket.GetPrivSocket().SendBinary(sub); err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToSendCancelOrder, err)
+	}
 	return nil
 }
 
@@ -223,7 +302,7 @@ func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, oty
 	}
 
 	test := strconv.FormatBool(testing)
-	sub, _ := json.Marshal(&types.Order{
+	sub, err := json.Marshal(&types.Order{
 		WsToken:   token,
 		Event:     "addOrder",
 		OrderType: otype,
@@ -233,7 +312,14 @@ func (client *KrakenClient) AddOrder(s settings.BruitSettings, token string, oty
 		Price:     price,
 		Validate:  test,
 	})
-	client.WebSocket.GetPrivSocket().SendBinary(sub)
+
+	if err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToMarshalAddOrder, err)
+	}
+
+	if err := client.WebSocket.GetPrivSocket().SendBinary(sub); err != nil {
+		return fmt.Errorf("%s - %w", ErrFailedToSendAddOrder, err)
+	}
 	return nil
 }
 
@@ -247,8 +333,35 @@ func (client *KrakenClient) PrivDecoder(s settings.BruitSettings) {
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetPrivSocket())
 
-	if err := PrivSocketGuard(&client.WebSocket); err != nil {
-		panic(err)
+	var err error
+	maxRetries := 5
+	backoff := 32 * time.Millisecond
+
+	for i := 0; i < maxRetries; i++ {
+		err = PrivSocketGuard(&client.WebSocket)
+		if err == nil {
+			break
+		}
+
+		if errors.Is(err, ErrPrivSocketNotInit) || errors.Is(err, ErrNotPrivSocket) {
+			log.Fatalf("FATAL - Dev configuration error in PrivDecoder: %v", err)
+		}
+
+		log.Printf("Warning: Connection attempt %d failed: %v. Retrying in %v...", i+1, err, backoff)
+
+		select {
+		case <-s.CtxDone():
+			return
+		case <-time.After(backoff):
+		}
+
+		backoff *= 2
+
+	}
+
+	if err != nil {
+		log.Printf("ERROR - PrivDecoder failed to establish a connection to the Kraken WebSocket server after %d attempts: %v\n", maxRetries, err)
+		return
 	}
 
 	<-s.CtxDone()

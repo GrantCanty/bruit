@@ -7,11 +7,11 @@ import (
 	"log"
 )
 
-var ErrNotPublicSocket error = errors.New("public socket function called on wrong socket")
+var ErrNotPubSocket error = errors.New("public socket function called on wrong socket")
 var ErrNotBookSocket error = errors.New("book socket function called on wrong socket")
 var ErrNotPrivSocket error = errors.New("private socket function called on wrong socket")
 
-var ErrPublicSocketNotInit error = errors.New("publicSocket is not initialized")
+var ErrPubSocketNotInit error = errors.New("publicSocket is not initialized")
 var ErrBookSocketNotInit error = errors.New("bookSocket is not initialized")
 var ErrPrivSocketNotInit error = errors.New("privateSocket is not initialized")
 
@@ -21,11 +21,11 @@ var ErrFailedToConnectToPrivServer error = errors.New("failed to connect to priv
 
 func IsPubSocketInit(client *web_socket.WebSocketClient) error {
 	if !client.GetPubSocket().IsInit() {
-		return ErrPublicSocketNotInit
+		return ErrPubSocketNotInit
 	}
 
 	if !client.GetPubSocket().IsPublicSocket() {
-		return ErrNotPublicSocket
+		return ErrNotPubSocket
 	}
 	return nil // nil means that socket is init
 }
@@ -58,11 +58,11 @@ func PubSocketGuard(client *web_socket.WebSocketClient) error { // checks if soc
 	defer ws_client.ReceiveUnlocker(socket)
 
 	if !socket.IsInit() {
-		return ErrPublicSocketNotInit
+		return ErrPubSocketNotInit
 	}
 
 	if !socket.IsPublicSocket() {
-		return ErrNotPublicSocket
+		return ErrNotPubSocket
 	}
 
 	if !socket.GetIsConnected() {

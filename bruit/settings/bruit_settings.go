@@ -1,14 +1,14 @@
 package settings
 
 type BruitSettings interface {
-	InitSettings()
+	InitSettings() error
 	Wait()
 	Add(i int)
 	Done()
 	CtxDone() <-chan struct{}
 	GetLoggingToConsole() bool
 	GetLoggingSettings() LoggingSettings
-	Load()
+	Load() error
 	GetBaseCurrency() string
 	IsProduction() bool
 	IsBackTesting() bool
