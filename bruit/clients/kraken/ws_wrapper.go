@@ -234,8 +234,7 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 			select {
 			case <-s.CtxDone():
 				return
-			default:
-				BookErrch <- fmt.Errorf("%s - %v", ErrDevConfigBookSocket, err)
+			case BookErrch <- fmt.Errorf("%s - %v", ErrDevConfigBookSocket, err):
 				return
 			}
 		}
@@ -257,8 +256,7 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 		select {
 		case <-s.CtxDone():
 			return
-		default:
-			BookErrch <- fmt.Errorf("%s: %d - %v", ErrBookSocketNotConnected, maxRetries, err)
+		case BookErrch <- fmt.Errorf("%s: %d - %v", ErrBookSocketNotConnected, maxRetries, err):
 			return
 		}
 	}
