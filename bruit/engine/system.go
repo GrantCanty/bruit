@@ -8,6 +8,7 @@ import (
 	"bruit/bruit/settings"
 	"bruit/bruit/shared_types"
 	"bruit/bruit/ws_client"
+	"errors"
 	"log"
 	"time"
 )
@@ -93,19 +94,28 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 	c.SubscribeToHoldingsOHLC(s, 1)
 
 	orderBookCh := make(chan types.BookRespV2UpdateJSON, 1024)
+	bookErrCh := make(chan error, 1024)
 	var bookDepth int = 10
 
-	go c.BookDecoder(s, orderBookCh, bookDepth)
-	go func(book chan types.BookRespV2UpdateJSON) {
+	go c.BookDecoder(s, orderBookCh, bookErrCh, bookDepth)
+	go func(book chan types.BookRespV2UpdateJSON, errCh chan error) {
 		for {
 			select {
 			case res := <-book:
 				log.Println("orderbook: ", res)
+			case err := <-errCh:
+				var desyncErr types.BookDesyncError
+				if errors.As(err, &desyncErr) {
+					log.Printf("Orderbook desync detected for %s. Re-subscribing...\n", desyncErr.Symbol)
+					go krakenClient.WebSocket.ReSubscribeToOrderBook(desyncErr.Symbol, desyncErr.Depth)
+				} else {
+					log.Println("orderbook error: ", err)
+				}
 			case <-s.CtxDone():
 				return
 			}
 		}
-	}(orderBookCh)
+	}(orderBookCh, bookErrCh)
 
 	krakenClient.WebSocket.GetBookSocket().OnDisconnected = func(err error, socket *ws_client.Socket) {
 		log.Println("disconnected from book socket: ", err)

@@ -289,3 +289,12 @@ type RespResultV2Subscrib struct {
 	Snapshot bool   `json:"snapshot"`
 	Symbol   string `json:"symbol"`
 }
+
+type BookDesyncError struct {
+	Symbol string
+	Depth  int
+}
+
+func (e BookDesyncError) Error() string {
+	return fmt.Sprintf("book desync for %s at depth %d", e.Symbol, e.Depth)
+}

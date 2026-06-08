@@ -25,6 +25,14 @@ var ErrFailedToSendCancelAll error = errors.New("Failed to send CancelAll messag
 var ErrFailedToSendCancelOrder error = errors.New("Failed to send CancelOrder message")
 var ErrFailedToSendAddOrder error = errors.New("Failed to send AddOrder message")
 
+var ErrDevConfigPubSocket error = errors.New("Dev configuration error in PubSocketGuard")
+var ErrDevConfigBookSocket error = errors.New("Dev configuration error in BookSocketGuard")
+var ErrDevConfigPrivSocket error = errors.New("Dev configuration error in PrivSocketGuard")
+
+var ErrPubSocketNotConnected error = errors.New("PubSocket failed to connected to websocket server after max retries of count")
+var ErrBookSocketNotConnected error = errors.New("BookSocket failed to connect to webserver after max retries of count")
+var ErrPrivSocketNotConnected error = errors.New("PrivSocket failed to connected to websocket server after max retries of count")
+
 func remove(slice []string, pos int) []string {
 	return append(slice[:pos], slice[pos+1:]...)
 }
@@ -201,13 +209,13 @@ func (client *KrakenClient) SubscribeToOrderBook(s settings.BruitSettings, depth
 // need a way to save the books to a struct. on message, we read
 // the struct back so we can see how to update it and then save the copy back to the struct
 // then send the struct to the chan
-func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan types.BookRespV2UpdateJSON, bookDepth int) {
+func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan types.BookRespV2UpdateJSON, BookErrch chan error, bookDepth int) {
 	s.Add(1)
 	defer s.Done()
 
 	ws_client.ReceiveLocker(client.WebSocket.GetBookSocket())
 	client.WebSocket.GetBookSocket().OnTextMessage = func(message []byte, socket *ws_client.Socket) {
-		client.WebSocket.BookJsonDecoder(message, s.GetLoggingSettings(), Bookch, bookDepth)
+		client.WebSocket.BookJsonDecoder(message, s.GetLoggingSettings(), Bookch, BookErrch, bookDepth)
 	}
 	ws_client.ReceiveUnlocker(client.WebSocket.GetBookSocket())
 
@@ -222,10 +230,17 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 		}
 
 		if errors.Is(err, ErrBookSocketNotInit) || errors.Is(err, ErrNotBookSocket) {
-			log.Fatalf("FATAL - Dev configuration error in BookDecoder: %v", err)
+			//log.Fatalf("FATAL - Dev configuration error in BookDecoder: %v", err)
+			select {
+			case <-s.CtxDone():
+				return
+			default:
+				BookErrch <- fmt.Errorf("%s - %v", ErrDevConfigBookSocket, err)
+				return
+			}
 		}
 
-		log.Printf("Warning: Connection attempt %d failed: %v. Retrying in %v...", i+1, err, backoff)
+		log.Printf("Warning - Connection attempt %d failed: %v. Retrying in %v...", i+1, err, backoff)
 
 		select {
 		case <-s.CtxDone():
@@ -238,8 +253,14 @@ func (client *KrakenClient) BookDecoder(s settings.BruitSettings, Bookch chan ty
 	}
 
 	if err != nil {
-		log.Printf("ERROR - BookDecoder failed to establish a connection to the Kraken WebSocket server after %d attempts: %v\n", maxRetries, err)
-		return
+		//log.Printf("ERROR - BookDecoder failed to establish a connection to the Kraken WebSocket server after %d attempts: %v\n", maxRetries, err)
+		select {
+		case <-s.CtxDone():
+			return
+		default:
+			BookErrch <- fmt.Errorf("%s: %d - %v", ErrBookSocketNotConnected, maxRetries, err)
+			return
+		}
 	}
 
 	<-s.CtxDone()

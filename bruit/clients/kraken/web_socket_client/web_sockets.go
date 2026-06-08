@@ -7,11 +7,18 @@ import (
 	"bruit/bruit/settings"
 	"bruit/bruit/ws_client"
 	"encoding/json"
+	"errors"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/emirpasic/gods/maps/treemap"
+)
+
+var (
+	ErrBookUpdateBidNotFound      = errors.New("Bid not found (book out of order). Re-subscribing...")
+	ErrBookUpdateAskNotFound      = errors.New("Ask not found (book out of order). Re-subscribing...")
+	ErrBookUpdateChecksumMismatch = errors.New("Checksum mismatch. Re-subscribing...")
 )
 
 type WebSocketClient struct {
@@ -51,7 +58,7 @@ func (client *WebSocketClient) PubJsonDecoder(byteResponse []byte, logger settin
 	}
 }
 
-func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger settings.LoggingSettings, Bookch chan types.BookRespV2UpdateJSON, bookDepth int) {
+func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger settings.LoggingSettings, Bookch chan types.BookRespV2UpdateJSON, BookErrch chan error, bookDepth int) {
 	var msgType MessageTypeIdentifier
 	if err := json.Unmarshal(byteResponse, &msgType); err != nil {
 		log.Println("Error identifying message type:", err)
@@ -89,17 +96,13 @@ func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger setti
 							if _, ok := book.Bids.Get(bid.Price); ok {
 								book.Bids.Remove(bid.Price)
 							} else {
-								if logger.GetLoggingConsole() {
-									log.Printf("Error: bid not found for %s (book out of order). Re-subscribing...\n", symbol)
+								bidNotFound := types.BookDesyncError{
+									Symbol: symbol,
+									Depth:  bookDepth,
 								}
-								// remove data so new checksum generation doesn't fail immediately
-								client.orderBooksMutex.Lock()
-								delete(client.orderBooks, symbol)
-								client.orderBooksMutex.Unlock()
-
-								// unsubscribe and resubscribe
-								client.UnsubscribeFromBook(symbol, bookDepth)
-								client.SubscribeToOrderBook([]string{symbol}, bookDepth)
+								if BookErrch != nil {
+									BookErrch <- bidNotFound
+								}
 
 								// unlock entry.Mutex so we don't have a deadlock
 								entry.Mutex.Unlock()
@@ -117,17 +120,13 @@ func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger setti
 							if _, ok := book.Asks.Get(ask.Price); ok {
 								book.Asks.Remove(ask.Price)
 							} else {
-								if logger.GetLoggingConsole() {
-									log.Printf("Error: ask not found for %s (book out of order). Re-subscribing...\n", symbol)
+								askNotFound := types.BookDesyncError{
+									Symbol: symbol,
+									Depth:  bookDepth,
 								}
-								// remove data so new checksum generation doesn't fail immediately
-								client.orderBooksMutex.Lock()
-								delete(client.orderBooks, symbol)
-								client.orderBooksMutex.Unlock()
-
-								// unsubscribe and resubscribe
-								client.UnsubscribeFromBook(symbol, bookDepth)
-								client.SubscribeToOrderBook([]string{symbol}, bookDepth)
+								if BookErrch != nil {
+									BookErrch <- askNotFound
+								}
 
 								// unlock entry.Mutex so we don't have a deadlock
 								entry.Mutex.Unlock()
@@ -156,17 +155,13 @@ func (client *WebSocketClient) BookJsonDecoder(byteResponse []byte, logger setti
 				}
 
 				if ok := types.VerifyChecksumUpdate(*book, *resp); !ok {
-					if logger.GetLoggingConsole() {
-						log.Printf("Error: checksum mismatch for %s. Re-subscribing...\n", symbol)
+					checksumMismatch := types.BookDesyncError{
+						Symbol: symbol,
+						Depth:  bookDepth,
 					}
-					// remove data so new checksum generation doesn't fail immediately
-					client.orderBooksMutex.Lock()
-					delete(client.orderBooks, symbol)
-					client.orderBooksMutex.Unlock()
-
-					// unsubscribe and resubscribe
-					client.UnsubscribeFromBook(symbol, bookDepth)
-					client.SubscribeToOrderBook([]string{symbol}, bookDepth)
+					if BookErrch != nil {
+						BookErrch <- checksumMismatch
+					}
 
 					// unlock entry.Mutex so we don't have a deadlock
 					entry.Mutex.Unlock()
@@ -351,6 +346,17 @@ func (ws *WebSocketClient) UnsubscribeFromBook(pair string, depth int) error {
 	}
 	//log.Println("unsub: ", string(unsub))
 	return ws.bookSocket.SendBinary(unsub)
+}
+
+func (ws *WebSocketClient) ReSubscribeToOrderBook(pair string, depth int) error {
+	ws.orderBooksMutex.Lock()
+	delete(ws.orderBooks, pair)
+	ws.orderBooksMutex.Unlock()
+
+	if err := ws.UnsubscribeFromBook(pair, depth); err != nil {
+		return err
+	}
+	return ws.SubscribeToOrderBook([]string{pair}, depth)
 }
 
 func (client *WebSocketClient) InitSockets() { // used to initialized public and private sockets
