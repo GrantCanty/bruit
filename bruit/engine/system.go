@@ -9,6 +9,8 @@ import (
 	"bruit/bruit/shared_types"
 	"bruit/bruit/ws_client"
 	"log"
+	"os"
+	"syscall"
 	"time"
 )
 
@@ -104,6 +106,12 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 				log.Println("orderbook: ", res)
 			case err := <-errCh:
 				log.Println("orderbook error: ", err)
+
+				if IsFatalErr(err) {
+					p.Stop()
+					return
+				}
+
 			case <-s.CtxDone():
 				return
 			}
@@ -147,7 +155,10 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 }
 
 func (p *SystemsTesting) Stop() {
-	return
+	log.Println("FATAL ERROR: Shutting down systems testing engine gracefully...")
+	if pid := os.Getpid(); pid > 0 {
+		syscall.Kill(pid, syscall.SIGINT)
+	}
 }
 
 func (p *SystemsTesting) Wait(s settings.BruitSettings, c clients.BruitCryptoClient) {
