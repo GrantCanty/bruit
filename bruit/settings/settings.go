@@ -67,8 +67,13 @@ func (s *settings) Load() error {
 		return err
 	}
 
-	s.initRunTimes(configs)
-	s.initLogging(configs)
+	if err := s.initRunTimes(configs); err != nil {
+		return err
+	}
+
+	if err := s.initLogging(configs); err != nil {
+		return err
+	}
 
 	if s.logging["ISLOGGINGTOCONSOLE"] {
 		log.Println(s.runTimes)

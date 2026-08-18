@@ -21,18 +21,34 @@ type KrakenClient struct {
 	State     state.StateManager
 }
 
-func (k *KrakenClient) InitClient(s settings.BruitSettings) {
-	k.initWebSockets()
-	k.initKeys()
-	k.initState()
+func (k *KrakenClient) InitClient(s settings.BruitSettings) error {
+	if err := k.initWebSockets(); err != nil {
+		return err
+	}
+
+	if err := k.initKeys(); err != nil {
+		return err
+	}
+
+	if err := k.initState(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (client *KrakenClient) initWebSockets() {
+func (client *KrakenClient) initWebSockets() error {
 	if !AreChannelsInit(&client.WebSocket) {
 		client.WebSocket.InitChannels()
 	}
+
 	client.WebSocket.InitBook()
-	client.socketInit()
+
+	if err := client.socketInit(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (k *KrakenClient) initState() error {

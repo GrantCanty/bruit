@@ -8,7 +8,7 @@ import (
 
 type BruitCryptoClient interface {
 	//general system commands
-	InitClient(s settings.BruitSettings)
+	InitClient(s settings.BruitSettings) error
 	DeferChanClose(s settings.BruitSettings)
 	GetHoldingsWithoutStaking() []string
 	GetHoldingsWithStaking() []string

@@ -58,7 +58,9 @@ func (c *Client) Init(cli clients.BruitCryptoClient) error {
 	}
 
 	c.CryptoClient = cli
-	c.CryptoClient.InitClient(c.Settings)
+	if err := c.CryptoClient.InitClient(c.Settings); err != nil {
+		return err
+	}
 
 	c.DB = influx.DB{}
 
