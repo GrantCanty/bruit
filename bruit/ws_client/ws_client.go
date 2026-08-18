@@ -1,7 +1,6 @@
 package ws_client
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -80,7 +79,7 @@ func New(url string) Socket {
 
 func (socket *Socket) setConnectionOptions() {
 	socket.WebsocketDialer.EnableCompression = socket.ConnectionOptions.UseCompression
-	socket.WebsocketDialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: socket.ConnectionOptions.UseSSL}
+	socket.WebsocketDialer.TLSClientConfig = nil
 	socket.WebsocketDialer.Proxy = socket.ConnectionOptions.Proxy
 	socket.WebsocketDialer.Subprotocols = socket.ConnectionOptions.Subprotocols
 }
