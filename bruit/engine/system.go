@@ -87,11 +87,14 @@ func (p *SystemsTesting) Run(s settings.BruitSettings, c clients.BruitCryptoClie
 				time.Sleep(min(backoff, 4096) * time.Millisecond)
 			}
 
+			// add error handling and skip handling here
 			c.SubscribeToHoldingsOHLC(s, 1)
 		}()
 	}
 
 	//c.SubscribeToOHLC(s, []string{"EOS/USD", "BTC/USD"}, 1)
+
+	// add error handling and skip handling here
 	c.SubscribeToHoldingsOHLC(s, 1)
 
 	orderBookCh := make(chan types.BookRespV2UpdateJSON, 1024)
